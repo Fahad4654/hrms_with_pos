@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 interface Product {
   id: string;
@@ -22,6 +23,7 @@ interface Category {
 
 const ProductCatalog: React.FC = () => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
@@ -45,6 +47,7 @@ const ProductCatalog: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to fetch categories', error);
+      showToast('Failed to fetch categories', 'error');
     }
   };
 
@@ -68,6 +71,7 @@ const ProductCatalog: React.FC = () => {
       }));
     } catch (error) {
       console.error('Failed to fetch products', error);
+      showToast('Failed to fetch products', 'error');
     }
   };
 
@@ -98,6 +102,26 @@ const ProductCatalog: React.FC = () => {
     } catch (error) {
       alert('Failed to create product'); // Fallback if showToast fails but it shouldn't
       showToast('Failed to create product', 'error');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const isConfirmed = await confirm({
+      title: 'Delete Product',
+      message: 'Are you sure you want to delete this product? This action cannot be undone.',
+      confirmText: 'Delete',
+      variant: 'danger'
+    });
+
+    if (isConfirmed) {
+      try {
+        await api.delete(`/products/${id}`);
+        fetchProducts();
+        showToast('Product deleted successfully', 'success');
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        showToast('Failed to delete product', 'error');
+      }
     }
   };
 
@@ -166,7 +190,13 @@ const ProductCatalog: React.FC = () => {
                     </span>
                   </td>
                   <td style={{ padding: '16px 24px' }}>
-                    <button style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
+                    <button style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', marginRight: '8px' }}>Edit</button>
+                    <button 
+                      style={{ color: 'var(--error)', background: 'none', border: 'none', cursor: 'pointer' }}
+                      onClick={() => handleDelete(product.id)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))

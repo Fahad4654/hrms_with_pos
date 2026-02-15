@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 interface Category {
   id: string;
@@ -12,6 +13,7 @@ interface Category {
 
 const Categories: React.FC = () => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -54,14 +56,22 @@ const Categories: React.FC = () => {
   };
 
   const handleDeleteCategory = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this category?')) return;
-    try {
-      await api.delete(`/categories/${id}`);
-      fetchCategories();
-      showToast('Category deleted successfully', 'success');
-    } catch (error: any) {
-      console.error('Error deleting category:', error);
-      showToast(error.response?.data?.message || 'Error deleting category', 'error');
+    const isConfirmed = await confirm({
+      title: 'Delete Category',
+      message: 'Are you sure you want to delete this category? Products in this category may be affected.',
+      confirmText: 'Delete',
+      variant: 'danger'
+    });
+
+    if (isConfirmed) {
+      try {
+        await api.delete(`/categories/${id}`);
+        fetchCategories();
+        showToast('Category deleted successfully', 'success');
+      } catch (error: any) {
+        console.error('Error deleting category:', error);
+        showToast(error.response?.data?.message || 'Error deleting category', 'error');
+      }
     }
   };
 

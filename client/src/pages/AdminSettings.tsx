@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 interface Role {
   id: string;
@@ -10,6 +11,7 @@ interface Role {
 
 const AdminSettings: React.FC = () => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -63,14 +65,22 @@ const AdminSettings: React.FC = () => {
   };
 
   const handleDeleteRole = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this role?')) return;
-    try {
-      await api.delete(`/roles/${id}`);
-      fetchData();
-      showToast('Role deleted successfully', 'success');
-    } catch (error: any) {
-      console.error('Error deleting role:', error);
-      showToast(error.response?.data?.message || 'Error deleting role', 'error');
+    const isConfirmed = await confirm({
+      title: 'Delete Role',
+      message: 'Are you sure you want to delete this role? Users assigned to this role may lose access.',
+      confirmText: 'Delete',
+      variant: 'danger'
+    });
+
+    if (isConfirmed) {
+      try {
+        await api.delete(`/roles/${id}`);
+        fetchData();
+        showToast('Role deleted successfully', 'success');
+      } catch (error: any) {
+        console.error('Error deleting role:', error);
+        showToast(error.response?.data?.message || 'Error deleting role', 'error');
+      }
     }
   };
 
