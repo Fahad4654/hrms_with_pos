@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Employee {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  name          String
+  role          Role           @default(STAFF)
+  salary        Decimal        @default(0)
+  refreshToken  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  attendance    Attendance[]
+  leaveRequests LeaveRequest[]
+  sales         Sale[]
+  commissions   Commission[]
+}
+
+model Attendance {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  clockIn    DateTime @default(now())
+  clockOut   DateTime?
+  latitude   Float?
+  longitude  Float?
+  ipAddress  String?
+}
+
+model LeaveRequest {
+  id         String      @id @default(uuid())
+  employeeId String
+  employee   Employee    @relation(fields: [employeeId], references: [id])
+  startDate  DateTime
+  endDate    DateTime
+  type       String
+  status     LeaveStatus @default(PENDING)
+  reason     String?
+}
+
+model Product {
+  id          String     @id @default(uuid())
+  sku         String     @unique
+  name        String
+  category    String
+  price       Decimal
+  stockLevel  Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  saleItems   SaleItem[]
+}
+
+model Sale {
+  id          String       @id @default(uuid())
+  employeeId  String
+  employee    Employee     @relation(fields: [employeeId], references: [id])
+  totalAmount Decimal
+  timestamp   DateTime     @default(now())
+  items       SaleItem[]
+  commissions Commission[]
+}
+
+model SaleItem {
+  id          String  @id @default(uuid())
+  saleId      String
+  sale        Sale    @relation(fields: [saleId], references: [id])
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  quantity    Int
+  priceAtSale Decimal
+}
+
+model Commission {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  saleId     String
+  sale       Sale     @relation(fields: [saleId], references: [id])
+  amount     Decimal
+  createdAt  DateTime @default(now())
+}
