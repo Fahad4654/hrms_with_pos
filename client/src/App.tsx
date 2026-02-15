@@ -13,6 +13,7 @@ import POSTerminal from './pages/POSTerminal.js';
 import SalesHistory from './pages/SalesHistory.js';
 import Analytics from './pages/Analytics.js';
 import AdminSettings from './pages/AdminSettings.js';
+import NoAccess from './pages/NoAccess.js';
 
 const ProtectedRoute = ({ children, permission }: { children: React.ReactNode, permission?: string }) => {
   const { user, loading } = useAuth();
@@ -32,6 +33,7 @@ const App: React.FC = () => {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/no-access" element={<NoAccess />} />
           <Route path="/" element={
             <ProtectedRoute>
               <Dashboard />

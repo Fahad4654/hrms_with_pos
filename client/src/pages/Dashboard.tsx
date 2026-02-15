@@ -92,7 +92,6 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
         
         <div style={{ marginBottom: '32px', marginTop: isMobileMenuOpen ? '60px' : '0' }}>
           {[
-            { label: "Overview", icon: "📊", to: "/", permission: "all" },
             { label: "Employees", icon: "👥", to: "/employees", permission: "employees" },
             { label: "Attendance", icon: "🕒", to: "/attendance", permission: "attendance" },
             { label: "Categories", icon: "🏷️", to: "/categories", permission: "categories" },

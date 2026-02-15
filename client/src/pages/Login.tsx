@@ -19,7 +19,31 @@ const Login: React.FC = () => {
     try {
       const { data } = await api.post('/auth/login', { email, password });
       login(data.accessToken, data.refreshToken, data.employee);
-      navigate('/');
+      
+      // Redirect based on user permissions
+      const permissions = data.employee.permissions || [];
+      if (permissions.length === 0) {
+        // No permissions assigned
+        navigate('/no-access');
+      } else if (permissions.includes('all')) {
+        navigate('/employees');
+      } else if (permissions.includes('employees')) {
+        navigate('/employees');
+      } else if (permissions.includes('attendance')) {
+        navigate('/attendance');
+      } else if (permissions.includes('categories')) {
+        navigate('/categories');
+      } else if (permissions.includes('inventory')) {
+        navigate('/products');
+      } else if (permissions.includes('pos')) {
+        navigate('/pos');
+      } else if (permissions.includes('sales')) {
+        navigate('/sales');
+      } else if (permissions.includes('analytics')) {
+        navigate('/analytics');
+      } else {
+        navigate('/no-access');
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid credentials');
     } finally {

@@ -22,6 +22,21 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Handle 403 Forbidden - Permission denied
+    if (error.response?.status === 403) {
+      // Clear auth data
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      
+      // Show alert to user
+      alert('Your permissions have been changed. Please log in again.');
+      
+      // Redirect to login
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
+
     // If error is 401 and it's a "Token Expired" code from backend
     if (error.response?.status === 401 && error.response?.data?.code === 'TOKEN_EXPIRED' && !originalRequest._retry) {
       originalRequest._retry = true;
