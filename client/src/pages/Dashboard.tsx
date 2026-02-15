@@ -91,13 +91,20 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
         <h2 className="hide-on-mobile" style={{ fontSize: '1.25rem', marginBottom: '40px', color: 'var(--primary)' }}>HRMS + POS</h2>
         
         <div style={{ marginBottom: '32px', marginTop: isMobileMenuOpen ? '60px' : '0' }}>
-          <SidebarItem label="Overview" icon="📊" to="/" />
-          <SidebarItem label="Employees" icon="👥" to="/employees" />
-          <SidebarItem label="Attendance" icon="🕒" to="/attendance" />
-          <SidebarItem label="Products" icon="📦" to="/products" />
-          <SidebarItem label="Sales POS" icon="💰" to="/pos" />
-          <SidebarItem label="Sales History" icon="📜" to="/sales" />
-          <SidebarItem label="Analytics" icon="📈" to="/analytics" />
+          {[
+            { label: "Overview", icon: "📊", to: "/", permission: "all" },
+            { label: "Employees", icon: "👥", to: "/employees", permission: "employees" },
+            { label: "Attendance", icon: "🕒", to: "/attendance", permission: "attendance" },
+            { label: "Products", icon: "📦", to: "/products", permission: "products" },
+            { label: "Sales POS", icon: "💰", to: "/pos", permission: "pos" },
+            { label: "Sales History", icon: "📜", to: "/sales", permission: "sales" },
+            { label: "Analytics", icon: "📈", to: "/analytics", permission: "analytics" },
+            { label: "Admin Settings", icon: "⚙️", to: "/settings", permission: "all" },
+          ].filter(item => 
+            user?.permissions?.includes('all') || user?.permissions?.includes(item.permission)
+          ).map(item => (
+            <SidebarItem key={item.to} label={item.label} icon={item.icon} to={item.to} />
+          ))}
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid var(--glass-border)' }}>

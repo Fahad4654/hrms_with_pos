@@ -17,14 +17,23 @@ export class AuthController {
       }
 
       const { email, password } = validation.data;
-      const employee = await prisma.employee.findUnique({ where: { email } });
+      const employee = await prisma.employee.findUnique({ 
+        where: { email },
+        include: { role: true }
+      });
 
       if (!employee || !(await bcrypt.compare(password, employee.password))) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
-      const accessToken = generateAccessToken({ id: employee.id, role: employee.role });
-      const refreshToken = generateRefreshToken({ id: employee.id, role: employee.role });
+      const userPayload = { 
+        id: employee.id, 
+        role: employee.role.name, 
+        permissions: employee.role.permissions 
+      };
+
+      const accessToken = generateAccessToken(userPayload);
+      const refreshToken = generateRefreshToken(userPayload);
 
       await prisma.employee.update({
         where: { id: employee.id },
@@ -38,7 +47,8 @@ export class AuthController {
           id: employee.id,
           email: employee.email,
           name: employee.name,
-          role: employee.role,
+          role: employee.role.name,
+          permissions: employee.role.permissions,
         },
       });
     } catch (error: any) {
@@ -56,15 +66,22 @@ export class AuthController {
     try {
       const decoded = verifyRefreshToken(refreshToken);
       const employee = await prisma.employee.findUnique({
-        where: { id: decoded.id }
+        where: { id: decoded.id },
+        include: { role: true }
       });
 
       if (!employee || employee.refreshToken !== refreshToken) {
         return res.status(403).json({ message: 'Invalid refresh token' });
       }
 
-      const newAccessToken = generateAccessToken({ id: employee.id, role: employee.role });
-      const newRefreshToken = generateRefreshToken({ id: employee.id, role: employee.role });
+      const userPayload = { 
+        id: employee.id, 
+        role: employee.role.name, 
+        permissions: employee.role.permissions 
+      };
+
+      const newAccessToken = generateAccessToken(userPayload);
+      const newRefreshToken = generateRefreshToken(userPayload);
 
       await prisma.employee.update({
         where: { id: employee.id },

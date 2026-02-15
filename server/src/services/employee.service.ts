@@ -22,13 +22,14 @@ export class EmployeeService {
         skip,
         take,
         orderBy: orderBy || { createdAt: 'desc' },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          role: true,
-          salary: true,
-          createdAt: true,
+        include: {
+          role: {
+            select: {
+              id: true,
+              name: true,
+              permissions: true,
+            }
+          }
         },
       }),
       prisma.employee.count({ where }),
@@ -63,6 +64,7 @@ export class EmployeeService {
         password: hashedPassword,
         salary: new Prisma.Decimal(data.salary),
       },
+      include: { role: true },
     });
   }
 
@@ -77,6 +79,7 @@ export class EmployeeService {
     return prisma.employee.update({
       where: { id },
       data: updateData,
+      include: { role: true },
     });
   }
 

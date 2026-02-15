@@ -11,13 +11,16 @@ import ProductCatalog from './pages/ProductCatalog.js';
 import POSTerminal from './pages/POSTerminal.js';
 import SalesHistory from './pages/SalesHistory.js';
 import Analytics from './pages/Analytics.js';
+import AdminSettings from './pages/AdminSettings.js';
 
-const ProtectedRoute = ({ children, roles }: { children: React.ReactNode, roles?: string[] }) => {
+const ProtectedRoute = ({ children, permission }: { children: React.ReactNode, permission?: string }) => {
   const { user, loading } = useAuth();
   
   if (loading) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" />;
-  if (roles && !roles.includes(user.role)) return <Navigate to="/" />;
+  if (permission && !user.permissions?.includes('all') && !user.permissions?.includes(permission)) {
+    return <Navigate to="/" />;
+  }
   
   return <>{children}</>;
 };
@@ -34,33 +37,38 @@ const App: React.FC = () => {
             </ProtectedRoute>
           } />
           <Route path="/employees" element={
-            <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
+            <ProtectedRoute permission="employees">
               <Dashboard><EmployeeManagement /></Dashboard>
             </ProtectedRoute>
           } />
           <Route path="/attendance" element={
-            <ProtectedRoute>
+            <ProtectedRoute permission="attendance">
               <Dashboard><Attendance /></Dashboard>
             </ProtectedRoute>
           } />
           <Route path="/products" element={
-            <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
+            <ProtectedRoute permission="products">
               <Dashboard><ProductCatalog /></Dashboard>
             </ProtectedRoute>
           } />
           <Route path="/pos" element={
-            <ProtectedRoute>
+            <ProtectedRoute permission="pos">
               <Dashboard><POSTerminal /></Dashboard>
             </ProtectedRoute>
           } />
           <Route path="/sales" element={
-            <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
+            <ProtectedRoute permission="sales">
               <Dashboard><SalesHistory /></Dashboard>
             </ProtectedRoute>
           } />
           <Route path="/analytics" element={
-            <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
+            <ProtectedRoute permission="analytics">
               <Dashboard><Analytics /></Dashboard>
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute permission="all">
+              <Dashboard><AdminSettings /></Dashboard>
             </ProtectedRoute>
           } />
         </Routes>

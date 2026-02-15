@@ -5,22 +5,45 @@ interface Employee {
   id: string;
   name: string;
   email: string;
-  role: string;
+  roleId: string;
+  role: {
+    id: string;
+    name: string;
+  };
   salary: number;
+}
+
+interface Role {
+  id: string;
+  name: string;
 }
 
 const EmployeeManagement: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'STAFF', salary: 0 });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', roleId: '', salary: 0 });
 
   useEffect(() => {
     fetchEmployees();
+    fetchRoles();
   }, [meta.page, meta.limit, sortBy, sortOrder]);
+
+  const fetchRoles = async () => {
+    try {
+      const { data } = await api.get('/roles');
+      setRoles(data);
+      if (data.length > 0 && !formData.roleId) {
+        setFormData(prev => ({ ...prev, roleId: data[0].id }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch roles', error);
+    }
+  };
 
   const fetchEmployees = async () => {
     try {
@@ -66,7 +89,7 @@ const EmployeeManagement: React.FC = () => {
     try {
       await api.post('/employees', formData);
       setShowModal(false);
-      setFormData({ name: '', email: '', password: '', role: 'STAFF', salary: 0 });
+      setFormData({ name: '', email: '', password: '', roleId: roles[0]?.id || '', salary: 0 });
       fetchEmployees();
     } catch (error) {
       alert('Failed to create employee');
@@ -123,10 +146,10 @@ const EmployeeManagement: React.FC = () => {
                       padding: '4px 10px', 
                       borderRadius: '20px', 
                       fontSize: '0.75rem', 
-                      background: emp.role === 'ADMIN' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)',
-                      color: emp.role === 'ADMIN' ? 'var(--error)' : 'var(--primary)'
+                      background: emp.role?.name === 'ADMIN' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)',
+                      color: emp.role?.name === 'ADMIN' ? 'var(--error)' : 'var(--primary)'
                     }}>
-                      {emp.role}
+                      {emp.role?.name || 'N/A'}
                     </span>
                   </td>
                   <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', color: 'var(--text-muted)' }}>{emp.email}</td>
@@ -212,12 +235,12 @@ const EmployeeManagement: React.FC = () => {
                 <label>Role</label>
                 <select 
                   style={{ width: '100%', padding: '12px', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
-                  value={formData.role} 
-                  onChange={e => setFormData({...formData, role: e.target.value})}
+                  value={formData.roleId} 
+                  onChange={e => setFormData({...formData, roleId: e.target.value})}
                 >
-                  <option value="STAFF">Staff</option>
-                  <option value="MANAGER">Manager</option>
-                  <option value="ADMIN">Admin</option>
+                  {roles.map(r => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
                 </select>
               </div>
               <div className="input-group">

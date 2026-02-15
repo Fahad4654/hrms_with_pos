@@ -6,10 +6,13 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  ADMIN
-  MANAGER
-  STAFF
+model Role {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  permissions String[]   // e.g., ["all", "employees", "attendance", "products", "pos", "sales", "analytics"]
+  employees   Employee[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 enum LeaveStatus {
@@ -23,7 +26,8 @@ model Employee {
   email         String         @unique
   password      String
   name          String
-  role          Role           @default(STAFF)
+  roleId        String
+  role          Role           @relation(fields: [roleId], references: [id])
   salary        Decimal        @default(0)
   refreshToken  String?
   createdAt     DateTime       @default(now())
@@ -56,11 +60,20 @@ model LeaveRequest {
   reason     String?
 }
 
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
 model Product {
   id          String     @id @default(uuid())
   sku         String     @unique
   name        String
-  category    String
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id])
   price       Decimal
   stockLevel  Int        @default(0)
   createdAt   DateTime   @default(now())

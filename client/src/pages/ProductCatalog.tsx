@@ -5,23 +5,46 @@ interface Product {
   id: string;
   sku: string;
   name: string;
-  category: string;
+  categoryId: string;
+  category: {
+    id: string;
+    name: string;
+  };
   price: number;
   stockLevel: number;
 }
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 const ProductCatalog: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ sku: '', name: '', category: 'General', price: 0, stockLevel: 0 });
+  const [formData, setFormData] = useState({ sku: '', name: '', categoryId: '', price: 0, stockLevel: 0 });
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, [meta.page, meta.limit, sortBy, sortOrder]);
+
+  const fetchCategories = async () => {
+    try {
+      const { data } = await api.get('/categories');
+      setCategories(data);
+      if (data.length > 0 && !formData.categoryId) {
+        setFormData(prev => ({ ...prev, categoryId: data[0].id }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch categories', error);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -67,7 +90,7 @@ const ProductCatalog: React.FC = () => {
     try {
       await api.post('/products', formData);
       setShowModal(false);
-      setFormData({ sku: '', name: '', category: 'General', price: 0, stockLevel: 0 });
+      setFormData({ sku: '', name: '', categoryId: categories[0]?.id || '', price: 0, stockLevel: 0 });
       fetchProducts();
     } catch (error) {
       alert('Failed to create product');
@@ -124,7 +147,7 @@ const ProductCatalog: React.FC = () => {
                 <tr key={product.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                   <td style={{ padding: '16px 24px', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{product.sku}</td>
                   <td style={{ padding: '16px 24px', fontWeight: '500' }}>{product.name}</td>
-                  <td style={{ padding: '16px 24px' }}>{product.category}</td>
+                  <td style={{ padding: '16px 24px' }}>{product.category?.name || 'N/A'}</td>
                   <td style={{ padding: '16px 24px', fontWeight: 'bold' }}>${Number(product.price).toFixed(2)}</td>
                   <td style={{ padding: '16px 24px' }}>{product.stockLevel} units</td>
                   <td style={{ padding: '16px 24px' }}>
@@ -201,7 +224,15 @@ const ProductCatalog: React.FC = () => {
                 </div>
                 <div className="input-group">
                   <label>Category</label>
-                  <input required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} />
+                  <select 
+                    style={{ width: '100%', padding: '12px', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
+                    value={formData.categoryId} 
+                    onChange={e => setFormData({...formData, categoryId: e.target.value})}
+                  >
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="input-group">

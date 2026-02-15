@@ -1,16 +1,24 @@
 import { z } from 'zod';
 
-export const RoleEnum = z.enum(['ADMIN', 'MANAGER', 'STAFF']);
-
 export const EmployeeSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   name: z.string().min(2),
-  role: RoleEnum.default('STAFF'),
+  roleId: z.string(),
   salary: z.number().nonnegative(),
 });
 
 export type EmployeeInput = z.infer<typeof EmployeeSchema>;
+
+export const ProductSchema = z.object({
+  sku: z.string().min(3),
+  name: z.string().min(2),
+  categoryId: z.string(),
+  price: z.number().positive(),
+  stockLevel: z.number().int().nonnegative(),
+});
+
+export type ProductInput = z.infer<typeof ProductSchema>;
 
 export const LoginSchema = z.object({
   email: z.string().email(),

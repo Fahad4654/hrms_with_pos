@@ -2,14 +2,7 @@ import prisma from '../config/prisma.js';
 import { Prisma } from '@prisma/client';
 import type { PaginationParams } from '../utils/pagination.js';
 import { getPaginationOptions } from '../utils/pagination.js';
-
-export interface ProductInput {
-  sku: string;
-  name: string;
-  category: string;
-  price: number;
-  stockLevel?: number;
-}
+import type { ProductInput } from '../types/shared.js';
 
 export class ProductService {
   static async getAllProducts(params: PaginationParams) {
@@ -20,7 +13,7 @@ export class ProductService {
       OR: [
         { name: { contains: search, mode: 'insensitive' } },
         { sku: { contains: search, mode: 'insensitive' } },
-        { category: { contains: search, mode: 'insensitive' } },
+        { category: { name: { contains: search, mode: 'insensitive' } } },
       ]
     } : {};
 
@@ -30,6 +23,7 @@ export class ProductService {
         skip,
         take,
         orderBy: orderBy || { name: 'asc' },
+        include: { category: true },
       }),
       prisma.product.count({ where }),
     ]);
@@ -55,9 +49,10 @@ export class ProductService {
     return prisma.product.create({
       data: {
         ...data,
-        price: String(data.price) as any,
+        price: new Prisma.Decimal(data.price),
         stockLevel: data.stockLevel || 0,
       },
+      include: { category: true },
     });
   }
 
@@ -80,6 +75,7 @@ export class ProductService {
     return prisma.product.update({
       where: { id },
       data: updateData,
+      include: { category: true },
     });
   }
 

@@ -11,6 +11,8 @@ import leaveRoutes from './routes/leave.routes.js';
 import productRoutes from './routes/product.routes.js';
 import saleRoutes from './routes/sale.routes.js';
 import biRoutes from './routes/bi.routes.js';
+import roleRoutes from './routes/role.routes.js';
+import categoryRoutes from './routes/category.routes.js';
 
 
 
@@ -29,6 +31,8 @@ app.use('/api/leaves', leaveRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/bi', biRoutes);
+app.use('/api/roles', roleRoutes);
+app.use('/api/categories', categoryRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
