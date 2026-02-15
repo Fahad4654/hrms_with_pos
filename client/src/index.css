@@ -182,9 +182,18 @@ h1, h2, h3 {
     position: sticky !important;
     transform: none !important;
     height: 100vh;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0, 1), min-width 0.3s cubic-bezier(0.4, 0, 0, 1), padding 0.3s cubic-bezier(0.4, 0, 0, 1), opacity 0.3s !important;
+    will-change: width, min-width, padding;
+    overflow: hidden;
+    white-space: nowrap;
   }
   .sidebar:not(.open) {
-    display: none; /* Hide completely on desktop if not open to avoid layout shift */
+    width: 0 !important;
+    min-width: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    border-right: none;
+    opacity: 0;
   }
 }
 

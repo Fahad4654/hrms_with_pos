@@ -115,7 +115,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
         <div
           style={{
             marginBottom: "32px",
-            marginTop: isMobileMenuOpen ? "60px" : "0",
+            marginTop: "0",
           }}
         >
           {[
