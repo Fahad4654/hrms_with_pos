@@ -145,9 +145,9 @@ const AdminSettings: React.FC = () => {
                   </div>
                 </td>
                 <td style={{ padding: '1.5%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4%' }}>
-                    <button className="btn btn-outline" style={{ padding: '0.5% 1.5%' }} onClick={() => { setEditingRole(role); setIsRoleModalOpen(true); }}>Edit</button>
-                    <button className="btn btn-outline" style={{ padding: '0.5% 1.5%', color: 'var(--error)' }} onClick={() => handleDeleteRole(role.id)}>Delete</button>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                    <button className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.875rem' }} onClick={() => { setEditingRole(role); setIsRoleModalOpen(true); }}>Edit</button>
+                    <button className="btn btn-danger" style={{ padding: '6px 12px', fontSize: '0.875rem' }} onClick={() => handleDeleteRole(role.id)}>Delete</button>
                   </div>
                 </td>
               </tr>

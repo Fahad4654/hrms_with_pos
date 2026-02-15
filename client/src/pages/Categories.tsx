@@ -6,6 +6,7 @@ import { useConfirm } from '../context/ConfirmContext';
 interface Category {
   id: string;
   name: string;
+  createdAt: string;
   _count?: {
     products: number;
   };
@@ -18,15 +19,27 @@ const Categories: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Partial<Category> | null>(null);
+  const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [meta.page, meta.limit]);
 
   const fetchCategories = async () => {
     try {
-      const { data } = await api.get('/categories');
-      setCategories(data);
+      const { data } = await api.get('/categories', {
+        params: {
+          page: meta.page,
+          limit: meta.limit
+        }
+      });
+      setCategories(data.data);
+      setMeta(prev => ({ 
+        ...prev, 
+        total: data.meta.total, 
+        totalPages: data.meta.totalPages,
+        page: data.meta.page
+      }));
     } catch (error) {
       console.error('Error fetching categories:', error);
       showToast('Error fetching categories', 'error');
@@ -86,36 +99,86 @@ const Categories: React.FC = () => {
         </button>
       </div>
       
-      <div className="glass-card" style={{ padding: '3%' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2%' }}>
-          {categories.map(cat => (
-            <div key={cat.id} className="glass-card" style={{ 
-              padding: '3%', 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px solid var(--glass-border)'
-            }}>
-              <span style={{ fontWeight: '600', fontSize: '1rem' }}>{cat.name}</span>
-              <div style={{ display: 'flex', gap: '2%' }}>
-                <button 
-                  className="btn btn-outline" 
-                  style={{ padding: '0.5% 1.5%', fontSize: '0.875rem' }} 
-                  onClick={() => { setEditingCategory(cat); setShowModal(true); }}
-                >
-                  Edit
-                </button>
-                <button 
-                  className="btn btn-outline" 
-                  style={{ padding: '0.5% 1.5%', fontSize: '0.875rem', color: 'var(--error)' }} 
-                  onClick={() => handleDeleteCategory(cat.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+      <div className="glass-card table-container">
+        <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+              <th style={{ padding: '2% 3%' }}>Category Name</th>
+              <th style={{ padding: '2% 3%' }}>Created At</th>
+              <th style={{ padding: '2% 3%', textAlign: 'right' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categories.length === 0 ? (
+              <tr><td colSpan={3} style={{ padding: '5%', textAlign: 'center' }}>No categories found</td></tr>
+            ) : (
+              categories.map(cat => (
+                <tr key={cat.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                  <td style={{ padding: '2% 3%', fontWeight: '500' }}>{cat.name}</td>
+                  <td style={{ padding: '2% 3%' }}>{new Date(cat.createdAt).toLocaleDateString()}</td>
+                  <td style={{ padding: '2% 3%' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                      <button 
+                        className="btn btn-primary" 
+                        style={{ padding: '6px 12px', fontSize: '0.875rem' }} 
+                        onClick={() => { setEditingCategory(cat); setShowModal(true); }}
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        className="btn btn-danger" 
+                        style={{ padding: '6px 12px', fontSize: '0.875rem' }} 
+                        onClick={() => handleDeleteCategory(cat.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '3%', flexWrap: 'wrap', gap: '2%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: 0 }}>
+            Showing {(meta.page - 1) * meta.limit + 1}-{Math.min(meta.page * meta.limit, meta.total)} of {meta.total} categories
+          </p>
+          <select 
+            value={meta.limit} 
+            onChange={e => setMeta(prev => ({ ...prev, limit: Number(e.target.value), page: 1 }))}
+            style={{ 
+              padding: '0.5% 1%', 
+              background: 'rgba(15, 23, 42, 0.5)', 
+              border: '1px solid var(--glass-border)', 
+              borderRadius: '4px', 
+              color: 'white',
+              fontSize: '0.875rem'
+            }}
+          >
+            {[10, 25, 50, 100].map(l => <option key={l} value={l}>{l}</option>)}
+          </select>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button 
+            className="btn" 
+            disabled={meta.page <= 1}
+            onClick={() => setMeta(prev => ({ ...prev, page: prev.page - 1 }))}
+            style={{ border: '1px solid var(--glass-border)' }}
+          >
+            Previous
+          </button>
+          <button 
+            className="btn" 
+            disabled={meta.page >= meta.totalPages}
+            onClick={() => setMeta(prev => ({ ...prev, page: prev.page + 1 }))}
+            style={{ border: '1px solid var(--glass-border)' }}
+          >
+            Next
+          </button>
         </div>
       </div>
 

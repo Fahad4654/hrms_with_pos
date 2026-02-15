@@ -160,7 +160,13 @@ const EmployeeManagement: React.FC = () => {
                   <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', color: 'var(--text-muted)' }}>{emp.email}</td>
                   <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>${Number(emp.salary).toLocaleString()}</td>
                   <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>
-                    <button style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
+                    <button 
+                      className="btn btn-primary"
+                      style={{ padding: '4px 12px', fontSize: '0.875rem' }} 
+                      onClick={() => { setEditingEmployee(employee); setIsModalOpen(true); }}
+                    >
+                      Edit
+                    </button>
                   </td>
                 </tr>
               ))

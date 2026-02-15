@@ -1,10 +1,30 @@
 import prisma from '../config/prisma.js';
+import type { PaginationParams } from '../utils/pagination.js';
+import { getPaginationOptions } from '../utils/pagination.js';
 
 export class CategoryService {
-  static async getAllCategories() {
-    return prisma.category.findMany({
-      orderBy: { name: 'asc' },
-    });
+  static async getAllCategories(params: PaginationParams) {
+    const { skip, take, orderBy, page, limit } = getPaginationOptions(params);
+    
+    const [categories, total] = await Promise.all([
+      prisma.category.findMany({
+        skip,
+        take,
+        orderBy: orderBy || { name: 'asc' },
+        include: { _count: { select: { products: true } } }
+      }),
+      prisma.category.count(),
+    ]);
+
+    return {
+      data: categories,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   static async getCategoryById(id: string) {

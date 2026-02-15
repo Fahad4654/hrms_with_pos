@@ -190,13 +190,22 @@ const ProductCatalog: React.FC = () => {
                     </span>
                   </td>
                   <td style={{ padding: '2% 3%' }}>
-                    <button style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', marginRight: '8px' }}>Edit</button>
-                    <button 
-                      style={{ color: 'var(--error)', background: 'none', border: 'none', cursor: 'pointer' }}
-                      onClick={() => handleDelete(product.id)}
-                    >
-                      Delete
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button 
+                        className="btn btn-primary"
+                        style={{ padding: '4px 12px', fontSize: '0.875rem' }} 
+                        onClick={() => { setEditingProduct(product); setIsModalOpen(true); }}
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        className="btn btn-danger" 
+                        style={{ padding: '4px 12px', fontSize: '0.875rem' }} 
+                        onClick={() => handleDelete(product.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
