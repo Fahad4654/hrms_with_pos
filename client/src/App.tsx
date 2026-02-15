@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard.js';
 import EmployeeManagement from './pages/EmployeeManagement.js';
 import Attendance from './pages/Attendance.js';
 import ProductCatalog from './pages/ProductCatalog.js';
+import Categories from './pages/Categories.js';
 import POSTerminal from './pages/POSTerminal.js';
 import SalesHistory from './pages/SalesHistory.js';
 import Analytics from './pages/Analytics.js';
@@ -47,8 +48,13 @@ const App: React.FC = () => {
             </ProtectedRoute>
           } />
           <Route path="/products" element={
-            <ProtectedRoute permission="products">
+            <ProtectedRoute permission="inventory">
               <Dashboard><ProductCatalog /></Dashboard>
+            </ProtectedRoute>
+          } />
+          <Route path="/categories" element={
+            <ProtectedRoute permission="categories">
+              <Dashboard><Categories /></Dashboard>
             </ProtectedRoute>
           } />
           <Route path="/pos" element={

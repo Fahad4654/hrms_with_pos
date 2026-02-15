@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { BIController } from '../controllers/bi.controller.js';
-import { authenticate, authorize } from '../middleware/auth.js';
+import { authenticate, authorizePermission } from '../middleware/auth.js';
 const router = Router();
 
 router.use(authenticate);
-router.use(authorize(['ADMIN', 'MANAGER']));
+router.use(authorizePermission(['analytics']));
 
 router.get('/labor-analytics', BIController.getLaborAnalytics);
 router.get('/payroll', BIController.getPayroll);

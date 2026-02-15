@@ -100,7 +100,7 @@ const ProductCatalog: React.FC = () => {
   return (
     <div className="animate-fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
-        <h1 style={{ margin: 0 }}>Inventory & Catalog</h1>
+        <h1 style={{ margin: 0 }}>Inventory Management</h1>
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px' }}>
             <input 
@@ -212,10 +212,20 @@ const ProductCatalog: React.FC = () => {
         </div>
       </div>
 
+      {/* Product Modal */}
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div className="glass-card" style={{ padding: '32px', width: '100%', maxWidth: '500px' }}>
-            <h2>Add New Product</h2>
+        <div className="modal-overlay" style={{ 
+          position: 'fixed', 
+          inset: 0, 
+          background: 'rgba(0,0,0,0.8)', 
+          display: 'flex', 
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflowY: 'auto',
+          zIndex: 1000 
+        }}>
+          <div className="glass-card modal-content animate-fade-in" style={{ padding: '32px', width: '100%', maxWidth: '500px' }}>
+            <h2>New Product</h2>
             <form onSubmit={handleCreate}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="input-group">
@@ -251,7 +261,7 @@ const ProductCatalog: React.FC = () => {
               </div>
               <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
                 <button type="button" className="btn" onClick={() => setShowModal(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Save Product</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Create Product</button>
               </div>
             </form>
           </div>

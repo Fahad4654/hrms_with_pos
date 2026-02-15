@@ -36,3 +36,28 @@ export const authorize = (roles: string[]) => {
     next();
   };
 };
+
+// New permission-based authorization
+export const authorizePermission = (requiredPermissions: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(403).json({ message: 'Access denied: Not authenticated' });
+    }
+
+    const userPermissions = req.user.permissions || [];
+    
+    // Check if user has 'all' permission or any of the required permissions
+    const hasPermission = userPermissions.includes('all') || 
+                         requiredPermissions.some(perm => userPermissions.includes(perm));
+
+    if (!hasPermission) {
+      return res.status(403).json({ 
+        message: 'Access denied: Insufficient permissions',
+        required: requiredPermissions,
+        userHas: userPermissions
+      });
+    }
+
+    next();
+  };
+};
