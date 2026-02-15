@@ -40,28 +40,28 @@ const EmployeeManagement: React.FC = () => {
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-        <h1>Employee Management</h1>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Employee</button>
+    <div className="animate-fade-in">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+        <h1 style={{ margin: 0 }}>Employees</h1>
+        <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add</button>
       </div>
 
-      <div className="glass-card table-container" style={{ overflow: 'hidden' }}>
-        <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <div className="glass-card table-container">
+        <table style={{ width: '100%', minWidth: window.innerWidth <= 480 ? '600px' : '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th style={{ padding: '16px 24px' }}>Name</th>
-              <th style={{ padding: '16px 24px' }}>Role</th>
-              <th style={{ padding: '16px 24px' }}>Email</th>
-              <th style={{ padding: '16px 24px' }}>Salary</th>
-              <th style={{ padding: '16px 24px' }}>Actions</th>
+              <th style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>Name</th>
+              <th style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>Role</th>
+              <th style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>Email</th>
+              <th style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>Salary</th>
+              <th style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {employees.map(emp => (
               <tr key={emp.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                <td style={{ padding: '16px 24px', fontWeight: '500' }}>{emp.name}</td>
-                <td style={{ padding: '16px 24px' }}>
+                <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', fontWeight: '500' }}>{emp.name}</td>
+                <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>
                   <span style={{ 
                     padding: '4px 10px', 
                     borderRadius: '20px', 
@@ -72,9 +72,9 @@ const EmployeeManagement: React.FC = () => {
                     {emp.role}
                   </span>
                 </td>
-                <td style={{ padding: '16px 24px', color: 'var(--text-muted)' }}>{emp.email}</td>
-                <td style={{ padding: '16px 24px' }}>${Number(emp.salary).toLocaleString()}</td>
-                <td style={{ padding: '16px 24px' }}>
+                <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', color: 'var(--text-muted)' }}>{emp.email}</td>
+                <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>${Number(emp.salary).toLocaleString()}</td>
+                <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>
                   <button style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
                 </td>
               </tr>

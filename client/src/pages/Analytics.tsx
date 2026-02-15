@@ -27,11 +27,16 @@ const Analytics: React.FC = () => {
       <h1>Business Intelligence</h1>
       <p style={{ color: 'var(--text-muted)', marginBottom: '40px' }}>Real-time performance and labor efficiency metrics</p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginBottom: '40px' }}>
-        <div className="glass-card" style={{ padding: '32px' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', 
+        gap: window.innerWidth <= 480 ? '16px' : '32px', 
+        marginBottom: '40px' 
+      }}>
+        <div className="glass-card" style={{ padding: window.innerWidth <= 480 ? '16px' : '32px' }}>
           <h3 style={{ marginBottom: '24px' }}>Labor Efficiency</h3>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', flexDirection: 'column' }}>
-            <div style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--accent)' }}>
+            <div style={{ fontSize: window.innerWidth <= 480 ? '2rem' : '3rem', fontWeight: 'bold', color: 'var(--accent)' }}>
               ${analytics?.salesPerManHour.toFixed(2)}
             </div>
             <p style={{ color: 'var(--text-muted)' }}>Sales per Man-Hour</p>
@@ -48,10 +53,10 @@ const Analytics: React.FC = () => {
           </div>
         </div>
 
-        <div className="glass-card" style={{ padding: '32px' }}>
+        <div className="glass-card" style={{ padding: window.innerWidth <= 480 ? '16px' : '32px' }}>
           <h3 style={{ marginBottom: '24px' }}>Sales Distribution</h3>
           {/* Simplified bar chart representation */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', height: '150px', paddingBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: window.innerWidth <= 480 ? '4px' : '12px', height: '150px', paddingBottom: '20px' }}>
             {[60, 80, 45, 90, 70, 55, 85].map((h, i) => (
               <div key={i} style={{ flex: 1, height: `${h}%`, background: 'var(--primary)', borderRadius: '4px 4px 0 0', opacity: 0.6 + (h/200) }}></div>
             ))}
@@ -62,7 +67,7 @@ const Analytics: React.FC = () => {
         </div>
       </div>
 
-      <div className="glass-card" style={{ padding: '32px' }}>
+      <div className="glass-card" style={{ padding: window.innerWidth <= 480 ? '16px' : '32px' }}>
         <h3>Quick Payroll Export</h3>
         <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.875rem' }}>Generate and verify monthly payroll for all active employees.</p>
         <div style={{ display: 'flex', gap: '16px' }}>
