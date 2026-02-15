@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
+import { useToast } from '../context/ToastContext';
 
 interface AttendanceLog {
   id: string;
@@ -8,6 +9,7 @@ interface AttendanceLog {
 }
 
 const Attendance: React.FC = () => {
+  const { showToast } = useToast();
   const [logs, setLogs] = useState<AttendanceLog[]>([]);
   const [isClockedIn, setIsClockedIn] = useState(false);
 
@@ -23,6 +25,7 @@ const Attendance: React.FC = () => {
       setIsClockedIn(!!active);
     } catch (error) {
       console.error('Failed to fetch logs', error);
+      showToast('Failed to fetch attendance logs', 'error');
     }
   };
 
@@ -30,12 +33,14 @@ const Attendance: React.FC = () => {
     try {
       if (isClockedIn) {
         await api.post('/attendance/clock-out');
+        showToast('Clocked out successfully', 'success');
       } else {
         await api.post('/attendance/clock-in');
+        showToast('Clocked in successfully', 'success');
       }
       fetchLogs();
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Action failed');
+      showToast(error.response?.data?.message || 'Action failed', 'error');
     }
   };
 

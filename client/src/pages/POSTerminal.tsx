@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
+import { useToast } from '../context/ToastContext';
 
 interface Product {
   id: string;
@@ -14,6 +15,7 @@ interface CartItem extends Product {
 }
 
 const POSTerminal: React.FC = () => {
+  const { showToast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState('');
@@ -37,11 +39,12 @@ const POSTerminal: React.FC = () => {
       setProducts(data.data);
     } catch (error) {
       console.error('Failed to fetch products', error);
+      showToast('Failed to fetch products', 'error');
     }
   };
 
   const addToCart = (product: Product) => {
-    if (product.stockLevel <= 0) return alert('Out of stock');
+    if (product.stockLevel <= 0) return showToast('Out of stock', 'warning');
     
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
@@ -74,7 +77,7 @@ const POSTerminal: React.FC = () => {
 
     try {
       await api.post('/sales/checkout', saleData);
-      alert('Sale completed successfully!');
+      showToast('Sale completed successfully!', 'success');
       setCart([]);
       fetchProducts();
     } catch (error: any) {
@@ -83,7 +86,7 @@ const POSTerminal: React.FC = () => {
       offlineQueue.push({ ...saleData, timestamp: new Date().toISOString() });
       localStorage.setItem('offline_sales', JSON.stringify(offlineQueue));
       
-      alert('Checkout failed (likely offline). Transaction saved locally and will sync later.');
+      showToast('Checkout failed (likely offline). Transaction saved locally and will sync later.', 'warning');
       setCart([]);
     } finally {
       setLoading(false);

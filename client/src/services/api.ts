@@ -29,8 +29,10 @@ api.interceptors.response.use(
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       
-      // Show alert to user
-      alert('Your permissions have been changed. Please log in again.');
+      // Show toast to user
+      window.dispatchEvent(new CustomEvent('show-toast', { 
+        detail: { message: 'Your permissions have been changed. Please log in again.', type: 'error' } 
+      }));
       
       // Redirect to login
       window.location.href = '/login';

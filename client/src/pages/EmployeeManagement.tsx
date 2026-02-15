@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
+import { useToast } from '../context/ToastContext';
 
 interface Employee {
   id: string;
@@ -19,6 +20,7 @@ interface Role {
 }
 
 const EmployeeManagement: React.FC = () => {
+  const { showToast } = useToast();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
@@ -42,6 +44,7 @@ const EmployeeManagement: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to fetch roles', error);
+      showToast('Failed to fetch roles', 'error');
     }
   };
 
@@ -65,6 +68,7 @@ const EmployeeManagement: React.FC = () => {
       }));
     } catch (error) {
       console.error('Failed to fetch employees', error);
+      showToast('Failed to fetch employees', 'error');
     }
   };
 
@@ -91,8 +95,9 @@ const EmployeeManagement: React.FC = () => {
       setShowModal(false);
       setFormData({ name: '', email: '', password: '', roleId: roles[0]?.id || '', salary: 0 });
       fetchEmployees();
+      showToast('Employee created successfully', 'success');
     } catch (error) {
-      alert('Failed to create employee');
+      showToast('Failed to create employee', 'error');
     }
   };
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api.js';
+import { useToast } from '../context/ToastContext';
 
 interface Role {
   id: string;
@@ -8,6 +9,7 @@ interface Role {
 }
 
 const AdminSettings: React.FC = () => {
+  const { showToast } = useToast();
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -36,6 +38,7 @@ const AdminSettings: React.FC = () => {
       setRoles(rolesRes.data);
     } catch (error) {
       console.error('Error fetching roles:', error);
+      showToast('Error fetching roles', 'error');
     } finally {
       setLoading(false);
     }
@@ -46,13 +49,16 @@ const AdminSettings: React.FC = () => {
     try {
       if (editingRole.id) {
         await api.put(`/roles/${editingRole.id}`, editingRole);
+        showToast('Role updated successfully', 'success');
       } else {
         await api.post('/roles', editingRole);
+        showToast('Role created successfully', 'success');
       }
       setIsRoleModalOpen(false);
       fetchData();
     } catch (error) {
-      alert('Error saving role');
+      console.error('Error saving role:', error);
+      showToast('Error saving role', 'error');
     }
   };
 
@@ -61,8 +67,10 @@ const AdminSettings: React.FC = () => {
     try {
       await api.delete(`/roles/${id}`);
       fetchData();
+      showToast('Role deleted successfully', 'success');
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Error deleting role');
+      console.error('Error deleting role:', error);
+      showToast(error.response?.data?.message || 'Error deleting role', 'error');
     }
   };
 

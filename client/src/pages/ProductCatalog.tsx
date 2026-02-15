@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
+import { useToast } from '../context/ToastContext';
 
 interface Product {
   id: string;
@@ -20,6 +21,7 @@ interface Category {
 }
 
 const ProductCatalog: React.FC = () => {
+  const { showToast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
@@ -92,8 +94,10 @@ const ProductCatalog: React.FC = () => {
       setShowModal(false);
       setFormData({ sku: '', name: '', categoryId: categories[0]?.id || '', price: 0, stockLevel: 0 });
       fetchProducts();
+      showToast('Product created successfully', 'success');
     } catch (error) {
-      alert('Failed to create product');
+      alert('Failed to create product'); // Fallback if showToast fails but it shouldn't
+      showToast('Failed to create product', 'error');
     }
   };
 

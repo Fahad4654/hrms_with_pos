@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api.js';
+import { useToast } from '../context/ToastContext';
 
 interface Category {
   id: string;
   name: string;
+  _count?: {
+    products: number;
+  };
 }
 
 const Categories: React.FC = () => {
+  const { showToast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -22,6 +27,7 @@ const Categories: React.FC = () => {
       setCategories(data);
     } catch (error) {
       console.error('Error fetching categories:', error);
+      showToast('Error fetching categories', 'error');
     } finally {
       setLoading(false);
     }
@@ -33,14 +39,17 @@ const Categories: React.FC = () => {
     try {
       if (editingCategory.id) {
         await api.put(`/categories/${editingCategory.id}`, { name: editingCategory.name });
+        showToast('Category updated successfully', 'success');
       } else {
         await api.post('/categories', { name: editingCategory.name });
+        showToast('Category created successfully', 'success');
       }
       setShowModal(false);
       setEditingCategory(null);
       fetchCategories();
     } catch (error) {
-      alert('Error saving category');
+      console.error('Error saving category:', error);
+      showToast('Error saving category', 'error');
     }
   };
 
@@ -49,8 +58,10 @@ const Categories: React.FC = () => {
     try {
       await api.delete(`/categories/${id}`);
       fetchCategories();
+      showToast('Category deleted successfully', 'success');
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Error deleting category');
+      console.error('Error deleting category:', error);
+      showToast(error.response?.data?.message || 'Error deleting category', 'error');
     }
   };
 
