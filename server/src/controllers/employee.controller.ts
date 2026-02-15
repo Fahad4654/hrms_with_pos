@@ -5,8 +5,15 @@ import { EmployeeSchema } from '../types/shared.js';
 export class EmployeeController {
   static async getAll(req: Request, res: Response) {
     try {
-      const employees = await EmployeeService.getAllEmployees();
-      res.json(employees);
+      const { page, limit, sortBy, sortOrder, search } = req.query;
+      const result = await EmployeeService.getAllEmployees({
+        page: page as string,
+        limit: limit as string,
+        sortBy: sortBy as string,
+        sortOrder: sortOrder as 'asc' | 'desc',
+        search: search as string,
+      });
+      res.json(result);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

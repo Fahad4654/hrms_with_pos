@@ -11,20 +11,54 @@ interface Employee {
 
 const EmployeeManagement: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'STAFF', salary: 0 });
 
   useEffect(() => {
     fetchEmployees();
-  }, []);
+  }, [meta.page, meta.limit, sortBy, sortOrder]);
 
   const fetchEmployees = async () => {
     try {
-      const { data } = await api.get('/employees');
-      setEmployees(data);
+      const { data } = await api.get('/employees', {
+        params: {
+          page: meta.page,
+          limit: meta.limit,
+          search,
+          sortBy,
+          sortOrder
+        }
+      });
+      setEmployees(data.data);
+      setMeta(prev => ({ 
+        ...prev, 
+        total: data.meta.total, 
+        totalPages: data.meta.totalPages,
+        page: data.meta.page
+      }));
     } catch (error) {
       console.error('Failed to fetch employees', error);
     }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setMeta(prev => ({ ...prev, page: 1 }));
+    fetchEmployees();
+  };
+
+  const toggleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+    setMeta(prev => ({ ...prev, page: 1 }));
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -43,44 +77,109 @@ const EmployeeManagement: React.FC = () => {
     <div className="animate-fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
         <h1 style={{ margin: 0 }}>Employees</h1>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add</button>
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px' }}>
+            <input 
+              type="text" 
+              placeholder="Search name or email..." 
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ width: '200px' }}
+            />
+            <button type="submit" className="btn btn-primary">Search</button>
+          </form>
+          <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add</button>
+        </div>
       </div>
 
       <div className="glass-card table-container">
         <table style={{ width: '100%', minWidth: window.innerWidth <= 480 ? '600px' : '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>Name</th>
-              <th style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>Role</th>
-              <th style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>Email</th>
-              <th style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>Salary</th>
+              <th onClick={() => toggleSort('name')} style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', cursor: 'pointer' }}>
+                Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => toggleSort('role')} style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', cursor: 'pointer' }}>
+                Role {sortBy === 'role' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => toggleSort('email')} style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', cursor: 'pointer' }}>
+                Email {sortBy === 'email' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => toggleSort('salary')} style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', cursor: 'pointer' }}>
+                Salary {sortBy === 'salary' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
               <th style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {employees.map(emp => (
-              <tr key={emp.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', fontWeight: '500' }}>{emp.name}</td>
-                <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>
-                  <span style={{ 
-                    padding: '4px 10px', 
-                    borderRadius: '20px', 
-                    fontSize: '0.75rem', 
-                    background: emp.role === 'ADMIN' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)',
-                    color: emp.role === 'ADMIN' ? 'var(--error)' : 'var(--primary)'
-                  }}>
-                    {emp.role}
-                  </span>
-                </td>
-                <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', color: 'var(--text-muted)' }}>{emp.email}</td>
-                <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>${Number(emp.salary).toLocaleString()}</td>
-                <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>
-                  <button style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
-                </td>
-              </tr>
-            ))}
+            {employees.length === 0 ? (
+              <tr><td colSpan={5} style={{ padding: '40px', textAlign: 'center' }}>No employees found</td></tr>
+            ) : (
+              employees.map(emp => (
+                <tr key={emp.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                  <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', fontWeight: '500' }}>{emp.name}</td>
+                  <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>
+                    <span style={{ 
+                      padding: '4px 10px', 
+                      borderRadius: '20px', 
+                      fontSize: '0.75rem', 
+                      background: emp.role === 'ADMIN' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)',
+                      color: emp.role === 'ADMIN' ? 'var(--error)' : 'var(--primary)'
+                    }}>
+                      {emp.role}
+                    </span>
+                  </td>
+                  <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', color: 'var(--text-muted)' }}>{emp.email}</td>
+                  <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>${Number(emp.salary).toLocaleString()}</td>
+                  <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>
+                    <button style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: 0 }}>
+            Showing {(meta.page - 1) * meta.limit + 1}-{Math.min(meta.page * meta.limit, meta.total)} of {meta.total} employees
+          </p>
+          <select 
+            value={meta.limit} 
+            onChange={e => setMeta(prev => ({ ...prev, limit: Number(e.target.value), page: 1 }))}
+            style={{ 
+              padding: '4px 8px', 
+              background: 'rgba(15, 23, 42, 0.5)', 
+              border: '1px solid var(--glass-border)', 
+              borderRadius: '4px', 
+              color: 'white',
+              fontSize: '0.875rem'
+            }}
+          >
+            {[5, 10, 20, 50].map(l => <option key={l} value={l}>{l} / page</option>)}
+          </select>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button 
+            className="btn" 
+            disabled={meta.page <= 1}
+            onClick={() => setMeta(prev => ({ ...prev, page: prev.page - 1 }))}
+            style={{ border: '1px solid var(--glass-border)' }}
+          >
+            Previous
+          </button>
+          <button 
+            className="btn" 
+            disabled={meta.page >= meta.totalPages}
+            onClick={() => setMeta(prev => ({ ...prev, page: prev.page + 1 }))}
+            style={{ border: '1px solid var(--glass-border)' }}
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {showModal && (

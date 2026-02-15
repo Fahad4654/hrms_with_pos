@@ -25,8 +25,16 @@ const POSTerminal: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data } = await api.get('/products');
-      setProducts(data);
+      // For POS, we'll fetch a larger set (e.g., 50) and handle local filtering for speed, 
+      // or we can implement real-time search from backend.
+      // Let's do real-time search from backend for consistency.
+      const { data } = await api.get('/products', {
+        params: {
+          search,
+          limit: 50
+        }
+      });
+      setProducts(data.data);
     } catch (error) {
       console.error('Failed to fetch products', error);
     }
@@ -107,10 +115,14 @@ const POSTerminal: React.FC = () => {
     return () => window.removeEventListener('online', syncOfflineSales);
   }, []);
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(search.toLowerCase()) || 
-    p.sku.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchProducts();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const filteredProducts = products; // Already filtered by backend
 
   return (
     <div className="pos-container" style={{ display: 'flex', gap: '32px', height: 'calc(100vh - 120px)' }}>

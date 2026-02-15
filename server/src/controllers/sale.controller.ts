@@ -21,8 +21,15 @@ export class SaleController {
 
   static async getHistory(req: AuthRequest, res: Response) {
     try {
-      const history = await SaleService.getTransactionHistory();
-      res.json(history);
+      const { page, limit, sortBy, sortOrder, search } = req.query;
+      const result = await SaleService.getTransactionHistory({
+        page: page as string,
+        limit: limit as string,
+        sortBy: sortBy as string,
+        sortOrder: sortOrder as 'asc' | 'desc',
+        search: search as string,
+      });
+      res.json(result);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

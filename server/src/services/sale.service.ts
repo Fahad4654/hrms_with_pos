@@ -1,4 +1,6 @@
 import prisma, { Prisma } from '../config/prisma.js';
+import type { PaginationParams } from '../utils/pagination.js';
+import { getPaginationOptions } from '../utils/pagination.js';
 
 export interface SaleItemInput {
   productId: string;
@@ -47,14 +49,39 @@ export class SaleService {
     });
   }
 
-  static async getTransactionHistory() {
-    return prisma.sale.findMany({
-      include: {
-        employee: { select: { name: true } },
-        items: { include: { product: { select: { name: true } } } },
+  static async getTransactionHistory(params: PaginationParams) {
+    const { skip, take, orderBy, page, limit } = getPaginationOptions(params);
+    const { search } = params;
+
+    const where: Prisma.SaleWhereInput = search ? {
+      employee: {
+        name: { contains: search, mode: 'insensitive' }
+      }
+    } : {};
+
+    const [sales, total] = await Promise.all([
+      prisma.sale.findMany({
+        where,
+        skip,
+        take,
+        orderBy: orderBy || { timestamp: 'desc' },
+        include: {
+          employee: { select: { name: true } },
+          items: { include: { product: { select: { name: true } } } },
+        },
+      }),
+      prisma.sale.count({ where }),
+    ]);
+
+    return {
+      data: sales,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
-      orderBy: { timestamp: 'desc' },
-    });
+    };
   }
 
   static async getEmployeeSales(employeeId: string) {

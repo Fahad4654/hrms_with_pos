@@ -96,6 +96,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
           <SidebarItem label="Attendance" icon="🕒" to="/attendance" />
           <SidebarItem label="Products" icon="📦" to="/products" />
           <SidebarItem label="Sales POS" icon="💰" to="/pos" />
+          <SidebarItem label="Sales History" icon="📜" to="/sales" />
           <SidebarItem label="Analytics" icon="📈" to="/analytics" />
         </div>
 

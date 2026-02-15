@@ -9,6 +9,7 @@ import EmployeeManagement from './pages/EmployeeManagement.js';
 import Attendance from './pages/Attendance.js';
 import ProductCatalog from './pages/ProductCatalog.js';
 import POSTerminal from './pages/POSTerminal.js';
+import SalesHistory from './pages/SalesHistory.js';
 import Analytics from './pages/Analytics.js';
 
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode, roles?: string[] }) => {
@@ -50,6 +51,11 @@ const App: React.FC = () => {
           <Route path="/pos" element={
             <ProtectedRoute>
               <Dashboard><POSTerminal /></Dashboard>
+            </ProtectedRoute>
+          } />
+          <Route path="/sales" element={
+            <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
+              <Dashboard><SalesHistory /></Dashboard>
             </ProtectedRoute>
           } />
           <Route path="/analytics" element={
