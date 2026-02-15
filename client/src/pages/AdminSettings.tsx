@@ -114,10 +114,10 @@ const AdminSettings: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <h1 style={{ marginBottom: '32px' }}>Role Management</h1>
+      <h1 style={{ marginBottom: '4%' }}>Role Management</h1>
       
-      <div className="glass-card" style={{ padding: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div className="glass-card" style={{ padding: '3%' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3%' }}>
           <h2 style={{ fontSize: '1.25rem', margin: 0 }}>System Roles</h2>
           <button className="btn btn-primary" onClick={() => { setEditingRole({ name: '', permissions: [] }); setIsRoleModalOpen(true); }}>
             + New Role
@@ -126,27 +126,29 @@ const AdminSettings: React.FC = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', textAlign: 'left' }}>
-              <th style={{ padding: '12px' }}>Role Name</th>
-              <th style={{ padding: '12px' }}>Permissions</th>
-              <th style={{ padding: '12px', textAlign: 'right' }}>Actions</th>
+              <th style={{ padding: '1.5%' }}>Role Name</th>
+              <th style={{ padding: '1.5%' }}>Permissions</th>
+              <th style={{ padding: '1.5%', textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {roles.map(role => (
               <tr key={role.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                <td style={{ padding: '12px', fontWeight: 'bold' }}>{role.name}</td>
-                <td style={{ padding: '12px' }}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                <td style={{ padding: '1.5%', fontWeight: 'bold' }}>{role.name}</td>
+                <td style={{ padding: '1.5%' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5%' }}>
                     {role.permissions.map(p => (
-                      <span key={p} style={{ fontSize: '0.75rem', padding: '2px 8px', background: 'rgba(99, 102, 241, 0.2)', borderRadius: '4px', color: 'var(--primary)' }}>
+                      <span key={p} style={{ fontSize: '0.75rem', padding: '0.5% 1.5%', background: 'rgba(99, 102, 241, 0.2)', borderRadius: '4px', color: 'var(--primary)' }}>
                         {p}
                       </span>
                     ))}
                   </div>
                 </td>
-                <td style={{ padding: '12px', textAlign: 'right' }}>
-                  <button className="btn btn-outline" style={{ padding: '4px 8px', marginRight: '8px' }} onClick={() => { setEditingRole(role); setIsRoleModalOpen(true); }}>Edit</button>
-                  <button className="btn btn-outline" style={{ padding: '4px 8px', color: 'var(--error)' }} onClick={() => handleDeleteRole(role.id)}>Delete</button>
+                <td style={{ padding: '1.5%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4%' }}>
+                    <button className="btn btn-outline" style={{ padding: '0.5% 1.5%' }} onClick={() => { setEditingRole(role); setIsRoleModalOpen(true); }}>Edit</button>
+                    <button className="btn btn-outline" style={{ padding: '0.5% 1.5%', color: 'var(--error)' }} onClick={() => handleDeleteRole(role.id)}>Delete</button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -166,7 +168,7 @@ const AdminSettings: React.FC = () => {
           overflowY: 'auto',
           zIndex: 1000 
         }}>
-          <div className="glass-card modal-content animate-fade-in" style={{ padding: '32px', width: '100%', maxWidth: '500px' }}>
+          <div className="glass-card modal-content animate-fade-in" style={{ padding: '4%', width: '90%', maxWidth: '40%' }}>
             <h2>{editingRole?.id ? 'Edit Role' : 'New Role'}</h2>
             <form onSubmit={(e) => { e.preventDefault(); handleSaveRole(); }}>
               <div className="input-group">
@@ -180,15 +182,15 @@ const AdminSettings: React.FC = () => {
               </div>
               <div className="input-group">
                 <label>Permissions</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginTop: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2%', marginTop: '2%' }}>
                   {availablePermissions.map(perm => (
                     <label key={perm} style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
-                      gap: '8px', 
+                      gap: '2%', 
                       fontSize: '0.875rem', 
                       cursor: 'pointer',
-                      padding: '8px',
+                      padding: '2%',
                       background: editingRole?.permissions?.includes(perm) ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
                       borderRadius: '6px',
                       border: '1px solid var(--glass-border)'
@@ -204,7 +206,7 @@ const AdminSettings: React.FC = () => {
                   ))}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
                 <button type="button" className="btn" onClick={() => setIsRoleModalOpen(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
                   {editingRole?.id ? 'Update Role' : 'Create Role'}

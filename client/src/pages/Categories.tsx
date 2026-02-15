@@ -79,18 +79,18 @@ const Categories: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4%' }}>
         <h1 style={{ margin: 0 }}>Product Categories</h1>
         <button className="btn btn-primary" onClick={() => { setEditingCategory({ name: '' }); setShowModal(true); }}>
           + New Category
         </button>
       </div>
       
-      <div className="glass-card" style={{ padding: '24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+      <div className="glass-card" style={{ padding: '3%' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2%' }}>
           {categories.map(cat => (
             <div key={cat.id} className="glass-card" style={{ 
-              padding: '20px', 
+              padding: '3%', 
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center', 
@@ -98,17 +98,17 @@ const Categories: React.FC = () => {
               border: '1px solid var(--glass-border)'
             }}>
               <span style={{ fontWeight: '600', fontSize: '1rem' }}>{cat.name}</span>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '2%' }}>
                 <button 
                   className="btn btn-outline" 
-                  style={{ padding: '4px 12px', fontSize: '0.875rem' }} 
+                  style={{ padding: '0.5% 1.5%', fontSize: '0.875rem' }} 
                   onClick={() => { setEditingCategory(cat); setShowModal(true); }}
                 >
                   Edit
                 </button>
                 <button 
                   className="btn btn-outline" 
-                  style={{ padding: '4px 12px', fontSize: '0.875rem', color: 'var(--error)' }} 
+                  style={{ padding: '0.5% 1.5%', fontSize: '0.875rem', color: 'var(--error)' }} 
                   onClick={() => handleDeleteCategory(cat.id)}
                 >
                   Delete
@@ -131,7 +131,7 @@ const Categories: React.FC = () => {
           overflowY: 'auto',
           zIndex: 1000 
         }}>
-          <div className="glass-card modal-content animate-fade-in" style={{ padding: '32px', width: '100%', maxWidth: '500px' }}>
+          <div className="glass-card modal-content animate-fade-in" style={{ padding: '4%', width: '90%', maxWidth: '40%' }}>
             <h2>{editingCategory?.id ? 'Edit Category' : 'New Category'}</h2>
             <form onSubmit={handleSaveCategory}>
               <div className="input-group">
@@ -143,7 +143,7 @@ const Categories: React.FC = () => {
                   placeholder="Electronics"
                 />
               </div>
-              <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '5%' }}>
                 <button type="button" className="btn" onClick={() => { setShowModal(false); setEditingCategory(null); }} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
                   {editingCategory?.id ? 'Update Category' : 'Create Category'}

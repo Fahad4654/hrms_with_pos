@@ -127,16 +127,16 @@ const ProductCatalog: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4%', flexWrap: 'wrap', gap: '2%' }}>
         <h1 style={{ margin: 0 }}>Inventory Management</h1>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '2%', flexWrap: 'wrap' }}>
           <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px' }}>
             <input 
               type="text" 
               placeholder="Search products..." 
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: '200px' }}
+              style={{ width: '100%', maxWidth: '200px' }} // Keep max-width for sanity but use % width
             />
             <button type="submit" className="btn btn-primary">Search</button>
           </form>
@@ -148,39 +148,39 @@ const ProductCatalog: React.FC = () => {
         <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th onClick={() => toggleSort('sku')} style={{ padding: '16px 24px', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('sku')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
                 SKU {sortBy === 'sku' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('name')} style={{ padding: '16px 24px', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('name')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
                 Product Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('category')} style={{ padding: '16px 24px', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('category')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
                 Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('price')} style={{ padding: '16px 24px', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('price')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
                 Price {sortBy === 'price' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('stockLevel')} style={{ padding: '16px 24px', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('stockLevel')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
                 Stock {sortBy === 'stockLevel' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th style={{ padding: '16px 24px' }}>Status</th>
-              <th style={{ padding: '16px 24px' }}>Actions</th>
+              <th style={{ padding: '2% 3%' }}>Status</th>
+              <th style={{ padding: '2% 3%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {products.length === 0 ? (
-              <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center' }}>No products found</td></tr>
+              <tr><td colSpan={7} style={{ padding: '5%', textAlign: 'center' }}>No products found</td></tr>
             ) : (
               products.map(product => (
                 <tr key={product.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: '16px 24px', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{product.sku}</td>
-                  <td style={{ padding: '16px 24px', fontWeight: '500' }}>{product.name}</td>
-                  <td style={{ padding: '16px 24px' }}>{product.category?.name || 'N/A'}</td>
-                  <td style={{ padding: '16px 24px', fontWeight: 'bold' }}>${Number(product.price).toFixed(2)}</td>
-                  <td style={{ padding: '16px 24px' }}>{product.stockLevel} units</td>
-                  <td style={{ padding: '16px 24px' }}>
+                  <td style={{ padding: '2% 3%', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{product.sku}</td>
+                  <td style={{ padding: '2% 3%', fontWeight: '500' }}>{product.name}</td>
+                  <td style={{ padding: '2% 3%' }}>{product.category?.name || 'N/A'}</td>
+                  <td style={{ padding: '2% 3%', fontWeight: 'bold' }}>${Number(product.price).toFixed(2)}</td>
+                  <td style={{ padding: '2% 3%' }}>{product.stockLevel} units</td>
+                  <td style={{ padding: '2% 3%' }}>
                     <span style={{ 
-                      padding: '4px 10px', 
+                      padding: '0.5% 1.5%', 
                       borderRadius: '20px', 
                       fontSize: '0.75rem', 
                       background: product.stockLevel < 10 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
@@ -189,7 +189,7 @@ const ProductCatalog: React.FC = () => {
                       {product.stockLevel < 10 ? 'Low Stock' : 'In Stock'}
                     </span>
                   </td>
-                  <td style={{ padding: '16px 24px' }}>
+                  <td style={{ padding: '2% 3%' }}>
                     <button style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', marginRight: '8px' }}>Edit</button>
                     <button 
                       style={{ color: 'var(--error)', background: 'none', border: 'none', cursor: 'pointer' }}
@@ -206,7 +206,7 @@ const ProductCatalog: React.FC = () => {
       </div>
 
       {/* Pagination */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '3%', flexWrap: 'wrap', gap: '2%' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: 0 }}>
             Showing {(meta.page - 1) * meta.limit + 1}-{Math.min(meta.page * meta.limit, meta.total)} of {meta.total} products
@@ -215,7 +215,7 @@ const ProductCatalog: React.FC = () => {
             value={meta.limit} 
             onChange={e => setMeta(prev => ({ ...prev, limit: Number(e.target.value), page: 1 }))}
             style={{ 
-              padding: '4px 8px', 
+              padding: '0.5% 1%', 
               background: 'rgba(15, 23, 42, 0.5)', 
               border: '1px solid var(--glass-border)', 
               borderRadius: '4px', 
@@ -223,7 +223,7 @@ const ProductCatalog: React.FC = () => {
               fontSize: '0.875rem'
             }}
           >
-            {[10, 25, 50, 100].map(l => <option key={l} value={l}>{l} / page</option>)}
+            {[10, 25, 50, 100].map(l => <option key={l} value={l}>{l}</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -258,10 +258,10 @@ const ProductCatalog: React.FC = () => {
           overflowY: 'auto',
           zIndex: 1000 
         }}>
-          <div className="glass-card modal-content animate-fade-in" style={{ padding: '32px', width: '100%', maxWidth: '500px' }}>
+          <div className="glass-card modal-content animate-fade-in" style={{ padding: '4%', width: '90%', maxWidth: '500px' }}>
             <h2>New Product</h2>
             <form onSubmit={handleCreate}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4%' }}>
                 <div className="input-group">
                   <label>SKU</label>
                   <input required value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} />
@@ -269,7 +269,7 @@ const ProductCatalog: React.FC = () => {
                 <div className="input-group">
                   <label>Category</label>
                   <select 
-                    style={{ width: '100%', padding: '12px', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
+                    style={{ width: '100%', padding: '3%', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
                     value={formData.categoryId} 
                     onChange={e => setFormData({...formData, categoryId: e.target.value})}
                   >
@@ -283,7 +283,7 @@ const ProductCatalog: React.FC = () => {
                 <label>Product Name</label>
                 <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4%' }}>
                 <div className="input-group">
                   <label>Price ($)</label>
                   <input type="number" step="0.01" required value={formData.price} onChange={e => setFormData({...formData, price: Number(e.target.value)})} />
@@ -293,7 +293,7 @@ const ProductCatalog: React.FC = () => {
                   <input type="number" required value={formData.stockLevel} onChange={e => setFormData({...formData, stockLevel: Number(e.target.value)})} />
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
                 <button type="button" className="btn" onClick={() => setShowModal(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Create Product</button>
               </div>

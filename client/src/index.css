@@ -136,7 +136,8 @@ h1, h2, h3 {
 
 /* Global Sidebar & Overlay Architecture */
 .sidebar {
-  width: 280px;
+  width: 18vw;
+  min-width: 200px;
   background: var(--bg-card);
   backdrop-filter: blur(12px);
   border-right: 1px solid var(--glass-border);

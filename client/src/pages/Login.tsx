@@ -53,11 +53,11 @@ const Login: React.FC = () => {
 
   return (
     <div className="container animate-fade-in" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-      <div className="glass-card" style={{ padding: '40px', width: '100%', maxWidth: '400px' }}>
-        <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>HRMS + POS</h1>
-        <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '30px' }}>Secure Enterprise Portal</p>
+      <div className="glass-card" style={{ padding: '5%', width: '90%', maxWidth: '400px' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '7%' }}>HRMS + POS</h1>
+        <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '7%' }}>Secure Enterprise Portal</p>
         
-        {error && <div style={{ color: 'var(--error)', marginBottom: '20px', textAlign: 'center', fontSize: '0.875rem' }}>{error}</div>}
+        {error && <div style={{ color: 'var(--error)', marginBottom: '5%', textAlign: 'center', fontSize: '0.875rem' }}>{error}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className="input-group">

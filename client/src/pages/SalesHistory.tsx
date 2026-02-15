@@ -66,7 +66,7 @@ const SalesHistory: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4%', flexWrap: 'wrap', gap: '2%' }}>
         <h1>Sales History</h1>
         <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px' }}>
           <input 
@@ -74,7 +74,7 @@ const SalesHistory: React.FC = () => {
             placeholder="Search by employee..." 
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ width: '250px' }}
+            style={{ width: '100%', maxWidth: '250px' }}
           />
           <button type="submit" className="btn btn-primary">Search</button>
         </form>
@@ -84,30 +84,30 @@ const SalesHistory: React.FC = () => {
         <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th style={{ padding: '16px 24px' }}>Date</th>
-              <th style={{ padding: '16px 24px' }}>Employee</th>
-              <th style={{ padding: '16px 24px' }}>Items</th>
-              <th style={{ padding: '16px 24px' }}>Total Amount</th>
-              <th style={{ padding: '16px 24px' }}>ID</th>
+              <th style={{ padding: '2% 3%' }}>Date</th>
+              <th style={{ padding: '2% 3%' }}>Employee</th>
+              <th style={{ padding: '2% 3%' }}>Items</th>
+              <th style={{ padding: '2% 3%' }}>Total Amount</th>
+              <th style={{ padding: '2% 3%' }}>ID</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} style={{ padding: '40px', textAlign: 'center' }}>Loading transactions...</td></tr>
+              <tr><td colSpan={5} style={{ padding: '5%', textAlign: 'center' }}>Loading transactions...</td></tr>
             ) : sales.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding: '40px', textAlign: 'center' }}>No transactions found</td></tr>
+              <tr><td colSpan={5} style={{ padding: '5%', textAlign: 'center' }}>No transactions found</td></tr>
             ) : (
               sales.map(sale => (
                 <tr key={sale.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: '16px 24px' }}>{new Date(sale.timestamp).toLocaleString()}</td>
-                  <td style={{ padding: '16px 24px', fontWeight: '500' }}>{sale.employee?.name}</td>
-                  <td style={{ padding: '16px 24px' }}>
+                  <td style={{ padding: '2% 3%' }}>{new Date(sale.timestamp).toLocaleString()}</td>
+                  <td style={{ padding: '2% 3%', fontWeight: '500' }}>{sale.employee?.name}</td>
+                  <td style={{ padding: '2% 3%' }}>
                     <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                       {sale.items.length} items
                     </div>
                   </td>
-                  <td style={{ padding: '16px 24px', fontWeight: 'bold' }}>${Number(sale.totalAmount).toFixed(2)}</td>
-                  <td style={{ padding: '16px 24px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sale.id.slice(0, 8)}...</td>
+                  <td style={{ padding: '2% 3%', fontWeight: 'bold' }}>${Number(sale.totalAmount).toFixed(2)}</td>
+                  <td style={{ padding: '2% 3%', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sale.id.slice(0, 8)}...</td>
                 </tr>
               ))
             )}
@@ -116,7 +116,7 @@ const SalesHistory: React.FC = () => {
       </div>
 
       {/* Pagination */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '3%', flexWrap: 'wrap', gap: '2%' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: 0 }}>
             Showing {(meta.page - 1) * meta.limit + 1}-{Math.min(meta.page * meta.limit, meta.total)} of {meta.total} transactions
@@ -125,7 +125,7 @@ const SalesHistory: React.FC = () => {
             value={meta.limit} 
             onChange={e => setMeta(prev => ({ ...prev, limit: Number(e.target.value), page: 1 }))}
             style={{ 
-              padding: '4px 8px', 
+              padding: '0.5% 1%', 
               background: 'rgba(15, 23, 42, 0.5)', 
               border: '1px solid var(--glass-border)', 
               borderRadius: '4px', 
@@ -133,7 +133,7 @@ const SalesHistory: React.FC = () => {
               fontSize: '0.875rem'
             }}
           >
-            {[10, 25, 50, 100].map(l => <option key={l} value={l}>{l} / page</option>)}
+            {[10, 25, 50, 100].map(l => <option key={l} value={l}>{l}</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>

@@ -47,12 +47,12 @@ const Attendance: React.FC = () => {
   return (
     <div>
       <h1>Attendance</h1>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Track your daily working hours</p>
+      <p style={{ color: 'var(--text-muted)', marginBottom: '4%' }}>Track your daily working hours</p>
 
-      <div className="glass-card" style={{ padding: '40px', textAlign: 'center', marginBottom: '32px' }}>
-        <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🕒</div>
-        <h2 style={{ marginBottom: '10px' }}>{isClockedIn ? 'You are currently Clocked In' : 'You are currently Clocked Out'}</h2>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '30px' }}>
+      <div className="glass-card" style={{ padding: '5%', textAlign: 'center', marginBottom: '4%' }}>
+        <div style={{ fontSize: '4rem', marginBottom: '3%' }}>🕒</div>
+        <h2 style={{ marginBottom: '1%' }}>{isClockedIn ? 'You are currently Clocked In' : 'You are currently Clocked Out'}</h2>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '4%' }}>
           {isClockedIn ? 'Don\'t forget to clock out before leaving.' : 'Start your shift by clocking in below.'}
         </p>
         <button 
@@ -65,17 +65,17 @@ const Attendance: React.FC = () => {
       </div>
 
       <h3>Recent History</h3>
-      <div className="glass-card table-container" style={{ marginTop: '20px' }}>
+      <div className="glass-card table-container" style={{ marginTop: '3%' }}>
         {logs.length === 0 ? (
-          <p style={{ padding: '20px', color: 'var(--text-muted)' }}>No recent activity found.</p>
+          <p style={{ padding: '3%', color: 'var(--text-muted)' }}>No recent activity found.</p>
         ) : (
           <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                <th style={{ padding: '16px 24px' }}>Date</th>
-                <th style={{ padding: '16px 24px' }}>Clock In</th>
-                <th style={{ padding: '16px 24px' }}>Clock Out</th>
-                <th style={{ padding: '16px 24px' }}>Duration</th>
+                <th style={{ padding: '2% 3%' }}>Date</th>
+                <th style={{ padding: '2% 3%' }}>Clock In</th>
+                <th style={{ padding: '2% 3%' }}>Clock Out</th>
+                <th style={{ padding: '2% 3%' }}>Duration</th>
               </tr>
             </thead>
             <tbody>
@@ -86,10 +86,10 @@ const Attendance: React.FC = () => {
 
                 return (
                   <tr key={log.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                    <td style={{ padding: '16px 24px' }}>{clockIn.toLocaleDateString()}</td>
-                    <td style={{ padding: '16px 24px' }}>{clockIn.toLocaleTimeString()}</td>
-                    <td style={{ padding: '16px 24px' }}>{clockOut ? clockOut.toLocaleTimeString() : '--'}</td>
-                    <td style={{ padding: '16px 24px', fontWeight: 'bold', color: log.clockOut ? 'var(--success)' : 'var(--primary)' }}>
+                    <td style={{ padding: '2% 3%' }}>{clockIn.toLocaleDateString()}</td>
+                    <td style={{ padding: '2% 3%' }}>{clockIn.toLocaleTimeString()}</td>
+                    <td style={{ padding: '2% 3%' }}>{clockOut ? clockOut.toLocaleTimeString() : '--'}</td>
+                    <td style={{ padding: '2% 3%', fontWeight: 'bold', color: log.clockOut ? 'var(--success)' : 'var(--primary)' }}>
                       {duration}
                     </td>
                   </tr>

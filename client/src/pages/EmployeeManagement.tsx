@@ -103,16 +103,16 @@ const EmployeeManagement: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4%', flexWrap: 'wrap', gap: '2%' }}>
         <h1 style={{ margin: 0 }}>Employees</h1>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '2%', flexWrap: 'wrap' }}>
           <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px' }}>
             <input 
               type="text" 
               placeholder="Search name or email..." 
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: '200px' }}
+              style={{ width: '100%', maxWidth: '200px' }}
             />
             <button type="submit" className="btn btn-primary">Search</button>
           </form>
@@ -124,31 +124,31 @@ const EmployeeManagement: React.FC = () => {
         <table style={{ width: '100%', minWidth: window.innerWidth <= 480 ? '600px' : '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th onClick={() => toggleSort('name')} style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('name')} style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', cursor: 'pointer' }}>
                 Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('role')} style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('role')} style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', cursor: 'pointer' }}>
                 Role {sortBy === 'role' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('email')} style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('email')} style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', cursor: 'pointer' }}>
                 Email {sortBy === 'email' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('salary')} style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('salary')} style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', cursor: 'pointer' }}>
                 Salary {sortBy === 'salary' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>Actions</th>
+              <th style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {employees.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding: '40px', textAlign: 'center' }}>No employees found</td></tr>
+              <tr><td colSpan={5} style={{ padding: '5%', textAlign: 'center' }}>No employees found</td></tr>
             ) : (
               employees.map(emp => (
                 <tr key={emp.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', fontWeight: '500' }}>{emp.name}</td>
-                  <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>
+                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', fontWeight: '500' }}>{emp.name}</td>
+                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>
                     <span style={{ 
-                      padding: '4px 10px', 
+                      padding: '0.5% 1.5%', 
                       borderRadius: '20px', 
                       fontSize: '0.75rem', 
                       background: emp.role?.name === 'ADMIN' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)',
@@ -157,9 +157,9 @@ const EmployeeManagement: React.FC = () => {
                       {emp.role?.name || 'N/A'}
                     </span>
                   </td>
-                  <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px', color: 'var(--text-muted)' }}>{emp.email}</td>
-                  <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>${Number(emp.salary).toLocaleString()}</td>
-                  <td style={{ padding: window.innerWidth <= 480 ? '12px 16px' : '16px 24px' }}>
+                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', color: 'var(--text-muted)' }}>{emp.email}</td>
+                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>${Number(emp.salary).toLocaleString()}</td>
+                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>
                     <button style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
                   </td>
                 </tr>
@@ -170,7 +170,7 @@ const EmployeeManagement: React.FC = () => {
       </div>
 
       {/* Pagination */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '3%', flexWrap: 'wrap', gap: '2%' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: 0 }}>
             Showing {(meta.page - 1) * meta.limit + 1}-{Math.min(meta.page * meta.limit, meta.total)} of {meta.total} employees
@@ -179,7 +179,7 @@ const EmployeeManagement: React.FC = () => {
             value={meta.limit} 
             onChange={e => setMeta(prev => ({ ...prev, limit: Number(e.target.value), page: 1 }))}
             style={{ 
-              padding: '4px 8px', 
+              padding: '0.5% 1%', 
               background: 'rgba(15, 23, 42, 0.5)', 
               border: '1px solid var(--glass-border)', 
               borderRadius: '4px', 
@@ -187,7 +187,7 @@ const EmployeeManagement: React.FC = () => {
               fontSize: '0.875rem'
             }}
           >
-            {[5, 10, 20, 50].map(l => <option key={l} value={l}>{l} / page</option>)}
+            {[5, 10, 20, 50].map(l => <option key={l} value={l}>{l}</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -221,7 +221,7 @@ const EmployeeManagement: React.FC = () => {
           overflowY: 'auto',
           zIndex: 1000 
         }}>
-          <div className="glass-card modal-content animate-fade-in" style={{ padding: '32px', width: '100%', maxWidth: '500px' }}>
+          <div className="glass-card modal-content animate-fade-in" style={{ padding: '4%', width: '90%', maxWidth: '40%' }}>
             <h2>New Employee</h2>
             <form onSubmit={handleCreate}>
               <div className="input-group">
@@ -239,7 +239,7 @@ const EmployeeManagement: React.FC = () => {
               <div className="input-group">
                 <label>Role</label>
                 <select 
-                  style={{ width: '100%', padding: '12px', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
+                  style={{ width: '100%', padding: '3%', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
                   value={formData.roleId} 
                   onChange={e => setFormData({...formData, roleId: e.target.value})}
                 >
@@ -252,7 +252,7 @@ const EmployeeManagement: React.FC = () => {
                 <label>Annual Salary ($)</label>
                 <input type="number" required value={formData.salary} onChange={e => setFormData({...formData, salary: Number(e.target.value)})} />
               </div>
-              <div style={{ display: 'flex', gap: '12px', marginTop: '30px' }}>
+              <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
                 <button type="button" className="btn" onClick={() => setShowModal(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Create Employee</button>
               </div>

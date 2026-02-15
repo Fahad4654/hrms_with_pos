@@ -25,23 +25,23 @@ const Analytics: React.FC = () => {
   return (
     <div>
       <h1>Business Intelligence</h1>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '40px' }}>Real-time performance and labor efficiency metrics</p>
+      <p style={{ color: 'var(--text-muted)', marginBottom: '4%' }}>Real-time performance and labor efficiency metrics</p>
 
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', 
-        gap: window.innerWidth <= 480 ? '16px' : '32px', 
-        marginBottom: '40px' 
+        gap: window.innerWidth <= 480 ? '2%' : '4%', 
+        marginBottom: '4%' 
       }}>
-        <div className="glass-card" style={{ padding: window.innerWidth <= 480 ? '16px' : '32px' }}>
-          <h3 style={{ marginBottom: '24px' }}>Labor Efficiency</h3>
+        <div className="glass-card" style={{ padding: window.innerWidth <= 480 ? '3%' : '4%' }}>
+          <h3 style={{ marginBottom: '5%' }}>Labor Efficiency</h3>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', flexDirection: 'column' }}>
             <div style={{ fontSize: window.innerWidth <= 480 ? '2rem' : '3rem', fontWeight: 'bold', color: 'var(--accent)' }}>
               ${analytics?.salesPerManHour.toFixed(2)}
             </div>
             <p style={{ color: 'var(--text-muted)' }}>Sales per Man-Hour</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '20px', borderTop: '1px solid var(--glass-border)', paddingTop: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3%', marginTop: '3%', borderTop: '1px solid var(--glass-border)', paddingTop: '3%' }}>
             <div>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total Sales</p>
               <p style={{ fontWeight: '600' }}>${analytics?.totalSales.toFixed(2)}</p>
@@ -53,10 +53,10 @@ const Analytics: React.FC = () => {
           </div>
         </div>
 
-        <div className="glass-card" style={{ padding: window.innerWidth <= 480 ? '16px' : '32px' }}>
-          <h3 style={{ marginBottom: '24px' }}>Sales Distribution</h3>
+        <div className="glass-card" style={{ padding: window.innerWidth <= 480 ? '3%' : '4%' }}>
+          <h3 style={{ marginBottom: '5%' }}>Sales Distribution</h3>
           {/* Simplified bar chart representation */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: window.innerWidth <= 480 ? '4px' : '12px', height: '150px', paddingBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: window.innerWidth <= 480 ? '1%' : '2%', height: '150px', paddingBottom: '3%' }}>
             {[60, 80, 45, 90, 70, 55, 85].map((h, i) => (
               <div key={i} style={{ flex: 1, height: `${h}%`, background: 'var(--primary)', borderRadius: '4px 4px 0 0', opacity: 0.6 + (h/200) }}></div>
             ))}
@@ -67,10 +67,10 @@ const Analytics: React.FC = () => {
         </div>
       </div>
 
-      <div className="glass-card" style={{ padding: window.innerWidth <= 480 ? '16px' : '32px' }}>
+      <div className="glass-card" style={{ padding: window.innerWidth <= 480 ? '3%' : '4%' }}>
         <h3>Quick Payroll Export</h3>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.875rem' }}>Generate and verify monthly payroll for all active employees.</p>
-        <div style={{ display: 'flex', gap: '16px' }}>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '3%', fontSize: '0.875rem' }}>Generate and verify monthly payroll for all active employees.</p>
+        <div style={{ display: 'flex', gap: '2%' }}>
           <button className="btn btn-primary">Process current month</button>
           <button className="btn" style={{ border: '1px solid var(--glass-border)' }}>Export CSV</button>
         </div>

@@ -52,7 +52,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     }
   }, [location.pathname, windowWidth]);
 
-  const contentPaddingX = windowWidth <= 480 ? (windowWidth <= 320 ? '12px' : '20px') : '40px';
+  const contentPaddingX = windowWidth <= 480 ? (windowWidth <= 320 ? '3%' : '4%') : '3%';
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', position: 'relative' }}>
@@ -60,7 +60,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
       <div style={{
         position: 'fixed',
         top: 0,
-        left: 0,
+        left: 0, 
         right: 0,
         height: '60px',
         background: 'var(--bg-card)',
@@ -69,8 +69,9 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: windowWidth <= 480 ? '0 12px' : '0 20px',
-        zIndex: 1000
+        padding: windowWidth <= 480 ? '0 3%' : '0 2%',
+        zIndex: 1200, // Higher than sidebar (1100)
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0, 1)'
       }}>
         <h2 style={{ fontSize: windowWidth <= 320 ? '0.875rem' : '1rem', margin: 0, color: 'var(--primary)' }}>HRMS + POS</h2>
         <button 
@@ -85,7 +86,9 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
       <div 
         className={`sidebar ${isMobileMenuOpen ? 'open' : ''} glass-card`}
         style={{ 
-          marginTop: isMobileMenuOpen ? '0' : '0' // Placeholder to maintain React style object if needed, but classes will handle layout
+          marginTop: '60px', // Always push below fixed header
+          height: 'calc(100vh - 60px)', // Adjust height
+          zIndex: 1100
         }}
       >
         <h2 className="hide-on-mobile" style={{ fontSize: '1.25rem', marginBottom: '40px', color: 'var(--primary)' }}>HRMS + POS</h2>
@@ -141,11 +144,11 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
       {/* Main Content */}
       <div style={{ 
         flex: 1, 
-        paddingLeft: contentPaddingX,
-        paddingRight: contentPaddingX,
-        paddingTop: '100px', // Consistent top padding for fixed header
+        paddingLeft: windowWidth > 1024 ? '2%' : contentPaddingX,
+        paddingRight: windowWidth > 1024 ? '2%' : contentPaddingX, // Percent based padding
+        paddingTop: '80px', 
         paddingBottom: '40px',
-        transition: 'padding 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0, 1)',
         overflowY: 'auto',
         maxWidth: '100vw'
       }} className="main-content">

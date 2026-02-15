@@ -128,10 +128,10 @@ const POSTerminal: React.FC = () => {
   const filteredProducts = products; // Already filtered by backend
 
   return (
-    <div className="pos-container" style={{ display: 'flex', gap: '32px', height: 'calc(100vh - 120px)' }}>
+    <div className="pos-container" style={{ display: 'flex', gap: '4%', height: 'calc(100vh - 120px)' }}>
       {/* Product Selection Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div className="glass-card" style={{ padding: '16px', marginBottom: '24px' }}>
+        <div className="glass-card" style={{ padding: '2%', marginBottom: '3%' }}>
           <input 
             type="text" 
             placeholder="Search SKU or Name..." 
@@ -140,13 +140,13 @@ const POSTerminal: React.FC = () => {
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '16px', overflowY: 'auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '2%', overflowY: 'auto' }}>
           {filteredProducts.map(p => (
             <div 
               key={p.id} 
               className="glass-card" 
               onClick={() => addToCart(p)}
-              style={{ padding: '16px', cursor: 'pointer', textAlign: 'center', transition: 'transform 0.1s' }}
+              style={{ padding: '4%', cursor: 'pointer', textAlign: 'center', transition: 'transform 0.1s' }}
               onMouseDown={e => e.currentTarget.style.transform = 'scale(0.98)'}
               onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
             >
@@ -160,15 +160,15 @@ const POSTerminal: React.FC = () => {
       </div>
 
       {/* Cart / Checkout Area */}
-      <div className="glass-card pos-cart" style={{ width: '400px', display: 'flex', flexDirection: 'column', padding: '24px' }}>
-        <h2 style={{ marginBottom: '24px' }}>Current Sale</h2>
+      <div className="glass-card pos-cart" style={{ width: '30%', minWidth: '300px', display: 'flex', flexDirection: 'column', padding: '3%' }}>
+        <h2 style={{ marginBottom: '5%' }}>Current Sale</h2>
         
-        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '24px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '5%' }}>
           {cart.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '40px' }}>Cart is empty</p>
+            <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '10%' }}>Cart is empty</p>
           ) : (
             cart.map(item => (
-              <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--glass-border)' }}>
+              <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4%', paddingBottom: '4%', borderBottom: '1px solid var(--glass-border)' }}>
                 <div>
                   <p style={{ fontWeight: '500' }}>{item.name}</p>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.quantity} x ${Number(item.price).toFixed(2)}</p>
@@ -182,16 +182,16 @@ const POSTerminal: React.FC = () => {
           )}
         </div>
 
-        <div style={{ borderTop: '2px solid var(--glass-border)', paddingTop: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: 'var(--text-muted)' }}>
+        <div style={{ borderTop: '2px solid var(--glass-border)', paddingTop: '5%' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2%', color: 'var(--text-muted)' }}>
             <span>Subtotal</span>
             <span>${subtotal.toFixed(2)}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', color: 'var(--text-muted)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4%', color: 'var(--text-muted)' }}>
             <span>Tax (8%)</span>
             <span>${tax.toFixed(2)}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px', fontSize: '1.5rem', fontWeight: 'bold' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6%', fontSize: '1.5rem', fontWeight: 'bold' }}>
             <span>Total</span>
             <span style={{ color: 'var(--accent)' }}>${total.toFixed(2)}</span>
           </div>
