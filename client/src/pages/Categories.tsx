@@ -20,17 +20,21 @@ const Categories: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Partial<Category> | null>(null);
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     fetchCategories();
-  }, [meta.page, meta.limit]);
+  }, [meta.page, meta.limit, sortBy, sortOrder]);
 
   const fetchCategories = async () => {
     try {
       const { data } = await api.get('/categories', {
         params: {
           page: meta.page,
-          limit: meta.limit
+          limit: meta.limit,
+          sortBy,
+          sortOrder
         }
       });
       setCategories(data.data);
@@ -46,6 +50,16 @@ const Categories: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+    setMeta(prev => ({ ...prev, page: 1 }));
   };
 
   const handleSaveCategory = async (e: React.FormEvent) => {
@@ -103,9 +117,19 @@ const Categories: React.FC = () => {
         <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th style={{ padding: '2% 3%' }}>Category Name</th>
-              <th style={{ padding: '2% 3%' }}>Created At</th>
-              <th style={{ padding: '2% 3%', textAlign: 'right' }}>Actions</th>
+              <th 
+                style={{ padding: '2% 3%', cursor: 'pointer', userSelect: 'none', width: '50%' }} 
+                onClick={() => toggleSort('name')}
+              >
+                Category Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th 
+                style={{ padding: '2% 3%', cursor: 'pointer', userSelect: 'none', width: '25%' }} 
+                onClick={() => toggleSort('createdAt')}
+              >
+                Created At {sortBy === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th style={{ padding: '2% 3%', textAlign: 'right', width: '25%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>

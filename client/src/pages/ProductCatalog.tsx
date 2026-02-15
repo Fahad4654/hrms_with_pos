@@ -148,23 +148,23 @@ const ProductCatalog: React.FC = () => {
         <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th onClick={() => toggleSort('sku')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('sku')} style={{ padding: '2% 3%', cursor: 'pointer', width: '15%' }}>
                 SKU {sortBy === 'sku' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('name')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('name')} style={{ padding: '2% 3%', cursor: 'pointer', width: '25%' }}>
                 Product Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('category')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('category')} style={{ padding: '2% 3%', cursor: 'pointer', width: '15%' }}>
                 Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('price')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('price')} style={{ padding: '2% 3%', cursor: 'pointer', width: '10%' }}>
                 Price {sortBy === 'price' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('stockLevel')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('stockLevel')} style={{ padding: '2% 3%', cursor: 'pointer', width: '10%' }}>
                 Stock {sortBy === 'stockLevel' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th style={{ padding: '2% 3%' }}>Status</th>
-              <th style={{ padding: '2% 3%' }}>Actions</th>
+              <th style={{ padding: '2% 3%', width: '10%' }}>Status</th>
+              <th style={{ padding: '2% 3%', width: '15%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>

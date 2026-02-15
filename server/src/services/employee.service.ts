@@ -16,12 +16,19 @@ export class EmployeeService {
       ]
     } : {};
 
+    let orderByClause: any = orderBy || { createdAt: 'desc' };
+    if (params.sortBy === 'role') {
+      orderByClause = { role: { name: params.sortOrder || 'asc' } };
+    } else if (orderBy) {
+      orderByClause = orderBy;
+    }
+
     const [employees, total] = await Promise.all([
       prisma.employee.findMany({
         where,
         skip,
         take,
-        orderBy: orderBy || { createdAt: 'desc' },
+        orderBy: orderByClause,
         include: {
           role: {
             select: {

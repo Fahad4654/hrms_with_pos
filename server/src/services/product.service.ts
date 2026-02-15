@@ -17,12 +17,19 @@ export class ProductService {
       ]
     } : {};
 
+    let orderByClause: any = orderBy || { name: 'asc' };
+    if (params.sortBy === 'category') {
+      orderByClause = { category: { name: params.sortOrder || 'asc' } };
+    } else if (orderBy) {
+      orderByClause = orderBy;
+    }
+
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where,
         skip,
         take,
-        orderBy: orderBy || { name: 'asc' },
+        orderBy: orderByClause,
         include: { category: true },
       }),
       prisma.product.count({ where }),
