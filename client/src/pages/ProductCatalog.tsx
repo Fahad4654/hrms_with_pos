@@ -12,14 +12,16 @@ interface Product {
 
 const ProductCatalog: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 8 });
+  const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ sku: '', name: '', category: 'General', price: 0, stockLevel: 0 });
 
   useEffect(() => {
     fetchProducts();
-  }, [meta.page, meta.limit]);
+  }, [meta.page, meta.limit, sortBy, sortOrder]);
 
   const fetchProducts = async () => {
     try {
@@ -27,7 +29,9 @@ const ProductCatalog: React.FC = () => {
         params: {
           page: meta.page,
           limit: meta.limit,
-          search
+          search,
+          sortBy,
+          sortOrder
         }
       });
       setProducts(data.data);
@@ -48,6 +52,16 @@ const ProductCatalog: React.FC = () => {
     fetchProducts();
   };
 
+  const toggleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+    setMeta(prev => ({ ...prev, page: 1 }));
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -61,9 +75,9 @@ const ProductCatalog: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
-        <h1>Inventory & Catalog</h1>
+        <h1 style={{ margin: 0 }}>Inventory & Catalog</h1>
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px' }}>
             <input 
@@ -79,43 +93,63 @@ const ProductCatalog: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
-        {products.length === 0 ? (
-          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '100px', color: 'var(--text-muted)' }}>
-            No products found matching your search.
-          </div>
-        ) : (
-          products.map(product => (
-            <div key={product.id} className="glass-card animate-fade-in" style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{product.sku}</span>
-                <span style={{ 
-                  fontSize: '0.75rem', 
-                  padding: '4px 8px', 
-                  borderRadius: '4px', 
-                  background: product.stockLevel < 10 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-                  color: product.stockLevel < 10 ? 'var(--error)' : 'var(--success)'
-                }}>
-                  {product.stockLevel < 10 ? 'Low Stock' : 'In Stock'}
-                </span>
-              </div>
-              <h3 style={{ marginBottom: '4px' }}>{product.name}</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '16px' }}>{product.category}</p>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <div>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Current Stock</p>
-                  <p style={{ fontWeight: 'bold' }}>{product.stockLevel} units</p>
-                </div>
-                <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--accent)' }}>${Number(product.price).toFixed(2)}</p>
-              </div>
-            </div>
-          ))
-        )}
+      <div className="glass-card table-container">
+        <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+              <th onClick={() => toggleSort('sku')} style={{ padding: '16px 24px', cursor: 'pointer' }}>
+                SKU {sortBy === 'sku' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => toggleSort('name')} style={{ padding: '16px 24px', cursor: 'pointer' }}>
+                Product Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => toggleSort('category')} style={{ padding: '16px 24px', cursor: 'pointer' }}>
+                Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => toggleSort('price')} style={{ padding: '16px 24px', cursor: 'pointer' }}>
+                Price {sortBy === 'price' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => toggleSort('stockLevel')} style={{ padding: '16px 24px', cursor: 'pointer' }}>
+                Stock {sortBy === 'stockLevel' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th style={{ padding: '16px 24px' }}>Status</th>
+              <th style={{ padding: '16px 24px' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.length === 0 ? (
+              <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center' }}>No products found</td></tr>
+            ) : (
+              products.map(product => (
+                <tr key={product.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                  <td style={{ padding: '16px 24px', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{product.sku}</td>
+                  <td style={{ padding: '16px 24px', fontWeight: '500' }}>{product.name}</td>
+                  <td style={{ padding: '16px 24px' }}>{product.category}</td>
+                  <td style={{ padding: '16px 24px', fontWeight: 'bold' }}>${Number(product.price).toFixed(2)}</td>
+                  <td style={{ padding: '16px 24px' }}>{product.stockLevel} units</td>
+                  <td style={{ padding: '16px 24px' }}>
+                    <span style={{ 
+                      padding: '4px 10px', 
+                      borderRadius: '20px', 
+                      fontSize: '0.75rem', 
+                      background: product.stockLevel < 10 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                      color: product.stockLevel < 10 ? 'var(--error)' : 'var(--success)'
+                    }}>
+                      {product.stockLevel < 10 ? 'Low Stock' : 'In Stock'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '16px 24px' }}>
+                    <button style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '40px', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', flexWrap: 'wrap', gap: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: 0 }}>
             Showing {(meta.page - 1) * meta.limit + 1}-{Math.min(meta.page * meta.limit, meta.total)} of {meta.total} products
@@ -132,7 +166,7 @@ const ProductCatalog: React.FC = () => {
               fontSize: '0.875rem'
             }}
           >
-            {[8, 16, 32, 64].map(l => <option key={l} value={l}>{l} / page</option>)}
+            {[10, 25, 50, 100].map(l => <option key={l} value={l}>{l} / page</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
