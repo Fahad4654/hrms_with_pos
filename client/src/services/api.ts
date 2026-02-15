@@ -23,19 +23,10 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Handle 403 Forbidden - Permission denied
+    // Handle 403 Forbidden - Permission denied
     if (error.response?.status === 403) {
-      // Clear auth data
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-      
-      // Show toast to user
-      window.dispatchEvent(new CustomEvent('show-toast', { 
-        detail: { message: 'Your permissions have been changed. Please log in again.', type: 'error' } 
-      }));
-      
-      // Redirect to login
-      window.location.href = '/login';
+      // Just reject the promise so the component can handle it (e.g., show a toast)
+      // Do NOT log out the user
       return Promise.reject(error);
     }
 

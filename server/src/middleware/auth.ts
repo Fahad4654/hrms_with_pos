@@ -6,6 +6,7 @@ export interface AuthRequest extends Request {
   user?: {
     id: string;
     role: string;
+    level: number;
     permissions: string[];
   };
 }
@@ -33,6 +34,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     req.user = {
       id: employee.id,
       role: employee.role.name,
+      level: employee.role.level,
       permissions: employee.role.permissions
     };
     

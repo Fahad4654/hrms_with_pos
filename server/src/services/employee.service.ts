@@ -59,6 +59,7 @@ export class EmployeeService {
       include: {
         attendance: true,
         leaveRequests: true,
+        role: true,
       },
     });
   }

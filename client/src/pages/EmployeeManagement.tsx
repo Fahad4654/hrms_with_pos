@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import { useAuth } from '../context/AuthContext';
 
 interface Employee {
   id: string;
@@ -17,10 +19,12 @@ interface Employee {
 interface Role {
   id: string;
   name: string;
+  level: number;
 }
 
 const EmployeeManagement: React.FC = () => {
   const { showToast } = useToast();
+  const { user } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
@@ -29,6 +33,16 @@ const EmployeeManagement: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '', roleId: '', salary: 0 });
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { confirm } = useConfirm();
+
+  // Filter roles based on hierarchy
+  // Level 1 can see all. Level > 1 can only see strictly lower hierarchy (higher level number)
+  const filteredRoles = roles.filter(role => {
+    if (!user?.level || user.level === 1) return true;
+    return role.level > user.level;
+  });
 
   useEffect(() => {
     fetchEmployees();
@@ -39,7 +53,7 @@ const EmployeeManagement: React.FC = () => {
     try {
       const { data } = await api.get('/roles');
       setRoles(data);
-      if (data.length > 0 && !formData.roleId) {
+      if (data && data.length > 0 && !formData.roleId) {
         setFormData(prev => ({ ...prev, roleId: data[0].id }));
       }
     } catch (error) {
@@ -96,8 +110,82 @@ const EmployeeManagement: React.FC = () => {
       setFormData({ name: '', email: '', password: '', roleId: roles[0]?.id || '', salary: 0 });
       fetchEmployees();
       showToast('Employee created successfully', 'success');
-    } catch (error) {
-      showToast('Failed to create employee', 'error');
+    } catch (error: any) {
+      console.error('Failed to create employee', error);
+      let message = error.response?.data?.message || 'Failed to create employee';
+      
+      // Handle Zod validation errors if present
+      const errors = error.response?.data?.errors;
+      if (errors) {
+         // errors is typically { _errors: [], fieldName: { _errors: [] } }
+         // Let's try to extract the first error message
+         const firstField = Object.keys(errors).find(k => k !== '_errors');
+         if (firstField && errors[firstField] && errors[firstField]._errors) {
+             message = `${firstField}: ${errors[firstField]._errors.join(', ')}`;
+         } else if (errors._errors && errors._errors.length > 0) {
+             message = errors._errors.join(', ');
+         }
+      }
+      showToast(message, 'error');
+    }
+  };
+
+  const openEditModal = (employee: Employee) => {
+    if (!employee.role) {
+        showToast('Employee has no role assigned', 'error');
+        return;
+    }
+    setEditingEmployee(employee);
+    setFormData({
+      name: employee.name,
+      email: employee.email,
+      password: '', // Leave empty to keep existing
+      roleId: employee.role.id,
+      salary: employee.salary
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEmployee) return;
+    try {
+      if (formData.password) {
+          await api.put(`/employees/${editingEmployee.id}`, formData);
+      } else {
+          // Exclude password if empty
+          const { password, ...rest } = formData;
+          await api.put(`/employees/${editingEmployee.id}`, rest);
+      }
+      setIsEditModalOpen(false);
+      setEditingEmployee(null);
+      setFormData({ name: '', email: '', password: '', roleId: roles[0]?.id || '', salary: 0 });
+      fetchEmployees();
+      showToast('Employee updated successfully', 'success');
+    } catch (error: any) {
+      console.error('Failed to update employee', error);
+      const message = error.response?.data?.message || 'Failed to update employee';
+      showToast(message, 'error');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const isConfirmed = await confirm({
+      title: 'Delete Employee',
+      message: 'Are you sure you want to delete this employee?',
+      confirmText: 'Delete',
+      variant: 'danger'
+    });
+
+    if (isConfirmed) {
+      try {
+        await api.delete(`/employees/${id}`);
+        fetchEmployees();
+        showToast('Employee deleted successfully', 'success');
+      } catch (error: any) {
+        console.error('Failed to delete employee', error);
+        showToast(error.response?.data?.message || 'Failed to delete employee', 'error');
+      }
     }
   };
 
@@ -160,13 +248,22 @@ const EmployeeManagement: React.FC = () => {
                   <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', color: 'var(--text-muted)' }}>{emp.email}</td>
                   <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>${Number(emp.salary).toLocaleString()}</td>
                   <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>
-                    <button 
-                      className="btn btn-primary"
-                      style={{ padding: '4px 12px', fontSize: '0.875rem' }} 
-                      onClick={() => { setEditingEmployee(employee); setIsModalOpen(true); }}
-                    >
-                      Edit
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button 
+                        className="btn btn-primary"
+                        style={{ padding: '6px 12px', fontSize: '0.875rem' }} 
+                        onClick={() => openEditModal(emp)}
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        className="btn btn-danger"
+                        style={{ padding: '6px 12px', fontSize: '0.875rem' }} 
+                        onClick={() => handleDelete(emp.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -175,7 +272,6 @@ const EmployeeManagement: React.FC = () => {
         </table>
       </div>
 
-      {/* Pagination */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '3%', flexWrap: 'wrap', gap: '2%' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: 0 }}>
@@ -216,6 +312,7 @@ const EmployeeManagement: React.FC = () => {
         </div>
       </div>
 
+      {/* Create Modal */}
       {showModal && (
         <div className="modal-overlay" style={{ 
           position: 'fixed', 
@@ -249,7 +346,7 @@ const EmployeeManagement: React.FC = () => {
                   value={formData.roleId} 
                   onChange={e => setFormData({...formData, roleId: e.target.value})}
                 >
-                  {roles.map(r => (
+                  {filteredRoles.map(r => (
                     <option key={r.id} value={r.id}>{r.name}</option>
                   ))}
                 </select>
@@ -261,6 +358,58 @@ const EmployeeManagement: React.FC = () => {
               <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
                 <button type="button" className="btn" onClick={() => setShowModal(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Create Employee</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {isEditModalOpen && (
+        <div className="modal-overlay" style={{ 
+          position: 'fixed', 
+          inset: 0, 
+          background: 'rgba(0,0,0,0.8)', 
+          display: 'flex', 
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflowY: 'auto',
+          zIndex: 1000 
+        }}>
+          <div className="glass-card modal-content animate-fade-in" style={{ padding: '4%', width: '90%', maxWidth: '40%' }}>
+            <h2>Edit Employee</h2>
+            <form onSubmit={handleEdit}>
+              <div className="input-group">
+                <label>Full Name</label>
+                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+              </div>
+              <div className="input-group">
+                <label>Email</label>
+                <input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+              </div>
+              <div className="input-group">
+                <label>New Password (leave blank to keep current)</label>
+                <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} placeholder="********" />
+              </div>
+              <div className="input-group">
+                <label>Role</label>
+                <select 
+                  style={{ width: '100%', padding: '3%', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
+                  value={formData.roleId} 
+                  onChange={e => setFormData({...formData, roleId: e.target.value})}
+                >
+                  {filteredRoles.map(r => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="input-group">
+                <label>Annual Salary ($)</label>
+                <input type="number" required value={formData.salary} onChange={e => setFormData({...formData, salary: Number(e.target.value)})} />
+              </div>
+              <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
+                <button type="button" className="btn" onClick={() => setIsEditModalOpen(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Update Employee</button>
               </div>
             </form>
           </div>

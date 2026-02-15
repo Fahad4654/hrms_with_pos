@@ -6,6 +6,7 @@ import { useConfirm } from '../context/ConfirmContext';
 interface Role {
   id: string;
   name: string;
+  level: number;
   permissions: string[];
 }
 
@@ -58,9 +59,9 @@ const AdminSettings: React.FC = () => {
       }
       setIsRoleModalOpen(false);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving role:', error);
-      showToast('Error saving role', 'error');
+      showToast(error.response?.data?.message || 'Error saving role', 'error');
     }
   };
 
@@ -119,7 +120,7 @@ const AdminSettings: React.FC = () => {
       <div className="glass-card" style={{ padding: '3%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3%' }}>
           <h2 style={{ fontSize: '1.25rem', margin: 0 }}>System Roles</h2>
-          <button className="btn btn-primary" onClick={() => { setEditingRole({ name: '', permissions: [] }); setIsRoleModalOpen(true); }}>
+          <button className="btn btn-primary" onClick={() => { setEditingRole({ name: '', permissions: [], level: 10 }); setIsRoleModalOpen(true); }}>
             + New Role
           </button>
         </div>
@@ -127,6 +128,7 @@ const AdminSettings: React.FC = () => {
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', textAlign: 'left' }}>
               <th style={{ padding: '1.5%' }}>Role Name</th>
+              <th style={{ padding: '1.5%' }}>Level</th>
               <th style={{ padding: '1.5%' }}>Permissions</th>
               <th style={{ padding: '1.5%', textAlign: 'right' }}>Actions</th>
             </tr>
@@ -135,6 +137,7 @@ const AdminSettings: React.FC = () => {
             {roles.map(role => (
               <tr key={role.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                 <td style={{ padding: '1.5%', fontWeight: 'bold' }}>{role.name}</td>
+                <td style={{ padding: '1.5%' }}>{role.level}</td>
                 <td style={{ padding: '1.5%' }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5%' }}>
                     {role.permissions.map(p => (
@@ -179,6 +182,19 @@ const AdminSettings: React.FC = () => {
                   onChange={e => setEditingRole({ ...editingRole!, name: e.target.value })}
                   placeholder="Manager"
                 />
+              </div>
+              <div className="input-group">
+                <label>Hierarchy Level (1-100)</label>
+                <input 
+                  type="number"
+                  required
+                  min="1"
+                  max="100"
+                  value={editingRole?.level || 10} 
+                  onChange={e => setEditingRole({ ...editingRole!, level: parseInt(e.target.value) })}
+                  placeholder="10"
+                />
+                <small style={{ color: 'var(--text-muted)' }}>Lower number = Higher authority (e.g. 1 = Super Admin)</small>
               </div>
               <div className="input-group">
                 <label>Permissions</label>

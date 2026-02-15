@@ -9,6 +9,7 @@ datasource db {
 model Role {
   id          String     @id @default(uuid())
   name        String     @unique
+  level       Int        @default(10) // 1 = Highest (Super Admin), 10 = Lowest (Staff)
   permissions String[]   // e.g., ["all", "employees", "attendance", "products", "pos", "sales", "analytics"]
   employees   Employee[]
   createdAt   DateTime   @default(now())

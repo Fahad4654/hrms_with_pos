@@ -13,13 +13,16 @@ export class RoleService {
     });
   }
 
-  static async createRole(data: { name: string; permissions: string[] }) {
+  static async createRole(data: { name: string; permissions: string[]; level?: number }) {
     return prisma.role.create({
-      data,
+      data: {
+        ...data,
+        level: data.level || 10,
+      },
     });
   }
 
-  static async updateRole(id: string, data: { name?: string; permissions?: string[] }) {
+  static async updateRole(id: string, data: { name?: string; permissions?: string[]; level?: number }) {
     return prisma.role.update({
       where: { id },
       data,
