@@ -287,6 +287,49 @@ const ProductCatalog: React.FC = () => {
           >
             Previous
           </button>
+          
+          {/* Page Numbers */}
+          {(() => {
+            const pages = [];
+            const total = meta.totalPages;
+            const current = meta.page;
+
+            if (total <= 5) {
+              for (let i = 1; i <= total; i++) pages.push(i);
+            } else {
+              if (current <= 3) {
+                for (let i = 1; i <= 5; i++) pages.push(i);
+                pages.push('...');
+              } else if (current >= total - 2) {
+                pages.push('...');
+                for (let i = total - 4; i <= total; i++) pages.push(i);
+              } else {
+                pages.push('...');
+                for (let i = current - 2; i <= current + 2; i++) pages.push(i);
+                pages.push('...');
+              }
+            }
+
+            return pages.map((p, i) => (
+              <button
+                key={i}
+                className="btn hide-on-mobile"
+                disabled={p === '...'}
+                onClick={() => typeof p === 'number' && setMeta(prev => ({ ...prev, page: p }))}
+                style={{
+                  border: '1px solid var(--glass-border)',
+                  background: current === p ? 'var(--primary)' : 'transparent',
+                  color: 'white',
+                  minWidth: '40px',
+                  justifyContent: 'center',
+                  cursor: p === '...' ? 'default' : 'pointer'
+                }}
+              >
+                {p}
+              </button>
+            ));
+          })()}
+
           <button 
             className="btn" 
             disabled={meta.page >= meta.totalPages}
