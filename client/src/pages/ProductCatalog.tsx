@@ -40,10 +40,13 @@ const ProductCatalog: React.FC = () => {
 
   const fetchCategories = async () => {
     try {
-      const { data } = await api.get('/categories');
-      setCategories(data);
-      if (data.length > 0 && !formData.categoryId) {
-        setFormData(prev => ({ ...prev, categoryId: data[0].id }));
+      const { data } = await api.get('/categories', { params: { limit: 1000 } });
+      const categoriesArray = data.data || data;
+      if (categoriesArray && Array.isArray(categoriesArray)) {
+        setCategories(categoriesArray);
+        if (categoriesArray.length > 0 && !formData.categoryId) {
+          setFormData(prev => ({ ...prev, categoryId: categoriesArray[0].id }));
+        }
       }
     } catch (error) {
       console.error('Failed to fetch categories', error);
@@ -62,13 +65,15 @@ const ProductCatalog: React.FC = () => {
           sortOrder
         }
       });
-      setProducts(data.data);
-      setMeta(prev => ({ 
-        ...prev, 
-        total: data.meta.total, 
-        totalPages: data.meta.totalPages,
-        page: data.meta.page
-      }));
+      if (data && data.data) {
+        setProducts(data.data);
+        setMeta(prev => ({ 
+          ...prev, 
+          total: data.meta.total, 
+          totalPages: data.meta.totalPages,
+          page: data.meta.page
+        }));
+      }
     } catch (error) {
       console.error('Failed to fetch products', error);
       showToast('Failed to fetch products', 'error');
@@ -91,6 +96,8 @@ const ProductCatalog: React.FC = () => {
     setMeta(prev => ({ ...prev, page: 1 }));
   };
 
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -99,10 +106,46 @@ const ProductCatalog: React.FC = () => {
       setFormData({ sku: '', name: '', categoryId: categories[0]?.id || '', price: 0, stockLevel: 0 });
       fetchProducts();
       showToast('Product created successfully', 'success');
-    } catch (error) {
-      alert('Failed to create product'); // Fallback if showToast fails but it shouldn't
-      showToast('Failed to create product', 'error');
+    } catch (error: any) {
+      console.error('Failed to create product', error);
+      const message = error.response?.data?.message || 'Failed to create product';
+      showToast(message, 'error');
     }
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    try {
+      await api.put(`/products/${editingProduct.id}`, formData);
+      setShowModal(false);
+      setEditingProduct(null);
+      setFormData({ sku: '', name: '', categoryId: categories[0]?.id || '', price: 0, stockLevel: 0 });
+      fetchProducts();
+      showToast('Product updated successfully', 'success');
+    } catch (error: any) {
+      console.error('Failed to update product', error);
+      const message = error.response?.data?.message || 'Failed to update product';
+      showToast(message, 'error');
+    }
+  };
+
+  const openEditModal = (product: Product) => {
+    setEditingProduct(product);
+    setFormData({
+      sku: product.sku,
+      name: product.name,
+      categoryId: product.categoryId,
+      price: Number(Number(product.price).toFixed(2)),
+      stockLevel: product.stockLevel
+    });
+    setShowModal(true);
+  };
+
+  const openCreateModal = () => {
+    setEditingProduct(null);
+    setFormData({ sku: '', name: '', categoryId: categories[0]?.id || '', price: 0, stockLevel: 0 });
+    setShowModal(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -140,7 +183,7 @@ const ProductCatalog: React.FC = () => {
             />
             <button type="submit" className="btn btn-primary">Search</button>
           </form>
-          <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ New Product</button>
+          <button className="btn btn-primary" onClick={openCreateModal}>+ New Product</button>
         </div>
       </div>
 
@@ -194,7 +237,7 @@ const ProductCatalog: React.FC = () => {
                       <button 
                         className="btn btn-primary"
                         style={{ padding: '4px 12px', fontSize: '0.875rem' }} 
-                        onClick={() => { setEditingProduct(product); setIsModalOpen(true); }}
+                        onClick={() => openEditModal(product)}
                       >
                         Edit
                       </button>
@@ -268,8 +311,8 @@ const ProductCatalog: React.FC = () => {
           zIndex: 1000 
         }}>
           <div className="glass-card modal-content animate-fade-in" style={{ padding: '4%', width: '90%', maxWidth: '500px' }}>
-            <h2>New Product</h2>
-            <form onSubmit={handleCreate}>
+            <h2>{editingProduct ? 'Edit Product' : 'New Product'}</h2>
+            <form onSubmit={editingProduct ? handleUpdate : handleCreate}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4%' }}>
                 <div className="input-group">
                   <label>SKU</label>
@@ -278,7 +321,6 @@ const ProductCatalog: React.FC = () => {
                 <div className="input-group">
                   <label>Category</label>
                   <select 
-                    style={{ width: '100%', padding: '3%', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
                     value={formData.categoryId} 
                     onChange={e => setFormData({...formData, categoryId: e.target.value})}
                   >
@@ -304,7 +346,7 @@ const ProductCatalog: React.FC = () => {
               </div>
               <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
                 <button type="button" className="btn" onClick={() => setShowModal(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Create Product</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>{editingProduct ? 'Update Product' : 'Create Product'}</button>
               </div>
             </form>
           </div>

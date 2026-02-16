@@ -38,6 +38,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ label, icon, to }) => {
 
 const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(
     window.innerWidth > 1024,
   );
@@ -56,11 +57,23 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     }
   }, [location.pathname, windowWidth]);
 
+  // Scroll locking for mobile menu
+  React.useEffect(() => {
+    if (windowWidth <= 1024 && isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen, windowWidth]);
+
   const contentPaddingX =
     windowWidth <= 480 ? (windowWidth <= 320 ? "3%" : "4%") : "3%";
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
+    <div style={{ display: "flex", height: "100vh", position: "relative", overflow: "hidden" }}>
       {/* Universal Header (Mobile & Desktop Toggle) */}
       <div
         style={{
@@ -107,7 +120,6 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
       <div
         className={`sidebar ${isMobileMenuOpen ? "open" : ""} glass-card`}
         style={{
-          marginTop: "60px", // Always push below fixed header
           height: "calc(100vh - 60px)", // Adjust height
           zIndex: 1100,
         }}
