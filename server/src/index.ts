@@ -26,8 +26,14 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
+import settingsRoutes from './routes/settings.routes.js';
+
+// ... (existing routes)
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/leaves', leaveRoutes);
+app.use('/api/settings', settingsRoutes);
+
+// Trigger restart 2
 app.use('/api/products', productRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/bi', biRoutes);
@@ -38,6 +44,12 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+import { startCronJobs } from './services/cron.service.js';
+
+// ... (existing routes)
+
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+    console.log(`Server is running on port ${port}`);
+    startCronJobs();
+    console.log('Cron jobs started');
 });

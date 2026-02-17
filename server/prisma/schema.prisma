@@ -102,6 +102,7 @@ model SaleItem {
   priceAtSale Decimal
 }
 
+
 model Commission {
   id         String   @id @default(uuid())
   employeeId String
@@ -110,4 +111,23 @@ model Commission {
   sale       Sale     @relation(fields: [saleId], references: [id])
   amount     Decimal
   createdAt  DateTime @default(now())
+}
+
+model LeaveType {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  daysAllowed Int
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CompanySettings {
+  id            String   @id @default(uuid())
+  companyName   String   @default("My Company")
+  workDays      String[] @default(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
+  workStartTime String   @default("09:00")
+  workEndTime   String   @default("17:00")
+  enableOvertime Boolean @default(false)
+  updatedAt     DateTime @updatedAt
 }
