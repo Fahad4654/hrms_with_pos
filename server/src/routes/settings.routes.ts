@@ -18,5 +18,6 @@ router.get('/leave-types', SettingsController.getLeaveTypes);
 router.post('/leave-types', authorizePermission(['all']), SettingsController.createLeaveType);
 router.put('/leave-types/:id', authorizePermission(['all']), SettingsController.updateLeaveType);
 router.delete('/leave-types/:id', authorizePermission(['all']), SettingsController.deleteLeaveType);
+router.get('/leave-types/:name/utilization', authorizePermission(['all']), SettingsController.getLeaveUtilization);
 
 export default router;

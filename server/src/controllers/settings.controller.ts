@@ -50,7 +50,7 @@ export class SettingsController {
 
   static async updateLeaveType(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       if (!id) throw new Error('ID is required');
       const type = await SettingsService.updateLeaveType(id, req.body);
       res.json(type);
@@ -61,12 +61,23 @@ export class SettingsController {
 
   static async deleteLeaveType(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       if (!id) throw new Error('ID is required');
       await SettingsService.deleteLeaveType(id);
       res.status(204).send();
     } catch (error: any) {
       res.status(400).json({ message: error.message });
+    }
+  }
+
+  static async getLeaveUtilization(req: Request, res: Response) {
+    try {
+      const name = req.params.name as string;
+      if (!name) throw new Error('Leave type name is required');
+      const utilization = await SettingsService.getLeaveUtilization(name);
+      res.json(utilization);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
     }
   }
 }
