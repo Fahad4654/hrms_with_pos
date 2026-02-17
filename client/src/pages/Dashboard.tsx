@@ -144,6 +144,12 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
               permission: "attendance",
             },
             {
+              label: "Leaves",
+              icon: "📅",
+              to: "/leaves",
+              permission: "attendance",
+            },
+            {
               label: "Categories",
               icon: "🏷️",
               to: "/categories",
@@ -178,7 +184,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
             .filter(
               (item) =>
                 user?.permissions?.includes("all") ||
-                user?.permissions?.includes(item.permission),
+                (item.permission && user?.permissions?.includes(item.permission)),
             )
             .map((item) => (
               <SidebarItem

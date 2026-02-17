@@ -7,7 +7,8 @@ export class AttendanceController {
     try {
       if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
       
-      const attendance = await AttendanceService.clockIn(req.user.id, req.body.location);
+      const { location } = req.body || {};
+      const attendance = await AttendanceService.clockIn(req.user.id, location);
       res.status(201).json(attendance);
     } catch (error: any) {
       res.status(400).json({ message: error.message });

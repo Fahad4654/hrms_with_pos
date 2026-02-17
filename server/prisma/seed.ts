@@ -45,21 +45,21 @@ async function main() {
   }
 
   // Seed 20 Employees
-  // for (let i = 1; i <= 20; i++) {
-  //   const email = `employee${i}@example.com`;
-  //   const role = roleList[i % 3];
-  //   await prisma.employee.upsert({
-  //     where: { email },
-  //     update: { roleId: role.id },
-  //     create: {
-  //       email,
-  //       name: `Demo Employee ${i}`,
-  //       password: password,
-  //       roleId: role.id,
-  //       salary: 40000 + (Math.random() * 20000),
-  //     },
-  //   });
-  // }
+  for (let i = 1; i <= 20; i++) {
+    const email = `employee${i}@example.com`;
+    const role = roleList[i % 3];
+    await prisma.employee.upsert({
+      where: { email },
+      update: { roleId: role.id },
+      create: {
+        email,
+        name: `Demo Employee ${i}`,
+        password: password,
+        roleId: role.id,
+        salary: 40000 + (Math.random() * 20000),
+      },
+    });
+  }
 
   // Seed 20 Products
   for (let i = 1; i <= 100; i++) {

@@ -7,6 +7,7 @@ import Login from './pages/Login.js';
 import Dashboard from './pages/Dashboard.js';
 import EmployeeManagement from './pages/EmployeeManagement.js';
 import Attendance from './pages/Attendance.js';
+import LeaveManagement from './pages/LeaveManagement.js';
 import ProductCatalog from './pages/ProductCatalog.js';
 import Categories from './pages/Categories.js';
 import POSTerminal from './pages/POSTerminal.js';
@@ -47,6 +48,11 @@ const App: React.FC = () => {
           <Route path="/attendance" element={
             <ProtectedRoute permission="attendance">
               <Dashboard><Attendance /></Dashboard>
+            </ProtectedRoute>
+          } />
+          <Route path="/leaves" element={
+            <ProtectedRoute>
+              <Dashboard><LeaveManagement /></Dashboard>
             </ProtectedRoute>
           } />
           <Route path="/products" element={
