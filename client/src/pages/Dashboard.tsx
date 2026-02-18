@@ -76,21 +76,25 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     <div style={{ display: "flex", height: "100vh", position: "relative", overflow: "hidden" }}>
       {/* Universal Header (Mobile & Desktop Toggle) */}
       <div
+        className="glass-card"
         style={{
           position: "fixed",
           top: 0,
           left: 0,
           right: 0,
           height: "60px",
-          background: "var(--bg-card)",
-          backdropFilter: "blur(12px)",
           borderBottom: "1px solid var(--glass-border)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           padding: windowWidth <= 480 ? "0 3%" : "0 2%",
-          zIndex: 1200, // Higher than sidebar (1100)
+          zIndex: 500, // Lowered to allow modals (9999) to stay on top
           transition: "all 0.3s cubic-bezier(0.4, 0, 0, 1)",
+          borderRadius: 0, // Header should be flat
+          margin: 0,
+          borderLeft: 'none',
+          borderRight: 'none',
+          borderTop: 'none'
         }}
       >
         <h2
@@ -121,7 +125,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
         className={`sidebar ${isMobileMenuOpen ? "open" : ""} glass-card`}
         style={{
           height: "calc(100vh - 60px)", // Adjust height
-          zIndex: 1100,
+          zIndex: 400,
         }}
       >
         <div
@@ -147,7 +151,13 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
               label: "Leaves",
               icon: "📅",
               to: "/leaves",
-              permission: "attendance",
+              permission: "leaves",
+            },
+            {
+              label: "Leave Approvals",
+              icon: "✅",
+              to: "/leave-approvals",
+              permission: "leave-approvals",
             },
             {
               label: "Categories",

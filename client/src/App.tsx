@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard.js';
 import EmployeeManagement from './pages/EmployeeManagement.js';
 import Attendance from './pages/Attendance.js';
 import LeaveManagement from './pages/LeaveManagement.js';
+import LeaveApprovals from './pages/LeaveApprovals.js';
 import SystemConfig from './pages/SystemConfig.js';
 import ProductCatalog from './pages/ProductCatalog.js';
 import Categories from './pages/Categories.js';
@@ -52,8 +53,13 @@ const App: React.FC = () => {
             </ProtectedRoute>
           } />
           <Route path="/leaves" element={
-            <ProtectedRoute>
+            <ProtectedRoute permission="leaves">
               <Dashboard><LeaveManagement /></Dashboard>
+            </ProtectedRoute>
+          } />
+          <Route path="/leave-approvals" element={
+            <ProtectedRoute permission="leave-approvals">
+              <Dashboard><LeaveApprovals /></Dashboard>
             </ProtectedRoute>
           } />
           <Route path="/products" element={

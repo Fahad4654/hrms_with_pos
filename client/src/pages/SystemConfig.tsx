@@ -279,12 +279,9 @@ const SystemConfig: React.FC = () => {
 
       {/* Leave Modal */}
       {isLeaveModalOpen && (
-        <div className="modal-overlay" style={{ 
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', 
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 
-        }}>
-          <div className="glass-card modal-content animate-fade-in" style={{ padding: '4%', width: '90%', maxWidth: '400px' }}>
-            <h2>{editingLeave?.id ? 'Edit Leave Type' : 'New Leave Type'}</h2>
+        <div className="modal-overlay">
+          <div className="glass-card modal-content animate-fade-in" style={{ width: '90%', maxWidth: '450px', padding: '30px' }}>
+            <h2 style={{ marginBottom: '20px' }}>{editingLeave?.id ? 'Edit Leave Type' : 'New Leave Type'}</h2>
             <form onSubmit={(e) => { e.preventDefault(); handleSaveLeaveType(); }}>
               <div className="input-group">
                 <label>Type Name</label>
@@ -327,13 +324,10 @@ const SystemConfig: React.FC = () => {
 
       {/* Utilization Modal */}
       {isUsageModalOpen && (
-        <div className="modal-overlay" style={{ 
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', 
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 
-        }}>
-          <div className="glass-card modal-content animate-fade-in" style={{ padding: '4%', width: '90%', maxWidth: '500px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6%' }}>
-              <h2>{selectedLeaveType} Utilization</h2>
+        <div className="modal-overlay">
+          <div className="glass-card modal-content animate-fade-in" style={{ width: '90%', maxWidth: '550px', padding: '30px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0 }}>{selectedLeaveType} Utilization</h2>
               <button className="btn" onClick={() => setIsUsageModalOpen(false)} style={{ padding: '4px 8px' }}>✕</button>
             </div>
 

@@ -17,21 +17,21 @@ interface LeaveRequest {
 
 const LeaveManagement: React.FC = () => {
   const { showToast } = useToast();
-  const { user } = useAuth();
   const [myLeaves, setMyLeaves] = useState<LeaveRequest[]>([]);
-  const [pendingLeaves, setPendingLeaves] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [leaveTypes, setLeaveTypes] = useState<{ id: string, name: string }[]>([]);
+  const [leaveSummary, setLeaveSummary] = useState<{ name: string, daysAllowed: number, daysTaken: number, daysRemaining: number }[]>([]);
 
   // Form State
   const [formData, setFormData] = useState({
     startDate: '',
     endDate: '',
-    type: 'Sick',
+    type: '',
     reason: ''
   });
 
-  const canApprove = user?.permissions?.includes('all') || user?.permissions?.includes('attendance');
+  // const canApprove = ... (removed)
 
   useEffect(() => {
     fetchData();
@@ -40,12 +40,19 @@ const LeaveManagement: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [myRes, pendingRes] = await Promise.all([
+      const [myRes, typesRes, summaryRes] = await Promise.all([
         api.get('/leaves/my-leaves'),
-        canApprove ? api.get('/leaves/pending') : Promise.resolve({ data: [] })
+        api.get('/settings/leave-types?active=true'),
+        api.get('/leaves/summary')
       ]);
       setMyLeaves(myRes.data);
-      setPendingLeaves(pendingRes.data);
+      setLeaveTypes(typesRes.data);
+      setLeaveSummary(summaryRes.data);
+      
+      // Set default type if not set and types exist
+      if (typesRes.data.length > 0 && !formData.type) {
+         setFormData(prev => ({ ...prev, type: typesRes.data[0].name }));
+      }
     } catch (error) {
       console.error('Failed to fetch leaves', error);
       showToast('Failed to load leave requests', 'error');
@@ -56,11 +63,35 @@ const LeaveManagement: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 1. Date Validation
+    const start = new Date(formData.startDate);
+    const end = new Date(formData.endDate);
+    if (start > end) {
+      showToast('Start date cannot be later than end date', 'error');
+      return;
+    }
+
+    // 2. Quota Validation
+    const selectedSummary = leaveSummary.find(s => s.name === formData.type);
+    if (selectedSummary) {
+      const requestedDays = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      if (requestedDays > selectedSummary.daysRemaining) {
+        showToast(`Insufficient balance. Remaining: ${selectedSummary.daysRemaining} days`, 'error');
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
       await api.post('/leaves/request', formData);
       showToast('Leave request submitted successfully', 'success');
-      setFormData({ startDate: '', endDate: '', type: 'Sick', reason: '' });
+      setFormData({ 
+        startDate: '', 
+        endDate: '', 
+        type: leaveTypes[0]?.name || '', 
+        reason: '' 
+      });
       fetchData();
     } catch (error: any) {
       showToast(error.response?.data?.message || 'Failed to submit request', 'error');
@@ -69,15 +100,7 @@ const LeaveManagement: React.FC = () => {
     }
   };
 
-  const handleUpdateStatus = async (id: string, status: 'APPROVED' | 'REJECTED') => {
-    try {
-      await api.patch(`/leaves/${id}/status`, { status });
-      showToast(`Request ${status.toLowerCase()} successfully`, 'success');
-      fetchData();
-    } catch (error: any) {
-      showToast(error.response?.data?.message || 'Update failed', 'error');
-    }
-  };
+  // handleUpdateStatus removed
 
   if (loading) return <div className="animate-fade-in">Loading Leave Management...</div>;
 
@@ -119,11 +142,12 @@ const LeaveManagement: React.FC = () => {
                 value={formData.type}
                 onChange={e => setFormData({...formData, type: e.target.value})}
                 style={{ width: '100%' }}
+                required
               >
-                <option value="Sick">Sick Leave</option>
-                <option value="Casual">Casual Leave</option>
-                <option value="Vacation">Vacation</option>
-                <option value="Emergency">Emergency</option>
+                <option value="" disabled>Select Leave Type</option>
+                {leaveTypes.map(t => (
+                  <option key={t.id} value={t.name}>{t.name}</option>
+                ))}
               </select>
             </div>
             <div>
@@ -150,52 +174,34 @@ const LeaveManagement: React.FC = () => {
             </h2>
           </div>
           <div className="glass-card" style={{ padding: '8%' }}>
-            <h3 style={{ marginBottom: '16px' }}>Leave Guidelines</h3>
-            <ul style={{ color: 'var(--text-muted)', fontSize: '0.875rem', paddingLeft: '20px' }}>
-              <li style={{ marginBottom: '8px' }}>Apply at least 2 days in advance for casual leave.</li>
-              <li style={{ marginBottom: '8px' }}>Medical certificates required for sick leave over 2 days.</li>
-              <li>Approval depends on team schedule and workload.</li>
-            </ul>
+            <h3 style={{ marginBottom: '16px' }}>Leave Balance</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {leaveSummary.map((item, i) => (
+                <div key={i} style={{ borderBottom: i === leaveSummary.length - 1 ? 'none' : '1px solid var(--glass-border)', paddingBottom: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ fontWeight: '600' }}>{item.name}</span>
+                    <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{item.daysRemaining} remaining</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    Taken: {item.daysTaken} / {item.daysAllowed} days
+                  </div>
+                  <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', marginTop: '6px' }}>
+                    <div style={{ 
+                      width: `${Math.min(100, (item.daysTaken / item.daysAllowed) * 100)}%`, 
+                      height: '100%', 
+                      background: 'var(--primary)', 
+                      borderRadius: '2px' 
+                    }} />
+                  </div>
+                </div>
+              ))}
+              {leaveSummary.length === 0 && <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No leave types configured.</p>}
+            </div>
           </div>
         </div>
       </div>
 
-      {canApprove && pendingLeaves.length > 0 && (
-        <div style={{ marginBottom: '4%' }}>
-          <h2 style={{ marginBottom: '2%' }}>Pending Approvals</h2>
-          <div className="glass-card table-container">
-            <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                  <th style={{ padding: '2% 3%' }}>Employee</th>
-                  <th style={{ padding: '2% 3%' }}>Type</th>
-                  <th style={{ padding: '2% 3%' }}>Dates</th>
-                  <th style={{ padding: '2% 3%' }}>Reason</th>
-                  <th style={{ padding: '2% 3%' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingLeaves.map(leave => (
-                  <tr key={leave.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                    <td style={{ padding: '2% 3%', fontWeight: '500' }}>{leave.employee?.name}</td>
-                    <td style={{ padding: '2% 3%' }}><span className="badge">{leave.type}</span></td>
-                    <td style={{ padding: '2% 3%', fontSize: '0.875rem' }}>
-                      {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
-                    </td>
-                    <td style={{ padding: '2% 3%', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{leave.reason || '--'}</td>
-                    <td style={{ padding: '2% 3%' }}>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={() => handleUpdateStatus(leave.id, 'APPROVED')} className="btn" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)', padding: '4px 12px' }}>Approve</button>
-                        <button onClick={() => handleUpdateStatus(leave.id, 'REJECTED')} className="btn" style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)', padding: '4px 12px' }}>Reject</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      {/* Pending Approvals removed */}
 
       <h2>My Requests</h2>
       <div className="glass-card table-container" style={{ marginTop: '2%' }}>

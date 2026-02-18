@@ -31,12 +31,21 @@ body {
 }
 
 .glass-card {
+  position: relative;
   background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: 16px;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: -1;
 }
 
 .btn {
@@ -104,6 +113,7 @@ input, select {
   color: white;
   outline: none;
   transition: border-color 0.2s;
+  color-scheme: dark;
 }
 
 input:focus {
@@ -236,21 +246,39 @@ h1, h2, h3 {
     padding: 16px;
   }
 
-  .modal-overlay {
-    padding: 0 !important;
-    background: var(--bg-dark) !important;
-    align-items: flex-start !important;
-    justify-content: flex-start !important;
-  }
-
   .modal-content {
     width: 100% !important;
     max-width: none !important;
-    min-height: 100vh !important;
-    height: auto !important;
+    height: 100% !important;
+    max-height: vh !important;
     border-radius: 0 !important;
     margin: 0 !important;
   }
+}
+
+.modal-overlay {
+  position: fixed !important;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 9999 !important;
+  padding: 20px;
+}
+
+.modal-content {
+  max-height: 75vh !important;
+  overflow-y: auto !important;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 @media (max-width: 640px) {

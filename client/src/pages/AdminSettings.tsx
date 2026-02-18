@@ -24,6 +24,8 @@ const AdminSettings: React.FC = () => {
     'all',
     'employees',
     'attendance',
+    'leaves',
+    'leave-approvals',
     'categories',
     'inventory',
     'pos',
@@ -161,18 +163,9 @@ const AdminSettings: React.FC = () => {
 
       {/* Role Modal */}
       {isRoleModalOpen && (
-        <div className="modal-overlay" style={{ 
-          position: 'fixed', 
-          inset: 0, 
-          background: 'rgba(0,0,0,0.8)', 
-          display: 'flex', 
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflowY: 'auto',
-          zIndex: 1000 
-        }}>
-          <div className="glass-card modal-content animate-fade-in" style={{ padding: '4%', width: '90%', maxWidth: '40%' }}>
-            <h2>{editingRole?.id ? 'Edit Role' : 'New Role'}</h2>
+        <div className="modal-overlay">
+          <div className="glass-card modal-content animate-fade-in" style={{ width: '90%', maxWidth: '600px', padding: '30px' }}>
+            <h2 style={{ marginBottom: '20px' }}>{editingRole?.id ? 'Edit Role' : 'New Role'}</h2>
             <form onSubmit={(e) => { e.preventDefault(); handleSaveRole(); }}>
               <div className="input-group">
                 <label>Role Name</label>
@@ -203,21 +196,33 @@ const AdminSettings: React.FC = () => {
                     <label key={perm} style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
-                      gap: '2%', 
+                      justifyContent: 'space-between',
                       fontSize: '0.875rem', 
                       cursor: 'pointer',
-                      padding: '2%',
-                      background: editingRole?.permissions?.includes(perm) ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-                      borderRadius: '6px',
-                      border: '1px solid var(--glass-border)'
+                      padding: '10px 14px',
+                      background: editingRole?.permissions?.includes(perm) ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255,255,255,0.02)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--glass-border)',
+                      transition: 'all 0.2s ease',
+                      height: '48px'
                     }}>
+                      <span style={{ 
+                        color: editingRole?.permissions?.includes(perm) ? 'var(--primary)' : 'var(--text-main)',
+                        fontWeight: editingRole?.permissions?.includes(perm) ? '600' : '400'
+                      }}>
+                        {perm.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                      </span>
                       <input 
                         type="checkbox" 
                         checked={editingRole?.permissions?.includes(perm) || false} 
                         onChange={() => togglePermission(perm)}
-                        style={{ cursor: 'pointer' }}
+                        style={{ 
+                          cursor: 'pointer',
+                          width: '18px',
+                          height: '18px',
+                          accentColor: 'var(--primary)'
+                        }}
                       />
-                      <span>{perm.charAt(0).toUpperCase() + perm.slice(1)}</span>
                     </label>
                   ))}
                 </div>

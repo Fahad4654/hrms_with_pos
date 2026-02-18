@@ -47,4 +47,14 @@ export class LeaveController {
       res.status(500).json({ message: error.message });
     }
   }
+
+  static async getSummary(req: AuthRequest, res: Response) {
+    try {
+      if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
+      const summary = await LeaveService.getLeaveSummary(req.user.id);
+      res.json(summary);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  }
 }
