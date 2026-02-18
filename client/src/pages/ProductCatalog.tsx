@@ -343,18 +343,9 @@ const ProductCatalog: React.FC = () => {
 
       {/* Product Modal */}
       {showModal && (
-        <div className="modal-overlay" style={{ 
-          position: 'fixed', 
-          inset: 0, 
-          background: 'rgba(0,0,0,0.8)', 
-          display: 'flex', 
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflowY: 'auto',
-          zIndex: 1000 
-        }}>
-          <div className="glass-card modal-content animate-fade-in" style={{ padding: '4%', width: '90%', maxWidth: '500px' }}>
-            <h2>{editingProduct ? 'Edit Product' : 'New Product'}</h2>
+        <div className="modal-overlay">
+          <div className="glass-card modal-content animate-fade-in" style={{ padding: '30px', width: '90%', maxWidth: '600px' }}>
+            <h2 style={{ marginBottom: '20px' }}>{editingProduct ? 'Edit Product' : 'New Product'}</h2>
             <form onSubmit={editingProduct ? handleUpdate : handleCreate}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4%' }}>
                 <div className="input-group">

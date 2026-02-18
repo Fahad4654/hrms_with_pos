@@ -250,7 +250,7 @@ h1, h2, h3 {
     width: 100% !important;
     max-width: none !important;
     height: 100% !important;
-    max-height: vh !important;
+    max-height: 100vh !important;
     border-radius: 0 !important;
     margin: 0 !important;
   }

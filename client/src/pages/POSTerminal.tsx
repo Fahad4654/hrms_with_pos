@@ -131,29 +131,40 @@ const POSTerminal: React.FC = () => {
     <div className="pos-container" style={{ display: 'flex', gap: '4%', height: 'calc(100vh - 120px)' }}>
       {/* Product Selection Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div className="glass-card" style={{ padding: '2%', marginBottom: '3%' }}>
+        <div className="glass-card" style={{ padding: '12px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '1.2rem', opacity: 0.7 }}>🔍</span>
           <input 
             type="text" 
-            placeholder="Search SKU or Name..." 
+            placeholder="Search by SKU or Name..." 
             value={search} 
-            onChange={e => setSearch(e.target.value)} 
+            onChange={e => setSearch(e.target.value)}
+            style={{ background: 'transparent', border: 'none', padding: '8px 0', fontSize: '1rem' }}
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '2%', overflowY: 'auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '16px', overflowY: 'auto', padding: '4px' }}>
           {filteredProducts.map(p => (
             <div 
               key={p.id} 
               className="glass-card" 
               onClick={() => addToCart(p)}
-              style={{ padding: '4%', cursor: 'pointer', textAlign: 'center', transition: 'transform 0.1s' }}
-              onMouseDown={e => e.currentTarget.style.transform = 'scale(0.98)'}
+              style={{ 
+                padding: '16px', 
+                cursor: 'pointer', 
+                textAlign: 'center', 
+                transition: 'all 0.2s',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                minHeight: '160px'
+              }}
+              onMouseDown={e => e.currentTarget.style.transform = 'scale(0.96)'}
               onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
             >
-              <div style={{ fontSize: '2rem', marginBottom: '12px' }}>📦</div>
-              <p style={{ fontWeight: '600', fontSize: '0.875rem', marginBottom: '4px' }}>{p.name}</p>
+              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📦</div>
+              <p style={{ fontWeight: '600', fontSize: '0.875rem', marginBottom: '4px', color: 'var(--text-main)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</p>
               <p style={{ color: 'var(--accent)', fontWeight: 'bold' }}>${Number(p.price).toFixed(2)}</p>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>{p.stockLevel} in stock</p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>{p.stockLevel} units</p>
             </div>
           ))}
         </div>
