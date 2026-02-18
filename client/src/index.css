@@ -57,6 +57,7 @@ body {
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
 }
 
@@ -164,6 +165,19 @@ h1, h2, h3 {
 .table-container {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  display: inline-flex;
+  border: 1px solid var(--glass-border);
 }
 
 /* Global Sidebar & Overlay Architecture */

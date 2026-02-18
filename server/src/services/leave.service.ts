@@ -1,5 +1,6 @@
 import prisma from '../config/prisma.js';
-import { LeaveStatus } from '@prisma/client';
+import { LeaveStatus, Prisma } from '@prisma/client';
+import { type PaginationParams, getPaginationOptions } from '../utils/pagination.js';
 
 export class LeaveService {
   static async requestLeave(employeeId: string, data: { startDate: Date, endDate: Date, type: string, reason?: string }) {
@@ -64,18 +65,167 @@ export class LeaveService {
     });
   }
 
-  static async getEmployeeLeaves(employeeId: string) {
-    return prisma.leaveRequest.findMany({
-      where: { employeeId },
-      orderBy: { startDate: 'desc' },
-    });
+  static async getEmployeeLeaves(employeeId: string, params: PaginationParams) {
+    const { skip, take, orderBy, page, limit } = getPaginationOptions(params);
+    const { search } = params;
+
+    const where: Prisma.LeaveRequestWhereInput = {
+      employeeId,
+      ...(search ? {
+        OR: [
+          { type: { contains: search, mode: 'insensitive' } },
+          { reason: { contains: search, mode: 'insensitive' } },
+        ]
+      } : {})
+    };
+
+    const [requests, total] = await Promise.all([
+      prisma.leaveRequest.findMany({
+        where,
+        skip,
+        take,
+        orderBy: orderBy || { startDate: 'desc' },
+        include: { 
+          employee: { 
+            select: { 
+              name: true, 
+              role: { select: { name: true } },
+              id: true
+            } 
+          } 
+        },
+      }),
+      prisma.leaveRequest.count({ where })
+    ]);
+
+    const data = await this.enrichLeaveRequests(requests);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  static async getAllLeaveRequests(params: PaginationParams & { status?: string }) {
+    const { skip, take, orderBy, page, limit } = getPaginationOptions(params);
+    const { search, status } = params;
+
+    const where: Prisma.LeaveRequestWhereInput = {
+      AND: [
+        status && status !== 'ALL' ? { status: status as any } : {},
+        search ? {
+          OR: [
+            { employee: { name: { contains: search, mode: 'insensitive' } } },
+            { employee: { email: { contains: search, mode: 'insensitive' } } },
+            { type: { contains: search, mode: 'insensitive' } },
+          ]
+        } : {}
+      ]
+    };
+
+    const [requests, total] = await Promise.all([
+      prisma.leaveRequest.findMany({
+        where,
+        skip,
+        take,
+        orderBy: params.sortBy === 'employee'
+          ? { employee: { name: params.sortOrder || 'asc' } }
+          : (orderBy || { startDate: 'desc' }),
+        include: { 
+          employee: { 
+            select: { 
+              name: true, 
+              role: { select: { name: true } },
+              id: true
+            } 
+          } 
+        },
+      }),
+      prisma.leaveRequest.count({ where })
+    ]);
+
+    const data = await this.enrichLeaveRequests(requests);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   static async getAllPendingLeaves() {
-    return prisma.leaveRequest.findMany({
+    // Keep this for any internal usage or simple views if needed, 
+    // but the main view now uses getAllLeaveRequests
+    const pendingRequests = await prisma.leaveRequest.findMany({
       where: { status: LeaveStatus.PENDING },
-      include: { employee: { select: { name: true, role: true } } },
+      include: { 
+        employee: { 
+          select: { 
+            name: true, 
+            role: { select: { name: true } },
+            id: true
+          } 
+        } 
+      },
     });
+
+    return this.enrichLeaveRequests(pendingRequests);
+  }
+
+  private static async enrichLeaveRequests(requests: any[]) {
+    const leaveTypes = await prisma.leaveType.findMany({ where: { active: true } });
+
+    return Promise.all(requests.map(async (req) => {
+      const daysRequested = Math.ceil(Math.abs(req.endDate.getTime() - req.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+      const typeConfig = leaveTypes.find(t => t.name === req.type);
+      let daysRemaining = 0;
+
+      if (typeConfig) {
+        try {
+          const approvedForType = await prisma.leaveRequest.findMany({
+            where: {
+              employeeId: req.employeeId,
+              type: req.type,
+              status: LeaveStatus.APPROVED,
+            },
+          });
+
+          const daysTaken = approvedForType.reduce((acc, r) => {
+            return acc + (Math.ceil(Math.abs(r.endDate.getTime() - r.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+          }, 0);
+
+          daysRemaining = Math.max(0, typeConfig.daysAllowed - daysTaken);
+        } catch (err) {
+          console.error(`Error calculating daysTaken for req ${req.id}:`, err);
+        }
+      }
+
+      return {
+        id: req.id,
+        employeeId: req.employeeId,
+        startDate: req.startDate,
+        endDate: req.endDate,
+        type: req.type,
+        reason: req.reason,
+        status: req.status,
+        daysRequested,
+        daysRemaining,
+        employee: {
+          name: req.employee.name,
+          role: req.employee.role.name
+        }
+      };
+    }));
   }
 
   static async getLeaveSummary(employeeId: string) {

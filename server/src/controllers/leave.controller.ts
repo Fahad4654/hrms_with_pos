@@ -31,18 +31,17 @@ export class LeaveController {
 
   static async getMyLeaves(req: AuthRequest, res: Response) {
     try {
-      if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
-      const leaves = await LeaveService.getEmployeeLeaves(req.user.id);
-      res.json(leaves);
+      const result = await LeaveService.getEmployeeLeaves(req.user!.id, req.query);
+      res.json(result);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
   }
 
-  static async getPending(req: AuthRequest, res: Response) {
+  static async getAll(req: AuthRequest, res: Response) {
     try {
-      const leaves = await LeaveService.getAllPendingLeaves();
-      res.json(leaves);
+      const result = await LeaveService.getAllLeaveRequests(req.query);
+      res.json(result);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

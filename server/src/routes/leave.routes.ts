@@ -10,7 +10,7 @@ router.get('/my-leaves', authorizePermission(['all', 'leaves']), LeaveController
 router.get('/summary', authorizePermission(['all', 'leaves']), LeaveController.getSummary);
 
 // Manager/Admin only routes
-router.get('/pending', authorizePermission(['all', 'attendance', 'leave-approvals']), LeaveController.getPending);
+router.get('/all', authorizePermission(['all', 'attendance', 'leave-approvals']), LeaveController.getAll);
 router.patch('/:id/status', authorizePermission(['all', 'attendance', 'leave-approvals']), LeaveController.updateStatus);
 
 export default router;
