@@ -180,6 +180,12 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
               to: "/settings",
               permission: "all",
             },
+            {
+              label: "System Config",
+              icon: "🔧",
+              to: "/system-config",
+              permission: "all",
+            },
           ]
             .filter(
               (item) =>

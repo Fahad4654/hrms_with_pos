@@ -8,6 +8,9 @@ interface DailyAttendance {
   lastClockOut: string | null;
   totalDuration: number;
   isActive: boolean;
+  isLate: boolean;
+  isOffDay: boolean;
+  overtimeDuration: number;
 }
 
 const Attendance: React.FC = () => {
@@ -105,10 +108,11 @@ const Attendance: React.FC = () => {
           <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                <th style={{ padding: '2% 3%' }}>Date</th>
-                <th style={{ padding: '2% 3%' }}>First Clock In</th>
-                <th style={{ padding: '2% 3%' }}>Last Clock Out</th>
-                <th style={{ padding: '2% 3%' }}>Total Duration</th>
+                <th style={{ padding: '2%', width: '15%' }}>Date</th>
+                <th style={{ padding: '2%', width: '15%' }}>Clock In</th>
+                <th style={{ padding: '2%', width: '15%' }}>Clock Out</th>
+                <th style={{ padding: '2%', width: '25%' }}>Status</th>
+                <th style={{ padding: '2%', width: '20%' }}>Total Duration</th>
               </tr>
             </thead>
             <tbody>
@@ -122,12 +126,28 @@ const Attendance: React.FC = () => {
                     <td style={{ padding: '2% 3%' }}>{date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</td>
                     <td style={{ padding: '2% 3%' }}>{firstIn.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                     <td style={{ padding: '2% 3%' }}>
-                      {lastOut ? lastOut.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (
+                      {lastOut ? lastOut.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}
+                    </td>
+                    <td style={{ padding: '2% 3%' }}>
+                      {log.isActive ? (
                         <span className="badge" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)' }}>Active</span>
+                      ) : (
+                           <div style={{ display: 'flex', gap: '5px' }}>
+                              {log.isOffDay && <span className="badge" style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)' }}>Off Day</span>}
+                              {log.isLate && <span className="badge" style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)' }}>Late</span>}
+                              {!log.isLate && !log.isOffDay && <span className="badge" style={{ background: 'rgba(34, 197, 94, 0.1)', color: 'var(--success)' }}>On Time</span>}
+                           </div>
                       )}
                     </td>
-                    <td style={{ padding: '2% 3%', fontWeight: 'bold', color: log.isActive ? 'var(--primary)' : 'var(--success)' }}>
-                      {formatDuration(log.totalDuration)}
+                    <td style={{ padding: '2% 3%', fontWeight: 'bold' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ color: log.isActive ? 'var(--primary)' : 'var(--text-color)' }}>{formatDuration(log.totalDuration)}</span>
+                          {log.overtimeDuration > 0 && (
+                              <span style={{ fontSize: '0.75rem', color: 'var(--success)' }}>
+                                  (+ {formatDuration(log.overtimeDuration)} OT)
+                              </span>
+                          )}
+                      </div>
                     </td>
                   </tr>
                 );

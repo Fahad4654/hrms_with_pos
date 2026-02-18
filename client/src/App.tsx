@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard.js';
 import EmployeeManagement from './pages/EmployeeManagement.js';
 import Attendance from './pages/Attendance.js';
 import LeaveManagement from './pages/LeaveManagement.js';
+import SystemConfig from './pages/SystemConfig.js';
 import ProductCatalog from './pages/ProductCatalog.js';
 import Categories from './pages/Categories.js';
 import POSTerminal from './pages/POSTerminal.js';
@@ -83,6 +84,11 @@ const App: React.FC = () => {
           <Route path="/settings" element={
             <ProtectedRoute permission="all">
               <Dashboard><AdminSettings /></Dashboard>
+            </ProtectedRoute>
+          } />
+          <Route path="/system-config" element={
+            <ProtectedRoute permission="all">
+              <Dashboard><SystemConfig /></Dashboard>
             </ProtectedRoute>
           } />
         </Routes>
