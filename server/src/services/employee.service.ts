@@ -71,6 +71,7 @@ export class EmployeeService {
         ...data,
         password: hashedPassword,
         salary: new Prisma.Decimal(data.salary),
+        joinTimestamp: data.joinTimestamp ? new Date(data.joinTimestamp) : null,
       },
       include: { role: true },
     });
@@ -83,6 +84,9 @@ export class EmployeeService {
     }
     if (data.salary !== undefined) {
       updateData.salary = String(data.salary);
+    }
+    if (data.joinTimestamp !== undefined) {
+      updateData.joinTimestamp = data.joinTimestamp ? new Date(data.joinTimestamp) : null;
     }
     return prisma.employee.update({
       where: { id },

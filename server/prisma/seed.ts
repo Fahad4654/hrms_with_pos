@@ -44,24 +44,31 @@ async function main() {
     dbCategories.push(cat);
   }
 
-  // Seed 20 Employees
-  for (let i = 1; i <= 20; i++) {
+  // Seed 100 Employees
+  for (let i = 1; i <= 100; i++) {
     const email = `employee${i}@example.com`;
     const role = roleList[i % 3];
+    const joinTimestamp = new Date();
+    joinTimestamp.setDate(joinTimestamp.getDate() - Math.floor(Math.random() * 365));
+
     await prisma.employee.upsert({
       where: { email },
-      update: { roleId: role.id },
+      update: { 
+        roleId: role.id,
+        joinTimestamp
+      },
       create: {
         email,
         name: `Demo Employee ${i}`,
         password: password,
         roleId: role.id,
         salary: 40000 + (Math.random() * 20000),
+        joinTimestamp,
       },
     });
   }
 
-  // Seed 20 Products
+  // Seed 100 Products
   for (let i = 1; i <= 100; i++) {
     const sku = `SKU-${1000 + i}`;
     const category = dbCategories[i % dbCategories.length];

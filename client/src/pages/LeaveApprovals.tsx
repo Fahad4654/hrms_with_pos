@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
+import { useLocale } from '../context/LocaleContext';
 
 interface LeaveRequest {
   id: string;
-  startDate: string;
-  endDate: string;
+  startTimestamp: string;
+  endTimestamp: string;
   type: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   reason: string | null;
@@ -19,6 +20,7 @@ interface LeaveRequest {
 
 const LeaveApprovals: React.FC = () => {
   const { showToast } = useToast();
+  const { formatDateTime } = useLocale();
   const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
@@ -26,7 +28,7 @@ const LeaveApprovals: React.FC = () => {
   // Pagination & Sort State
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('startDate');
+  const [sortBy, setSortBy] = useState('startTimestamp');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
@@ -138,7 +140,7 @@ const LeaveApprovals: React.FC = () => {
         ) : leaves.length === 0 ? (
           <p style={{ padding: '3%', color: 'var(--text-muted)' }}>No leave requests found.</p>
         ) : (
-          <table style={{ width: '100%', minWidth: '950px', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table style={{ width: '100%', minWidth: '950px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
                 <th onClick={() => toggleSort('employee')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
@@ -148,8 +150,8 @@ const LeaveApprovals: React.FC = () => {
                   Leave Details {sortBy === 'type' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
                 <th style={{ padding: '2% 3%' }}>Current Balance</th>
-                <th onClick={() => toggleSort('startDate')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
-                  Dates {sortBy === 'startDate' && (sortOrder === 'asc' ? '↑' : '↓')}
+                <th onClick={() => toggleSort('startTimestamp')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
+                  Timestamps {sortBy === 'startTimestamp' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
                 <th onClick={() => toggleSort('status')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
                   Status {sortBy === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
@@ -181,8 +183,8 @@ const LeaveApprovals: React.FC = () => {
                     </div>
                   </td>
                   <td style={{ padding: '2% 3%', fontSize: '0.875rem' }}>
-                    <div style={{ whiteSpace: 'nowrap' }}>{new Date(leave.startDate).toLocaleDateString()}</div>
-                    <div style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>to {new Date(leave.endDate).toLocaleDateString()}</div>
+                    <div style={{ whiteSpace: 'nowrap' }}>{formatDateTime(leave.startTimestamp)}</div>
+                    <div style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>to {formatDateTime(leave.endTimestamp)}</div>
                   </td>
                   <td style={{ padding: '2% 3%' }}>
                     <span 

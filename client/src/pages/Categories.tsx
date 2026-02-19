@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import { useLocale } from '../context/LocaleContext';
 
 interface Category {
   id: string;
@@ -15,6 +16,7 @@ interface Category {
 const Categories: React.FC = () => {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
+  const { formatDateTime } = useLocale();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -114,7 +116,7 @@ const Categories: React.FC = () => {
       </div>
       
       <div className="glass-card table-container">
-        <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
               <th 
@@ -127,7 +129,7 @@ const Categories: React.FC = () => {
                 style={{ padding: '2% 3%', cursor: 'pointer', userSelect: 'none', width: '25%' }} 
                 onClick={() => toggleSort('createdAt')}
               >
-                Created At {sortBy === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
+                Created Timestamp {sortBy === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
               <th style={{ padding: '2% 3%', textAlign: 'right', width: '25%' }}>Actions</th>
             </tr>
@@ -139,7 +141,7 @@ const Categories: React.FC = () => {
               categories.map(cat => (
                 <tr key={cat.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                   <td style={{ padding: '2% 3%', fontWeight: '500' }}>{cat.name}</td>
-                  <td style={{ padding: '2% 3%' }}>{new Date(cat.createdAt).toLocaleDateString()}</td>
+                  <td style={{ padding: '2% 3%' }}>{formatDateTime(cat.createdAt)}</td>
                   <td style={{ padding: '2% 3%' }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                       <button 

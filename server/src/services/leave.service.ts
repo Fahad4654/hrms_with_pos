@@ -3,10 +3,10 @@ import { LeaveStatus, Prisma } from '@prisma/client';
 import { type PaginationParams, getPaginationOptions } from '../utils/pagination.js';
 
 export class LeaveService {
-  static async requestLeave(employeeId: string, data: { startDate: Date, endDate: Date, type: string, reason?: string }) {
+  static async requestLeave(employeeId: string, data: { startTimestamp: Date, endTimestamp: Date, type: string, reason?: string }) {
     // 1. Date Validation
-    const start = new Date(data.startDate);
-    const end = new Date(data.endDate);
+    const start = new Date(data.startTimestamp);
+    const end = new Date(data.endTimestamp);
     start.setHours(0,0,0,0);
     end.setHours(0,0,0,0);
 
@@ -35,8 +35,8 @@ export class LeaveService {
     });
 
     const daysTaken = approvedRequests.reduce((acc, req) => {
-      const s = new Date(req.startDate);
-      const e = new Date(req.endDate);
+      const s = new Date(req.startTimestamp);
+      const e = new Date(req.endTimestamp);
       s.setHours(0,0,0,0);
       e.setHours(0,0,0,0);
       return acc + (Math.ceil(Math.abs(e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
@@ -49,8 +49,8 @@ export class LeaveService {
     return prisma.leaveRequest.create({
       data: {
         employeeId,
-        startDate: data.startDate,
-        endDate: data.endDate,
+        startTimestamp: data.startTimestamp,
+        endTimestamp: data.endTimestamp,
         type: data.type,
         reason: data.reason ?? null,
         status: LeaveStatus.PENDING,
@@ -84,7 +84,7 @@ export class LeaveService {
         where,
         skip,
         take,
-        orderBy: orderBy || { startDate: 'desc' },
+        orderBy: orderBy || { startTimestamp: 'desc' },
         include: { 
           employee: { 
             select: { 
@@ -135,7 +135,7 @@ export class LeaveService {
         take,
         orderBy: params.sortBy === 'employee'
           ? { employee: { name: params.sortOrder || 'asc' } }
-          : (orderBy || { startDate: 'desc' }),
+          : (orderBy || { startTimestamp: 'desc' }),
         include: { 
           employee: { 
             select: { 
@@ -185,7 +185,7 @@ export class LeaveService {
     const leaveTypes = await prisma.leaveType.findMany({ where: { active: true } });
 
     return Promise.all(requests.map(async (req) => {
-      const daysRequested = Math.ceil(Math.abs(req.endDate.getTime() - req.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const daysRequested = Math.ceil(Math.abs(req.endTimestamp.getTime() - req.startTimestamp.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
       const typeConfig = leaveTypes.find(t => t.name === req.type);
       let daysRemaining = 0;
@@ -201,7 +201,7 @@ export class LeaveService {
           });
 
           const daysTaken = approvedForType.reduce((acc, r) => {
-            return acc + (Math.ceil(Math.abs(r.endDate.getTime() - r.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+            return acc + (Math.ceil(Math.abs(r.endTimestamp.getTime() - r.startTimestamp.getTime()) / (1000 * 60 * 60 * 24)) + 1);
           }, 0);
 
           daysRemaining = Math.max(0, typeConfig.daysAllowed - daysTaken);
@@ -213,8 +213,8 @@ export class LeaveService {
       return {
         id: req.id,
         employeeId: req.employeeId,
-        startDate: req.startDate,
-        endDate: req.endDate,
+        startTimestamp: req.startTimestamp,
+        endTimestamp: req.endTimestamp,
         type: req.type,
         reason: req.reason,
         status: req.status,
@@ -246,8 +246,8 @@ export class LeaveService {
     const summary = leaveTypes.map((type) => {
       const typeRequests = approvedRequests.filter((r) => r.type === type.name);
       const daysTaken = typeRequests.reduce((acc, req) => {
-        const start = new Date(req.startDate);
-        const end = new Date(req.endDate);
+        const start = new Date(req.startTimestamp);
+        const end = new Date(req.endTimestamp);
         start.setHours(0, 0, 0, 0);
         end.setHours(0, 0, 0, 0);
         const diffTime = Math.abs(end.getTime() - start.getTime());

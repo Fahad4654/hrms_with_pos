@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
+import { useLocale } from '../context/LocaleContext';
 
 const Analytics: React.FC = () => {
+  const { formatCurrency } = useLocale();
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,14 +39,14 @@ const Analytics: React.FC = () => {
           <h3 style={{ marginBottom: '5%' }}>Labor Efficiency</h3>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', flexDirection: 'column' }}>
             <div style={{ fontSize: window.innerWidth <= 480 ? '2rem' : '3rem', fontWeight: 'bold', color: 'var(--accent)' }}>
-              ${analytics?.salesPerManHour.toFixed(2)}
+              {formatCurrency(analytics?.salesPerManHour)}
             </div>
             <p style={{ color: 'var(--text-muted)' }}>Sales per Man-Hour</p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3%', marginTop: '3%', borderTop: '1px solid var(--glass-border)', paddingTop: '3%' }}>
             <div>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total Sales</p>
-              <p style={{ fontWeight: '600' }}>${analytics?.totalSales.toFixed(2)}</p>
+              <p style={{ fontWeight: '600' }}>{formatCurrency(analytics?.totalSales)}</p>
             </div>
             <div>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total Hours</p>

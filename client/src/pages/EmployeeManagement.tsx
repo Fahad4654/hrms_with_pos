@@ -3,6 +3,7 @@ import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import { useAuth } from '../context/AuthContext';
+import { useLocale } from '../context/LocaleContext';
 
 interface Employee {
   id: string;
@@ -14,6 +15,7 @@ interface Employee {
     name: string;
   };
   salary: number;
+  joinTimestamp?: string;
 }
 
 interface Role {
@@ -25,6 +27,7 @@ interface Role {
 const EmployeeManagement: React.FC = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
+  const { formatDateTime } = useLocale();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
@@ -32,7 +35,7 @@ const EmployeeManagement: React.FC = () => {
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', roleId: '', salary: 0 });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', roleId: '', salary: 0, joinTimestamp: '' });
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { confirm } = useConfirm();
@@ -105,11 +108,16 @@ const EmployeeManagement: React.FC = () => {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post('/employees', formData);
+      const payload = {
+        ...formData,
+        joinTimestamp: formData.joinTimestamp || undefined
+      };
+      await api.post('/employees', payload);
       setShowModal(false);
-      setFormData({ name: '', email: '', password: '', roleId: roles[0]?.id || '', salary: 0 });
+      setFormData({ name: '', email: '', password: '', roleId: roles[0]?.id || '', salary: 0, joinTimestamp: '' });
       fetchEmployees();
       showToast('Employee created successfully', 'success');
+
     } catch (error: any) {
       console.error('Failed to create employee', error);
       let message = error.response?.data?.message || 'Failed to create employee';
@@ -141,7 +149,8 @@ const EmployeeManagement: React.FC = () => {
       email: employee.email,
       password: '', // Leave empty to keep existing
       roleId: employee.role.id,
-      salary: employee.salary
+      salary: employee.salary,
+      joinTimestamp: employee.joinTimestamp ? new Date(employee.joinTimestamp).toISOString().split('T')[0] : ''
     });
     setIsEditModalOpen(true);
   };
@@ -151,17 +160,26 @@ const EmployeeManagement: React.FC = () => {
     if (!editingEmployee) return;
     try {
       if (formData.password) {
-          await api.put(`/employees/${editingEmployee.id}`, formData);
+          const payload = {
+        ...formData,
+        joinTimestamp: formData.joinTimestamp || undefined
+      };
+      await api.put(`/employees/${editingEmployee.id}`, payload);
       } else {
           // Exclude password if empty
           const { password, ...rest } = formData;
-          await api.put(`/employees/${editingEmployee.id}`, rest);
+          const payload = {
+            ...rest,
+            joinTimestamp: rest.joinTimestamp || undefined
+          };
+          await api.put(`/employees/${editingEmployee.id}`, payload);
       }
       setIsEditModalOpen(false);
       setEditingEmployee(null);
-      setFormData({ name: '', email: '', password: '', roleId: roles[0]?.id || '', salary: 0 });
+      setFormData({ name: '', email: '', password: '', roleId: roles[0]?.id || '', salary: 0, joinTimestamp: '' });
       fetchEmployees();
       showToast('Employee updated successfully', 'success');
+
     } catch (error: any) {
       console.error('Failed to update employee', error);
       const message = error.response?.data?.message || 'Failed to update employee';
@@ -209,7 +227,7 @@ const EmployeeManagement: React.FC = () => {
       </div>
 
       <div className="glass-card table-container">
-        <table style={{ width: '100%', minWidth: window.innerWidth <= 480 ? '600px' : '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <table style={{ width: '100%', minWidth: window.innerWidth <= 480 ? '600px' : '800px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
               <th onClick={() => toggleSort('name')} style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', cursor: 'pointer' }}>
@@ -223,6 +241,9 @@ const EmployeeManagement: React.FC = () => {
               </th>
               <th onClick={() => toggleSort('salary')} style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', cursor: 'pointer' }}>
                 Salary {sortBy === 'salary' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => toggleSort('joinDate')} style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', cursor: 'pointer' }}>
+                Join Date {sortBy === 'joinDate' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
               <th style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>Actions</th>
             </tr>
@@ -246,7 +267,10 @@ const EmployeeManagement: React.FC = () => {
                     </span>
                   </td>
                   <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', color: 'var(--text-muted)' }}>{emp.email}</td>
-                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>${Number(emp.salary).toLocaleString()}</td>
+                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', fontWeight: 'bold', color: 'var(--accent)' }}>{useLocale().formatCurrency(emp.salary)}</td>
+                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', color: 'var(--text-muted)' }}>
+                    {emp.joinTimestamp ? formatDateTime(emp.joinTimestamp) : '--'}
+                  </td>
                   <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button 
@@ -395,8 +419,12 @@ const EmployeeManagement: React.FC = () => {
                 </select>
               </div>
               <div className="input-group">
-                <label>Annual Salary ($)</label>
+                <label>Annual Salary</label>
                 <input type="number" required value={formData.salary} onChange={e => setFormData({...formData, salary: Number(e.target.value)})} />
+              </div>
+              <div className="input-group">
+                <label>Join Timestamp</label>
+                <input type="date" value={formData.joinTimestamp} onChange={e => setFormData({...formData, joinTimestamp: e.target.value})} />
               </div>
               <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
                 <button type="button" className="btn" onClick={() => setShowModal(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
@@ -447,8 +475,12 @@ const EmployeeManagement: React.FC = () => {
                 </select>
               </div>
               <div className="input-group">
-                <label>Annual Salary ($)</label>
+                <label>Annual Salary</label>
                 <input type="number" required value={formData.salary} onChange={e => setFormData({...formData, salary: Number(e.target.value)})} />
+              </div>
+              <div className="input-group">
+                <label>Join Timestamp</label>
+                <input type="date" value={formData.joinTimestamp} onChange={e => setFormData({...formData, joinTimestamp: e.target.value})} />
               </div>
               <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
                 <button type="button" className="btn" onClick={() => setIsEditModalOpen(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>

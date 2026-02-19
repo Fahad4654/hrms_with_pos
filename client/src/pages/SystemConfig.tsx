@@ -15,6 +15,9 @@ interface CompanySettings {
   workStartTime: string;
   workEndTime: string;
   enableOvertime: boolean;
+  country: string;
+  timezone: string;
+  currency: string;
 }
 
 const SystemConfig: React.FC = () => {
@@ -28,7 +31,10 @@ const SystemConfig: React.FC = () => {
     workDays: [],
     workStartTime: '09:00',
     workEndTime: '17:00',
-    enableOvertime: false
+    enableOvertime: false,
+    country: 'US',
+    timezone: 'America/New_York',
+    currency: 'USD',
   });
   
   // Leaves State
@@ -224,6 +230,118 @@ const SystemConfig: React.FC = () => {
               </div>
               <span>Enable Overtime Logic (Auto-Clockout at 11:59 PM)</span>
             </label>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4%', marginBottom: '6%' }}>
+            <div className="input-group">
+              <label>Country</label>
+              <select
+                style={{ width: '100%', padding: '3%', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
+                value={settings.country}
+                onChange={e => setSettings({...settings, country: e.target.value})}
+              >
+                <option value="US">🇺🇸 United States</option>
+                <option value="GB">🇬🇧 United Kingdom</option>
+                <option value="AU">🇦🇺 Australia</option>
+                <option value="CA">🇨🇦 Canada</option>
+                <option value="IN">🇮🇳 India</option>
+                <option value="PK">🇵🇰 Pakistan</option>
+                <option value="BD">🇧🇩 Bangladesh</option>
+                <option value="AE">🇦🇪 UAE</option>
+                <option value="SA">🇸🇦 Saudi Arabia</option>
+                <option value="DE">🇩🇪 Germany</option>
+                <option value="FR">🇫🇷 France</option>
+                <option value="ES">🇪🇸 Spain</option>
+                <option value="IT">🇮🇹 Italy</option>
+                <option value="NL">🇳🇱 Netherlands</option>
+                <option value="SE">🇸🇪 Sweden</option>
+                <option value="NO">🇳🇴 Norway</option>
+                <option value="DK">🇩🇰 Denmark</option>
+                <option value="FI">🇫🇮 Finland</option>
+                <option value="PL">🇵🇱 Poland</option>
+                <option value="RU">🇷🇺 Russia</option>
+                <option value="JP">🇯🇵 Japan</option>
+                <option value="CN">🇨🇳 China</option>
+                <option value="KR">🇰🇷 South Korea</option>
+                <option value="SG">🇸🇬 Singapore</option>
+                <option value="MY">🇲🇾 Malaysia</option>
+                <option value="ID">🇮🇩 Indonesia</option>
+                <option value="TH">🇹🇭 Thailand</option>
+                <option value="PH">🇵🇭 Philippines</option>
+                <option value="BR">🇧🇷 Brazil</option>
+                <option value="MX">🇲🇽 Mexico</option>
+                <option value="TR">🇹🇷 Turkey</option>
+                <option value="EG">🇪🇬 Egypt</option>
+                <option value="NG">🇳🇬 Nigeria</option>
+                <option value="ZA">🇿🇦 South Africa</option>
+              </select>
+            </div>
+            <div className="input-group">
+              <label>Timezone</label>
+              <select
+                style={{ width: '100%', padding: '3%', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
+                value={settings.timezone}
+                onChange={e => setSettings({...settings, timezone: e.target.value})}
+              >
+                <option value="America/New_York">America/New_York (EST/EDT)</option>
+                <option value="America/Chicago">America/Chicago (CST/CDT)</option>
+                <option value="America/Denver">America/Denver (MST/MDT)</option>
+                <option value="America/Los_Angeles">America/Los_Angeles (PST/PDT)</option>
+                <option value="America/Toronto">America/Toronto</option>
+                <option value="America/Sao_Paulo">America/Sao_Paulo</option>
+                <option value="America/Mexico_City">America/Mexico_City</option>
+                <option value="Europe/London">Europe/London (GMT/BST)</option>
+                <option value="Europe/Paris">Europe/Paris (CET/CEST)</option>
+                <option value="Europe/Berlin">Europe/Berlin</option>
+                <option value="Europe/Amsterdam">Europe/Amsterdam</option>
+                <option value="Europe/Madrid">Europe/Madrid</option>
+                <option value="Europe/Rome">Europe/Rome</option>
+                <option value="Europe/Stockholm">Europe/Stockholm</option>
+                <option value="Europe/Oslo">Europe/Oslo</option>
+                <option value="Europe/Warsaw">Europe/Warsaw</option>
+                <option value="Europe/Moscow">Europe/Moscow</option>
+                <option value="Africa/Cairo">Africa/Cairo (EET)</option>
+                <option value="Africa/Lagos">Africa/Lagos (WAT)</option>
+                <option value="Africa/Johannesburg">Africa/Johannesburg (SAST)</option>
+                <option value="Asia/Dubai">Asia/Dubai (GST)</option>
+                <option value="Asia/Riyadh">Asia/Riyadh (AST)</option>
+                <option value="Asia/Karachi">Asia/Karachi (PKT)</option>
+                <option value="Asia/Dhaka">Asia/Dhaka (BST)</option>
+                <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                <option value="Asia/Bangkok">Asia/Bangkok (ICT)</option>
+                <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
+                <option value="Asia/Kuala_Lumpur">Asia/Kuala_Lumpur (MYT)</option>
+                <option value="Asia/Manila">Asia/Manila (PST)</option>
+                <option value="Asia/Jakarta">Asia/Jakarta (WIB)</option>
+                <option value="Asia/Shanghai">Asia/Shanghai (CST)</option>
+                <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                <option value="Asia/Seoul">Asia/Seoul (KST)</option>
+                <option value="Asia/Istanbul">Asia/Istanbul (TRT)</option>
+                <option value="Australia/Sydney">Australia/Sydney (AEST/AEDT)</option>
+                <option value="Australia/Melbourne">Australia/Melbourne</option>
+                <option value="Pacific/Auckland">Pacific/Auckland (NZST/NZDT)</option>
+              </select>
+            </div>
+            <div className="input-group">
+              <label>Currency</label>
+              <select
+                style={{ width: '100%', padding: '3%', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
+                value={settings.currency}
+                onChange={e => setSettings({...settings, currency: e.target.value})}
+              >
+                <option value="USD">USD - US Dollar ($)</option>
+                <option value="EUR">EUR - Euro (€)</option>
+                <option value="GBP">GBP - British Pound (£)</option>
+                <option value="BDT">BDT - Bangladeshi Taka (৳)</option>
+                <option value="INR">INR - Indian Rupee (₹)</option>
+                <option value="PKR">PKR - Pakistani Rupee (Rs)</option>
+                <option value="AED">AED - UAE Dirham (د.إ)</option>
+                <option value="SAR">SAR - Saudi Riyal (﷼)</option>
+                <option value="CAD">CAD - Canadian Dollar ($)</option>
+                <option value="AUD">AUD - Australian Dollar ($)</option>
+                <option value="JPY">JPY - Japanese Yen (¥)</option>
+              </select>
+            </div>
           </div>
 
           <button className="btn btn-primary" onClick={handleSaveSettings} style={{ width: '200px' }}>

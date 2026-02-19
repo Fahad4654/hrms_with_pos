@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
-import { useConfirm } from '../context/ConfirmContext';
+import { useLocale } from '../context/LocaleContext';
 
 interface LeaveRequest {
   id: string;
-  startDate: string;
-  endDate: string;
+  startTimestamp: string;
+  endTimestamp: string;
   type: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   reason: string | null;
@@ -20,6 +20,7 @@ interface LeaveRequest {
 
 const LeaveManagement: React.FC = () => {
   const { showToast } = useToast();
+  const { formatDateTime } = useLocale();
   const [myLeaves, setMyLeaves] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -29,13 +30,13 @@ const LeaveManagement: React.FC = () => {
   // Pagination & Filter State
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('startDate');
+  const [sortBy, setSortBy] = useState('startTimestamp');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Form State
   const [formData, setFormData] = useState({
-    startDate: '',
-    endDate: '',
+    startTimestamp: '',
+    endTimestamp: '',
     type: '',
     reason: ''
   });
@@ -114,8 +115,8 @@ const LeaveManagement: React.FC = () => {
     e.preventDefault();
     
     // 1. Date Validation
-    const start = new Date(formData.startDate);
-    const end = new Date(formData.endDate);
+    const start = new Date(formData.startTimestamp);
+    const end = new Date(formData.endTimestamp);
     if (start > end) {
       showToast('Start date cannot be later than end date', 'error');
       return;
@@ -136,8 +137,8 @@ const LeaveManagement: React.FC = () => {
       await api.post('/leaves/request', formData);
       showToast('Leave request submitted successfully', 'success');
       setFormData({ 
-        startDate: '', 
-        endDate: '', 
+        startTimestamp: '', 
+        endTimestamp: '', 
         type: leaveTypes[0]?.name || '', 
         reason: '' 
       });
@@ -273,15 +274,15 @@ const LeaveManagement: React.FC = () => {
         ) : myLeaves.length === 0 ? (
           <p style={{ padding: '3%', color: 'var(--text-muted)' }}>No leave requests found.</p>
         ) : (
-          <table style={{ width: '100%', minWidth: '900px', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table style={{ width: '100%', minWidth: '900px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
                 <th onClick={() => toggleSort('type')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
                    Leave Details {sortBy === 'type' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
                 <th style={{ padding: '2% 3%' }}>Current Balance</th>
-                <th onClick={() => toggleSort('startDate')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
-                   Dates {sortBy === 'startDate' && (sortOrder === 'asc' ? '↑' : '↓')}
+                <th onClick={() => toggleSort('startTimestamp')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
+                   Timestamps {sortBy === 'startTimestamp' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
                 <th style={{ padding: '2% 3%' }}>Reason</th>
                 <th onClick={() => toggleSort('status')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
@@ -309,8 +310,8 @@ const LeaveManagement: React.FC = () => {
                     </div>
                   </td>
                   <td style={{ padding: '2% 3%', fontSize: '0.875rem' }}>
-                    <div style={{ whiteSpace: 'nowrap' }}>{new Date(leave.startDate).toLocaleDateString()}</div>
-                    <div style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>to {new Date(leave.endDate).toLocaleDateString()}</div>
+                    <div style={{ whiteSpace: 'nowrap' }}>{formatDateTime(leave.startTimestamp)}</div>
+                    <div style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>to {formatDateTime(leave.endTimestamp)}</div>
                   </td>
                   <td style={{ padding: '2% 3%', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{leave.reason || '--'}</td>
                   <td style={{ padding: '2% 3%' }}>

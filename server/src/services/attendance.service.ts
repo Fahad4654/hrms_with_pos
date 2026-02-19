@@ -6,12 +6,12 @@ export class AttendanceService {
     const activeSession = await prisma.attendance.findFirst({
       where: {
         employeeId,
-        clockOut: null,
+        clockOutTimestamp: null,
       },
     });
 
     if (activeSession) {
-      const sessionDate = new Date(activeSession.clockIn).toDateString();
+      const sessionDate = new Date(activeSession.clockInTimestamp).toDateString();
       const todayDate = new Date().toDateString();
 
       if (sessionDate === todayDate) {
@@ -27,14 +27,14 @@ export class AttendanceService {
         const enableOvertime = settings?.enableOvertime || false;
         
         // Construct clockOut time for that previous day
-        let autoClockOutTime = new Date(activeSession.clockIn);
+        let autoClockOutTime = new Date(activeSession.clockInTimestamp);
 
         if (enableOvertime) {
             // If overtime is enabled, auto-clock out at 23:59:59
             autoClockOutTime.setHours(23, 59, 59, 999);
         } else {
-             const [endH, endM] = workEndTime.split(':').map(Number);
-             autoClockOutTime.setHours(endH, endM, 0, 0);
+             const [endH, endM] = (workEndTime || '17:00').split(':').map(Number);
+             autoClockOutTime.setHours(endH || 17, endM || 0, 0, 0);
         }
 
         // If clockIn was actually AFTER workEndTime (e.g. valid late night work), 
@@ -43,13 +43,13 @@ export class AttendanceService {
         // Better: if workEndTime < clockIn, maybe set to 23:59:59? 
         // For simplicity: Set to workEndTime. If duration negative, handle it? 
         // Let's ensure it's at least clockIn time.
-        if (autoClockOutTime < activeSession.clockIn) {
-             autoClockOutTime.setTime(activeSession.clockIn.getTime() + 1000); // 1 sec later
+        if (autoClockOutTime < activeSession.clockInTimestamp) {
+             autoClockOutTime.setTime(activeSession.clockInTimestamp.getTime() + 1000); // 1 sec later
         }
 
         await prisma.attendance.update({
           where: { id: activeSession.id },
-          data: { clockOut: autoClockOutTime },
+          data: { clockOutTimestamp: autoClockOutTime },
         });
         console.log(`[AttendanceService] Stale session ${activeSession.id} auto-closed at ${autoClockOutTime.toISOString()}`);
       }
@@ -70,9 +70,9 @@ export class AttendanceService {
     const activeSession = await prisma.attendance.findFirst({
       where: {
         employeeId,
-        clockOut: null,
+        clockOutTimestamp: null,
       },
-      orderBy: { clockIn: 'desc' },
+      orderBy: { clockInTimestamp: 'desc' },
     });
 
     if (!activeSession) {
@@ -81,14 +81,14 @@ export class AttendanceService {
 
     return prisma.attendance.update({
       where: { id: activeSession.id },
-      data: { clockOut: new Date() },
+      data: { clockOutTimestamp: new Date() },
     });
   }
 
   static async getAttendanceLogs(employeeId: string) {
     const rawLogs = await prisma.attendance.findMany({
       where: { employeeId },
-      orderBy: { clockIn: 'asc' }, // Order by asc to process chronologically
+      orderBy: { clockInTimestamp: 'asc' }, // Order by asc to process chronologically
     });
 
     const settings = await prisma.companySettings.findFirst();
@@ -97,25 +97,25 @@ export class AttendanceService {
     const workEndTime = settings?.workEndTime || '17:00';
 
     // Parse work hours to minutes for duration calculation
-    const [startH, startM] = workStartTime.split(':').map(Number);
-    const [endH, endM] = workEndTime.split(':').map(Number);
-    const expectedDurationMs = ((endH * 60 + endM) - (startH * 60 + startM)) * 60 * 1000;
+    const [startH, startM] = (workStartTime || '09:00').split(':').map(Number);
+    const [endH, endM] = (workEndTime || '17:00').split(':').map(Number);
+    const expectedDurationMs = (((endH || 17) * 60 + (endM || 0)) - ((startH || 9) * 60 + (startM || 0))) * 60 * 1000;
 
     const groupedLogs: Record<string, any> = {};
 
     for (const log of rawLogs) {
       // Get date string YYYY-MM-DD
-      const date = new Date(log.clockIn).toISOString().split('T')[0] as string;
+      const date = new Date(log.clockInTimestamp).toISOString().split('T')[0] as string;
 
       if (!groupedLogs[date]) {
         // Determine if Off Day
-        const dayName = new Date(log.clockIn).toLocaleDateString('en-US', { weekday: 'long' });
+        const dayName = new Date(log.clockInTimestamp).toLocaleDateString('en-US', { weekday: 'long' });
         const isOffDay = !workDays.includes(dayName);
 
         // Determine if Late
-        const clockInTime = new Date(log.clockIn);
-        const workStartDate = new Date(log.clockIn);
-        workStartDate.setHours(startH, startM, 0, 0);
+        const clockInTime = new Date(log.clockInTimestamp);
+        const workStartDate = new Date(log.clockInTimestamp);
+        workStartDate.setHours(startH || 9, startM || 0, 0, 0);
         
         // 15 mins grace period? User didn't specify, but let's be strict for now or add small buffer.
         // Let's say strict > workStartTime is Late.
@@ -123,10 +123,10 @@ export class AttendanceService {
 
         groupedLogs[date] = {
           date,
-          firstClockIn: log.clockIn,
-          lastClockOut: log.clockOut,
+          firstClockIn: log.clockInTimestamp,
+          lastClockOut: log.clockOutTimestamp,
           totalDuration: 0,
-          isActive: !log.clockOut,
+          isActive: !log.clockOutTimestamp,
           sessions: [],
           isOffDay,
           isLate: !isOffDay && isLate, // Only mark late if it's a working day
@@ -135,17 +135,17 @@ export class AttendanceService {
       }
 
       // Update lastClockOut if this session ended later (or is active)
-      if (log.clockOut) {
+      if (log.clockOutTimestamp) {
         // ... existing logic ...
         const currentLast = groupedLogs[date].lastClockOut ? new Date(groupedLogs[date].lastClockOut).getTime() : 0;
-        const newOut = new Date(log.clockOut).getTime();
+        const newOut = new Date(log.clockOutTimestamp).getTime();
         
         if (newOut > currentLast) {
-           groupedLogs[date].lastClockOut = log.clockOut;
+           groupedLogs[date].lastClockOut = log.clockOutTimestamp;
         }
 
         // Add duration
-        const durationMs = newOut - new Date(log.clockIn).getTime();
+        const durationMs = newOut - new Date(log.clockInTimestamp).getTime();
         groupedLogs[date].totalDuration += durationMs;
       } else {
         // Active session

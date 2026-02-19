@@ -9,8 +9,8 @@ export class LeaveController {
       if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
       const leave = await LeaveService.requestLeave(req.user.id, {
         ...req.body,
-        startDate: new Date(req.body.startDate),
-        endDate: new Date(req.body.endDate),
+        startTimestamp: new Date(req.body.startTimestamp),
+        endTimestamp: new Date(req.body.endTimestamp),
       });
       res.status(201).json(leave);
     } catch (error: any) {

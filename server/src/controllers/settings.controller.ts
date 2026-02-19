@@ -14,13 +14,16 @@ export class SettingsController {
 
   static async updateCompany(req: Request, res: Response) {
     try {
-      const { companyName, workDays, workStartTime, workEndTime, enableOvertime } = req.body;
+      const { companyName, workDays, workStartTime, workEndTime, enableOvertime, country, timezone, currency } = req.body;
       const settings = await SettingsService.updateCompanySettings({
         companyName,
         workDays,
         workStartTime,
         workEndTime,
         enableOvertime,
+        country,
+        timezone,
+        currency
       });
       res.json(settings);
     } catch (error: any) {

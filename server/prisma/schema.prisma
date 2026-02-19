@@ -30,6 +30,7 @@ model Employee {
   roleId        String
   role          Role           @relation(fields: [roleId], references: [id])
   salary        Decimal        @default(0)
+  joinTimestamp DateTime?
   refreshToken  String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -40,25 +41,25 @@ model Employee {
 }
 
 model Attendance {
-  id         String   @id @default(uuid())
-  employeeId String
-  employee   Employee @relation(fields: [employeeId], references: [id])
-  clockIn    DateTime @default(now())
-  clockOut   DateTime?
-  latitude   Float?
-  longitude  Float?
-  ipAddress  String?
+  id               String   @id @default(uuid())
+  employeeId       String
+  employee         Employee @relation(fields: [employeeId], references: [id])
+  clockInTimestamp  DateTime @default(now())
+  clockOutTimestamp DateTime?
+  latitude         Float?
+  longitude        Float?
+  ipAddress        String?
 }
 
 model LeaveRequest {
-  id         String      @id @default(uuid())
-  employeeId String
-  employee   Employee    @relation(fields: [employeeId], references: [id])
-  startDate  DateTime
-  endDate    DateTime
-  type       String
-  status     LeaveStatus @default(PENDING)
-  reason     String?
+  id             String      @id @default(uuid())
+  employeeId     String
+  employee       Employee    @relation(fields: [employeeId], references: [id])
+  startTimestamp DateTime
+  endTimestamp   DateTime
+  type           String
+  status         LeaveStatus @default(PENDING)
+  reason         String?
 }
 
 model Category {
@@ -129,5 +130,8 @@ model CompanySettings {
   workStartTime String   @default("09:00")
   workEndTime   String   @default("17:00")
   enableOvertime Boolean @default(false)
+  country       String   @default("US")
+  timezone      String   @default("America/New_York")
+  currency      String   @default("USD")
   updatedAt     DateTime @updatedAt
 }

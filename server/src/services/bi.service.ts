@@ -28,11 +28,11 @@ export class BIService {
     const totalSales = allSales.reduce((sum, sale) => sum + Number(sale.totalAmount), 0);
 
     const allAttendance = await prisma.attendance.findMany({
-      where: { clockOut: { not: null } },
+      where: { clockOutTimestamp: { not: null } },
     });
 
     const totalHours = allAttendance.reduce((sum, log) => {
-      const duration = (log.clockOut!.getTime() - log.clockIn.getTime()) / (1000 * 60 * 60);
+      const duration = (log.clockOutTimestamp!.getTime() - log.clockInTimestamp.getTime()) / (1000 * 60 * 60);
       return sum + duration;
     }, 0);
 
@@ -64,14 +64,13 @@ export class BIService {
       where: {
         employeeId,
         status: 'APPROVED',
-        startDate: { gte: startDate },
-        endDate: { lte: endDate },
+        startTimestamp: { gte: startDate },
+        endTimestamp: { lte: endDate },
         type: 'UNPAID',
       },
     });
-
     const unpaidDays = leaves.reduce((sum, leave) => {
-      const days = (leave.endDate.getTime() - leave.startDate.getTime()) / (1000 * 60 * 60 * 24) + 1;
+      const days = (leave.endTimestamp.getTime() - leave.startTimestamp.getTime()) / (1000 * 60 * 60 * 24) + 1;
       return sum + days;
     }, 0);
 

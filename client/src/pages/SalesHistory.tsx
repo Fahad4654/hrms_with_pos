@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
+import { useLocale } from '../context/LocaleContext';
 
 interface Sale {
   id: string;
@@ -29,6 +30,7 @@ const SalesHistory: React.FC = () => {
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const { formatDateTime, formatCurrency } = useLocale();
 
   useEffect(() => {
     fetchHistory();
@@ -81,10 +83,10 @@ const SalesHistory: React.FC = () => {
       </div>
 
       <div className="glass-card table-container">
-        <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th style={{ padding: '2% 3%' }}>Date</th>
+              <th style={{ padding: '2% 3%' }}>Timestamp</th>
               <th style={{ padding: '2% 3%' }}>Employee</th>
               <th style={{ padding: '2% 3%' }}>Items</th>
               <th style={{ padding: '2% 3%' }}>Total Amount</th>
@@ -99,14 +101,14 @@ const SalesHistory: React.FC = () => {
             ) : (
               sales.map(sale => (
                 <tr key={sale.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: '2% 3%' }}>{new Date(sale.timestamp).toLocaleString()}</td>
+                  <td style={{ padding: '2% 3%' }}>{formatDateTime(sale.timestamp)}</td>
                   <td style={{ padding: '2% 3%', fontWeight: '500' }}>{sale.employee?.name}</td>
                   <td style={{ padding: '2% 3%' }}>
                     <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                       {sale.items.length} items
                     </div>
                   </td>
-                  <td style={{ padding: '2% 3%', fontWeight: 'bold' }}>${Number(sale.totalAmount).toFixed(2)}</td>
+                  <td style={{ padding: '2% 3%', fontWeight: 'bold' }}>{formatCurrency(sale.totalAmount)}</td>
                   <td style={{ padding: '2% 3%', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sale.id.slice(0, 8)}...</td>
                 </tr>
               ))

@@ -14,6 +14,9 @@ export class SettingsService {
           workStartTime: '09:00',
           workEndTime: '17:00',
           enableOvertime: false,
+          country: 'US',
+          timezone: 'America/New_York',
+          currency: 'USD',
         },
       });
     }
@@ -26,6 +29,9 @@ export class SettingsService {
     workStartTime?: string;
     workEndTime?: string;
     enableOvertime?: boolean;
+    country?: string;
+    timezone?: string;
+    currency?: string;
   }) {
     const settings = await this.getCompanySettings(); // Ensure exists
     
@@ -96,8 +102,8 @@ export class SettingsService {
     for (const req of requests) {
       // Calculate duration in days (Inclusive)
       // Reset hours to ensure clean date difference
-      const start = new Date(req.startDate);
-      const end = new Date(req.endDate);
+      const start = new Date(req.startTimestamp);
+      const end = new Date(req.endTimestamp);
       start.setHours(0,0,0,0);
       end.setHours(0,0,0,0);
       

@@ -16,15 +16,14 @@ export const startCronJobs = () => {
 
       // Find all active sessions
       const activeSessions = await prisma.attendance.findMany({
-        where: { clockOut: null },
+        where: { clockOutTimestamp: null },
       });
-
       for (const session of activeSessions) {
-        const sessionDate = new Date(session.clockIn);
+        const sessionDate = new Date(session.clockInTimestamp);
         const sessionDateString = sessionDate.toDateString();
         
         let shouldClose = false;
-        let closeTime = new Date(session.clockIn);
+        let closeTime = new Date(session.clockInTimestamp);
 
         if (enableOvertime) {
           // Overtime Enabled: Close if session is from a previous day
@@ -38,9 +37,9 @@ export const startCronJobs = () => {
           // Case 1: Session is from previous day -> active for too long -> close at workEndTime of session day
           // Case 2: Session is from today -> check if now > workEndTime
           
-          const [endH, endM] = workEndTime.split(':').map(Number);
-          const workEndDateTime = new Date(session.clockIn);
-          workEndDateTime.setHours(endH, endM, 0, 0);
+          const [endH, endM] = (workEndTime || '17:00').split(':').map(Number);
+          const workEndDateTime = new Date(session.clockInTimestamp);
+          workEndDateTime.setHours(endH || 17, endM || 0, 0, 0);
 
           if (sessionDateString !== todayString) {
             // Previous day session, definitely close
@@ -55,15 +54,15 @@ export const startCronJobs = () => {
 
         if (shouldClose) {
           // Ensure closeTime is not before clockIn
-          if (closeTime < session.clockIn) {
-             closeTime = new Date(session.clockIn.getTime() + 1000);
+          if (closeTime < session.clockInTimestamp) {
+             closeTime = new Date(session.clockInTimestamp.getTime() + 1000);
           }
           
           console.log(`[Cron] Auto-closing session ${session.id} for employee ${session.employeeId}. ClockOut: ${closeTime.toISOString()}`);
           
           await prisma.attendance.update({
             where: { id: session.id },
-            data: { clockOut: closeTime },
+            data: { clockOutTimestamp: closeTime },
           });
         }
       }

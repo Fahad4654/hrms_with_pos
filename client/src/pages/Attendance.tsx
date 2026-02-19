@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
+import { useLocale } from '../context/LocaleContext';
 
 interface DailyAttendance {
   date: string;
@@ -15,6 +16,7 @@ interface DailyAttendance {
 
 const Attendance: React.FC = () => {
   const { showToast } = useToast();
+  const { formatDateTime } = useLocale();
   const [logs, setLogs] = useState<DailyAttendance[]>([]);
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -105,10 +107,10 @@ const Attendance: React.FC = () => {
         {logs.length === 0 ? (
           <p style={{ padding: '4%', color: 'var(--text-muted)', textAlign: 'center' }}>No recent activity found. Your logs will appear here.</p>
         ) : (
-          <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                <th style={{ padding: '2%', width: '15%' }}>Date</th>
+                <th style={{ padding: '2%', width: '15%' }}>Timestamp</th>
                 <th style={{ padding: '2%', width: '15%' }}>Clock In</th>
                 <th style={{ padding: '2%', width: '15%' }}>Clock Out</th>
                 <th style={{ padding: '2%', width: '25%' }}>Status</th>
@@ -117,16 +119,12 @@ const Attendance: React.FC = () => {
             </thead>
             <tbody>
               {logs.map((log) => {
-                const date = new Date(log.date);
-                const firstIn = new Date(log.firstClockIn);
-                const lastOut = log.lastClockOut ? new Date(log.lastClockOut) : null;
-                
                 return (
                   <tr key={log.date} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                    <td style={{ padding: '2% 3%' }}>{date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</td>
-                    <td style={{ padding: '2% 3%' }}>{firstIn.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                    <td style={{ padding: '2% 3%' }}>{formatDateTime(log.date)}</td>
+                    <td style={{ padding: '2% 3%' }}>{formatDateTime(log.firstClockIn)}</td>
                     <td style={{ padding: '2% 3%' }}>
-                      {lastOut ? lastOut.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}
+                      {log.lastClockOut ? formatDateTime(log.lastClockOut) : '-'}
                     </td>
                     <td style={{ padding: '2% 3%' }}>
                       {log.isActive ? (

@@ -6,6 +6,7 @@ export const EmployeeSchema = z.object({
   name: z.string().min(2),
   roleId: z.string(),
   salary: z.number().nonnegative(),
+  joinTimestamp: z.string().optional(),
 });
 
 export type EmployeeInput = z.infer<typeof EmployeeSchema>;

@@ -1,6 +1,27 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.js";
+import { useLocale } from "../context/LocaleContext";
+
+const LiveClock: React.FC = () => {
+  const { timezone, formatTime } = useLocale();
+  const [time, setTime] = React.useState(new Date());
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontWeight: '600', fontSize: '1rem' }}>
+       <span style={{ opacity: 0.8 }}>🕒</span>
+       <span>{formatTime(time)}</span>
+       <span style={{ fontSize: '0.7rem', opacity: 0.6, fontWeight: 'normal', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
+         {timezone.split('/').pop()?.replace('_', ' ')}
+       </span>
+    </div>
+  );
+};
 
 interface SidebarItemProps {
   label: string;
@@ -106,18 +127,22 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
         >
           HRMS + POS
         </h2>
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "white",
-            fontSize: windowWidth <= 480 ? "1.25rem" : "1.5rem",
-            cursor: "pointer",
-          }}
-        >
-          {isMobileMenuOpen ? "✕" : "☰"}
-        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          {windowWidth > 640 && <LiveClock />}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            style={{
+              background: "none",
+              border: "none",
+              color: "white",
+              fontSize: windowWidth <= 480 ? "1.25rem" : "1.5rem",
+              cursor: "pointer",
+            }}
+          >
+            {isMobileMenuOpen ? "✕" : "☰"}
+          </button>
+        </div>
       </div>
 
       {/* Sidebar */}
@@ -323,7 +348,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
                   >
                     Total Sales (Today)
                   </p>
-                  <h3>$1,240.00</h3>
+                  <h3>{useLocale().formatCurrency(1240.00)}</h3>
                 </div>
                 <div
                   className="glass-card"

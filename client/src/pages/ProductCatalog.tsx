@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import { useLocale } from '../context/LocaleContext';
 
 interface Product {
   id: string;
@@ -188,7 +189,7 @@ const ProductCatalog: React.FC = () => {
       </div>
 
       <div className="glass-card table-container">
-        <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
               <th onClick={() => toggleSort('sku')} style={{ padding: '2% 3%', cursor: 'pointer', width: '15%' }}>
@@ -219,7 +220,7 @@ const ProductCatalog: React.FC = () => {
                   <td style={{ padding: '2% 3%', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{product.sku}</td>
                   <td style={{ padding: '2% 3%', fontWeight: '500' }}>{product.name}</td>
                   <td style={{ padding: '2% 3%' }}>{product.category?.name || 'N/A'}</td>
-                  <td style={{ padding: '2% 3%', fontWeight: 'bold' }}>${Number(product.price).toFixed(2)}</td>
+                  <td style={{ padding: '2% 3%', fontWeight: 'bold' }}>{useLocale().formatCurrency(product.price)}</td>
                   <td style={{ padding: '2% 3%' }}>{product.stockLevel} units</td>
                   <td style={{ padding: '2% 3%' }}>
                     <span style={{ 
@@ -370,7 +371,7 @@ const ProductCatalog: React.FC = () => {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4%' }}>
                 <div className="input-group">
-                  <label>Price ($)</label>
+                  <label>Price</label>
                   <input type="number" step="0.01" required value={formData.price} onChange={e => setFormData({...formData, price: Number(e.target.value)})} />
                 </div>
                 <div className="input-group">

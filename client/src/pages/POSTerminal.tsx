@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
+import { useLocale } from '../context/LocaleContext';
 
 interface Product {
   id: string;
@@ -163,7 +164,7 @@ const POSTerminal: React.FC = () => {
             >
               <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📦</div>
               <p style={{ fontWeight: '600', fontSize: '0.875rem', marginBottom: '4px', color: 'var(--text-main)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</p>
-              <p style={{ color: 'var(--accent)', fontWeight: 'bold' }}>${Number(p.price).toFixed(2)}</p>
+              <p style={{ color: 'var(--accent)', fontWeight: 'bold' }}>{useLocale().formatCurrency(p.price)}</p>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>{p.stockLevel} units</p>
             </div>
           ))}
@@ -182,10 +183,10 @@ const POSTerminal: React.FC = () => {
               <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4%', paddingBottom: '4%', borderBottom: '1px solid var(--glass-border)' }}>
                 <div>
                   <p style={{ fontWeight: '500' }}>{item.name}</p>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.quantity} x ${Number(item.price).toFixed(2)}</p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.quantity} x {useLocale().formatCurrency(item.price)}</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontWeight: 'bold' }}>${(item.quantity * Number(item.price)).toFixed(2)}</p>
+                  <p style={{ fontWeight: 'bold' }}>{useLocale().formatCurrency(item.quantity * Number(item.price))}</p>
                   <button onClick={() => removeFromCart(item.id)} style={{ color: 'var(--error)', background: 'none', border: 'none', fontSize: '0.75rem', cursor: 'pointer' }}>Remove</button>
                 </div>
               </div>
@@ -196,15 +197,15 @@ const POSTerminal: React.FC = () => {
         <div style={{ borderTop: '2px solid var(--glass-border)', paddingTop: '5%' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2%', color: 'var(--text-muted)' }}>
             <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>{useLocale().formatCurrency(subtotal)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4%', color: 'var(--text-muted)' }}>
             <span>Tax (8%)</span>
-            <span>${tax.toFixed(2)}</span>
+            <span>{useLocale().formatCurrency(tax)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6%', fontSize: '1.5rem', fontWeight: 'bold' }}>
             <span>Total</span>
-            <span style={{ color: 'var(--accent)' }}>${total.toFixed(2)}</span>
+            <span style={{ color: 'var(--accent)' }}>{useLocale().formatCurrency(total)}</span>
           </div>
           
           <button 

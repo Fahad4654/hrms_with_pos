@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.js';
+import { LocaleProvider } from './context/LocaleContext.js';
 import './index.css';
 
 import Login from './pages/Login.js';
@@ -32,6 +33,7 @@ const ProtectedRoute = ({ children, permission }: { children: React.ReactNode, p
 
 const App: React.FC = () => {
   return (
+    <LocaleProvider>
     <AuthProvider>
       <Router>
         <Routes>
@@ -100,6 +102,7 @@ const App: React.FC = () => {
         </Routes>
       </Router>
     </AuthProvider>
+    </LocaleProvider>
   );
 };
 
