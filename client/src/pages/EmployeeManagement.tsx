@@ -8,6 +8,7 @@ import { exportAttendanceToPDF } from '../utils/pdfExport';
 
 interface Employee {
   id: string;
+  employeeId?: string;
   name: string;
   email: string;
   roleId: string;
@@ -17,6 +18,13 @@ interface Employee {
   };
   salary: number;
   joinTimestamp?: string;
+  phone?: string;
+  address?: string;
+  gender?: string;
+  maritalStatus?: string;
+  nationality?: string;
+  dateOfBirth?: string;
+  designation?: string;
 }
 
 interface Role {
@@ -36,9 +44,26 @@ const EmployeeManagement: React.FC = () => {
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', roleId: '', salary: 0, joinTimestamp: '' });
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    email: '', 
+    password: '', 
+    roleId: '', 
+    salary: 0, 
+    joinTimestamp: '',
+    employeeId: '',
+    phone: '',
+    address: '',
+    gender: '',
+    maritalStatus: '',
+    nationality: '',
+    dateOfBirth: '',
+    designation: ''
+  });
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [viewingEmployee, setViewingEmployee] = useState<Employee | null>(null);
   const { confirm } = useConfirm();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -119,7 +144,7 @@ const EmployeeManagement: React.FC = () => {
       };
       await api.post('/employees', payload);
       setShowModal(false);
-      setFormData({ name: '', email: '', password: '', roleId: roles[0]?.id || '', salary: 0, joinTimestamp: '' });
+      resetForm();
       fetchEmployees();
       showToast('Employee created successfully', 'success');
 
@@ -144,10 +169,6 @@ const EmployeeManagement: React.FC = () => {
   };
 
   const openEditModal = (employee: Employee) => {
-    if (!employee.role) {
-        showToast('Employee has no role assigned', 'error');
-        return;
-    }
     setEditingEmployee(employee);
     setFormData({
       name: employee.name,
@@ -155,36 +176,46 @@ const EmployeeManagement: React.FC = () => {
       password: '', // Leave empty to keep existing
       roleId: employee.role.id,
       salary: employee.salary,
-      joinTimestamp: employee.joinTimestamp ? new Date(employee.joinTimestamp).toISOString().split('T')[0] : ''
+      joinTimestamp: employee.joinTimestamp ? new Date(Number(employee.joinTimestamp)).toISOString().split('T')[0] : '',
+      employeeId: employee.employeeId || '',
+      phone: employee.phone || '',
+      address: employee.address || '',
+      gender: employee.gender || '',
+      maritalStatus: employee.maritalStatus || '',
+      nationality: employee.nationality || '',
+      dateOfBirth: employee.dateOfBirth ? new Date(Number(employee.dateOfBirth)).toISOString().split('T')[0] : '',
+      designation: employee.designation || ''
     });
     setIsEditModalOpen(true);
+  };
+
+  const resetForm = () => {
+    setFormData({ 
+      name: '', email: '', password: '', roleId: roles[0]?.id || '', salary: 0, joinTimestamp: '',
+      employeeId: '', phone: '', address: '', gender: '', maritalStatus: '', nationality: '', dateOfBirth: '', designation: ''
+    });
   };
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingEmployee) return;
     try {
-      if (formData.password) {
-          const payload = {
+      const payload: any = {
         ...formData,
-        joinTimestamp: formData.joinTimestamp || undefined
+        joinTimestamp: formData.joinTimestamp || undefined,
+        dateOfBirth: formData.dateOfBirth || undefined
       };
-      await api.put(`/employees/${editingEmployee.id}`, payload);
-      } else {
-          // Exclude password if empty
-          const { password, ...rest } = formData;
-          const payload = {
-            ...rest,
-            joinTimestamp: rest.joinTimestamp || undefined
-          };
-          await api.put(`/employees/${editingEmployee.id}`, payload);
+      
+      if (!payload.password) {
+        delete payload.password;
       }
+
+      await api.put(`/employees/${editingEmployee.id}`, payload);
       setIsEditModalOpen(false);
       setEditingEmployee(null);
-      setFormData({ name: '', email: '', password: '', roleId: roles[0]?.id || '', salary: 0, joinTimestamp: '' });
+      resetForm();
       fetchEmployees();
       showToast('Employee updated successfully', 'success');
-
     } catch (error: any) {
       console.error('Failed to update employee', error);
       const message = error.response?.data?.message || 'Failed to update employee';
@@ -231,6 +262,7 @@ const EmployeeManagement: React.FC = () => {
     }
   };
 
+
   return (
     <div className="animate-fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4%', flexWrap: 'wrap', gap: '2%' }}>
@@ -269,35 +301,50 @@ const EmployeeManagement: React.FC = () => {
       </div>
 
       <div className="glass-card table-container">
-        <table style={{ width: '100%', minWidth: window.innerWidth <= 480 ? '600px' : '800px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
+        <table style={{ width: '100%', minWidth: '1400px', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th onClick={() => toggleSort('name')} style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('name')} style={{ padding: '12px 16px', cursor: 'pointer', width: '15%' }}>
                 Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('role')} style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('designation')} style={{ padding: '12px 16px', width: '15%', cursor: 'pointer' }}>
+                Designation {sortBy === 'designation' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => toggleSort('role')} style={{ padding: '12px 16px', cursor: 'pointer', width: '10%' }}>
                 Role {sortBy === 'role' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('email')} style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', cursor: 'pointer' }}>
+              <th onClick={() => toggleSort('email')} style={{ padding: '12px 16px', cursor: 'pointer', width: '20%' }}>
                 Email {sortBy === 'email' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('salary')} style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', cursor: 'pointer' }}>
-                Salary {sortBy === 'salary' && (sortOrder === 'asc' ? '↑' : '↓')}
+              <th onClick={() => toggleSort('phone')} style={{ padding: '12px 16px', width: '12%', cursor: 'pointer' }}>
+                Phone No. {sortBy === 'phone' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('joinDate')} style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', cursor: 'pointer' }}>
-                Join Date {sortBy === 'joinDate' && (sortOrder === 'asc' ? '↑' : '↓')}
+              <th onClick={() => toggleSort('joinTimestamp')} style={{ padding: '12px 16px', cursor: 'pointer', width: '15%' }}>
+                Join Date {sortBy === 'joinTimestamp' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>Actions</th>
+              <th style={{ 
+                padding: '12px 16px', 
+                width: '130px', 
+                position: 'sticky', 
+                right: 0, 
+                background: '#1e293b', 
+                zIndex: 20,
+                borderLeft: '2px solid var(--glass-border)',
+                boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+              }}>
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {employees.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding: '5%', textAlign: 'center' }}>No employees found</td></tr>
+               <tr><td colSpan={7} style={{ padding: '5%', textAlign: 'center' }}>No employees found</td></tr>
             ) : (
               employees.map(emp => (
                 <tr key={emp.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', fontWeight: '500' }}>{emp.name}</td>
-                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={emp.name}>{emp.name}</td>
+                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={emp.designation || 'N/A'}>{emp.designation || 'N/A'}</td>
+                  <td style={{ padding: '12px 16px' }}>
                     <span style={{ 
                       padding: '0.5% 1.5%', 
                       borderRadius: '20px', 
@@ -308,13 +355,36 @@ const EmployeeManagement: React.FC = () => {
                       {emp.role?.name || 'N/A'}
                     </span>
                   </td>
-                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', color: 'var(--text-muted)' }}>{emp.email}</td>
-                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', fontWeight: 'bold', color: 'var(--accent)' }}>{useLocale().formatCurrency(emp.salary)}</td>
-                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', color: 'var(--text-muted)' }}>
+                   <td style={{ 
+                    padding: '12px 16px', 
+                    color: 'var(--text-muted)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }} title={emp.email}>
+                    {emp.email}
+                  </td>
+                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{emp.phone || 'N/A'}</td>
+                  <td style={{ padding: '12px 16px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                     {emp.joinTimestamp ? formatDateTime(emp.joinTimestamp) : '--'}
                   </td>
-                    <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>
+                    <td style={{ 
+                      padding: '12px 16px',
+                      position: 'sticky',
+                      right: 0,
+                      background: '#1e293b',
+                      zIndex: 10,
+                      borderLeft: '2px solid var(--glass-border)',
+                      boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+                    }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
+                      <button 
+                        className="btn btn-primary"
+                        style={{ padding: '6px 12px', fontSize: '0.875rem', background: 'var(--primary)', color: 'white' }} 
+                        onClick={() => { setViewingEmployee(emp); setIsDetailsModalOpen(true); }}
+                      >
+                        Details
+                      </button>
                       <button 
                         className="btn btn-primary"
                         style={{ padding: '6px 12px', fontSize: '0.875rem' }} 
@@ -428,117 +498,205 @@ const EmployeeManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Create Modal */}
       {showModal && (
-        <div className="modal-overlay" style={{ 
-          position: 'fixed', 
-          inset: 0, 
-          background: 'rgba(0,0,0,0.8)', 
-          display: 'flex', 
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflowY: 'auto',
-          zIndex: 1000 
-        }}>
-          <div className="glass-card modal-content animate-fade-in" style={{ padding: '4%', width: '90%', maxWidth: '40%' }}>
-            <h2>New Employee</h2>
-            <form onSubmit={handleCreate}>
-              <div className="input-group">
-                <label>Full Name</label>
-                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-              </div>
-              <div className="input-group">
-                <label>Email</label>
-                <input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-              </div>
-              <div className="input-group">
-                <label>Default Password</label>
-                <input type="password" required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
-              </div>
-              <div className="input-group">
-                <label>Role</label>
-                <select 
-                  style={{ width: '100%', padding: '3%', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
-                  value={formData.roleId} 
-                  onChange={e => setFormData({...formData, roleId: e.target.value})}
-                >
-                  {filteredRoles.map(r => (
-                    <option key={r.id} value={r.id}>{r.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="input-group">
-                <label>Annual Salary</label>
-                <input type="number" required value={formData.salary} onChange={e => setFormData({...formData, salary: Number(e.target.value)})} />
-              </div>
-              <div className="input-group">
-                <label>Join Timestamp</label>
-                <input type="date" value={formData.joinTimestamp} onChange={e => setFormData({...formData, joinTimestamp: e.target.value})} />
-              </div>
-              <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
-                <button type="button" className="btn" onClick={() => setShowModal(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Create Employee</button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <EmployeeForm 
+          title="New Employee" 
+          onSubmit={handleCreate} 
+          onCancel={() => setShowModal(false)} 
+          formData={formData}
+          setFormData={setFormData}
+          filteredRoles={filteredRoles}
+        />
       )}
-
-      {/* Edit Modal */}
       {isEditModalOpen && (
-        <div className="modal-overlay" style={{ 
-          position: 'fixed', 
-          inset: 0, 
-          background: 'rgba(0,0,0,0.8)', 
-          display: 'flex', 
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflowY: 'auto',
-          zIndex: 1000 
-        }}>
-          <div className="glass-card modal-content animate-fade-in" style={{ padding: '4%', width: '90%', maxWidth: '40%' }}>
-            <h2>Edit Employee</h2>
-            <form onSubmit={handleEdit}>
-              <div className="input-group">
-                <label>Full Name</label>
-                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-              </div>
-              <div className="input-group">
-                <label>Email</label>
-                <input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-              </div>
-              <div className="input-group">
-                <label>New Password (leave blank to keep current)</label>
-                <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} placeholder="********" />
-              </div>
-              <div className="input-group">
-                <label>Role</label>
-                <select 
-                  style={{ width: '100%', padding: '3%', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white' }}
-                  value={formData.roleId} 
-                  onChange={e => setFormData({...formData, roleId: e.target.value})}
-                >
-                  {filteredRoles.map(r => (
-                    <option key={r.id} value={r.id}>{r.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="input-group">
-                <label>Annual Salary</label>
-                <input type="number" required value={formData.salary} onChange={e => setFormData({...formData, salary: Number(e.target.value)})} />
-              </div>
-              <div className="input-group">
-                <label>Join Timestamp</label>
-                <input type="date" value={formData.joinTimestamp} onChange={e => setFormData({...formData, joinTimestamp: e.target.value})} />
-              </div>
-              <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
-                <button type="button" className="btn" onClick={() => setIsEditModalOpen(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Update Employee</button>
-              </div>
-            </form>
+        <EmployeeForm 
+          title="Edit Employee" 
+          onSubmit={handleEdit} 
+          onCancel={() => { setIsEditModalOpen(false); setEditingEmployee(null); }} 
+          formData={formData}
+          setFormData={setFormData}
+          filteredRoles={filteredRoles}
+        />
+      )}
+      {isDetailsModalOpen && viewingEmployee && (
+        <DetailsModal 
+          employee={viewingEmployee} 
+          onClose={() => { setIsDetailsModalOpen(false); setViewingEmployee(null); }} 
+          formatDateTime={formatDateTime}
+        />
+      )}
+    </div>
+  );
+};
+
+interface EmployeeFormProps {
+  onSubmit: (e: React.FormEvent) => void;
+  title: string;
+  onCancel: () => void;
+  formData: any;
+  setFormData: (data: any) => void;
+  filteredRoles: Role[];
+}
+
+const EmployeeForm: React.FC<EmployeeFormProps> = ({ onSubmit, title, onCancel, formData, setFormData, filteredRoles }) => (
+  <div className="modal-overlay" style={{ 
+    position: 'fixed', 
+    inset: 0, 
+    background: 'rgba(0,0,0,0.8)', 
+    display: 'flex', 
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflowY: 'auto',
+    zIndex: 1000,
+    padding: '20px'
+  }}>
+    <div className="glass-card modal-content animate-fade-in" style={{ padding: '30px', width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto' }}>
+      <h2 style={{ marginTop: 0, marginBottom: '24px' }}>{title}</h2>
+      <form onSubmit={onSubmit}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="input-group">
+              <label>Full Name <span style={{ color: 'var(--error)' }}>*</span></label>
+              <input required minLength={2} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+            </div>
+            <div className="input-group">
+              <label>Email Address <span style={{ color: 'var(--error)' }}>*</span></label>
+              <input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+            </div>
+            <div className="input-group">
+              <label>{title.includes('Edit') ? 'New Password (optional)' : 'Default Password'} <span style={{ color: 'var(--error)' }}>{!title.includes('Edit') && '*'}</span></label>
+              <input type="password" required={!title.includes('Edit')} minLength={6} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} placeholder={title.includes('Edit') ? '********' : ''} />
+            </div>
+            <div className="input-group">
+              <label>Employee ID</label>
+              <input value={formData.employeeId} onChange={e => setFormData({...formData, employeeId: e.target.value})} placeholder="EMP001" />
+            </div>
+            <div className="input-group">
+              <label>Designation</label>
+              <input value={formData.designation} onChange={e => setFormData({...formData, designation: e.target.value})} placeholder="Software Engineer" />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="input-group">
+              <label>Role <span style={{ color: 'var(--error)' }}>*</span></label>
+              <select 
+                required 
+                value={formData.roleId} 
+                onChange={e => setFormData({...formData, roleId: e.target.value})}
+              >
+                {filteredRoles.map(role => (
+                  <option key={role.id} value={role.id}>{role.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="input-group">
+              <label>Salary <span style={{ color: 'var(--error)' }}>*</span></label>
+              <input type="number" step="0.01" min="0" required value={formData.salary} onChange={e => setFormData({...formData, salary: Number(e.target.value)})} />
+            </div>
+            <div className="input-group">
+              <label>Phone Number</label>
+              <input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="+1 234 567 890" />
+            </div>
+            <div className="input-group">
+              <label>Gender</label>
+              <select value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})}>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div className="input-group">
+              <label>Marital Status</label>
+              <select value={formData.maritalStatus} onChange={e => setFormData({...formData, maritalStatus: e.target.value})}>
+                <option value="">Select Status</option>
+                <option value="Single">Single</option>
+                <option value="Married">Married</option>
+                <option value="Divorced">Divorced</option>
+              </select>
+            </div>
+            <div className="input-group">
+              <label>Date of Birth</label>
+              <input type="date" value={formData.dateOfBirth} onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} />
+            </div>
+            <div className="input-group">
+              <label>Join Date</label>
+              <input type="date" value={formData.joinTimestamp} onChange={e => setFormData({...formData, joinTimestamp: e.target.value})} />
+            </div>
           </div>
         </div>
-      )}
+
+        <div className="input-group" style={{ marginTop: '16px' }}>
+          <label>Nationality</label>
+          <input value={formData.nationality} onChange={e => setFormData({...formData, nationality: e.target.value})} placeholder="American" />
+        </div>
+
+        <div className="input-group" style={{ marginTop: '16px' }}>
+          <label>Address</label>
+          <textarea 
+            value={formData.address} 
+            onChange={e => setFormData({...formData, address: e.target.value})} 
+            style={{ width: '100%', padding: '10px', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'white', minHeight: '80px' }}
+            placeholder="123 Main St, City, Country"
+          />
+        </div>
+
+        <div style={{ display: 'flex', gap: '16px', marginTop: '30px' }}>
+          <button type="button" className="btn" onClick={onCancel} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
+          <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>{title.includes('Edit') ? 'Update Employee' : 'Create Employee'}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+);
+
+interface DetailsModalProps {
+  employee: Employee;
+  onClose: () => void;
+  formatDateTime: (ts: string | number) => string;
+}
+
+const DetailsModal: React.FC<DetailsModalProps> = ({ employee, onClose, formatDateTime }) => {
+  const { formatCurrency } = useLocale();
+  return (
+    <div className="modal-overlay" style={{ 
+      position: 'fixed', 
+      inset: 0, 
+      background: 'rgba(0,0,0,0.8)', 
+      display: 'flex', 
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflowY: 'auto',
+      zIndex: 1000,
+      padding: '20px'
+    }}>
+      <div className="glass-card modal-content animate-fade-in" style={{ padding: '30px', width: '100%', maxWidth: '700px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h2 style={{ margin: 0 }}>Employee Details</h2>
+          <button className="btn" onClick={onClose} style={{ border: '1px solid var(--glass-border)' }}>Close</button>
+        </div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <p><strong>Name:</strong> {employee.name}</p>
+              <p><strong>Employee ID:</strong> {employee.employeeId || 'N/A'}</p>
+              <p><strong>Designation:</strong> {employee.designation || 'N/A'}</p>
+              <p><strong>Email:</strong> {employee.email}</p>
+              <p><strong>Phone:</strong> {employee.phone || 'N/A'}</p>
+              <p><strong>Salary:</strong> {formatCurrency(employee.salary)}</p>
+              <p><strong>Role:</strong> {employee.role?.name}</p>
+           </div>
+           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <p><strong>Gender:</strong> {employee.gender || 'N/A'}</p>
+              <p><strong>Marital Status:</strong> {employee.maritalStatus || 'N/A'}</p>
+              <p><strong>Nationality:</strong> {employee.nationality || 'N/A'}</p>
+              <p><strong>Date of Birth:</strong> {employee.dateOfBirth ? formatDateTime(employee.dateOfBirth) : 'N/A'}</p>
+              <p><strong>Join Date:</strong> {employee.joinTimestamp ? formatDateTime(employee.joinTimestamp) : 'N/A'}</p>
+              <p><strong>Address:</strong> {employee.address || 'N/A'}</p>
+           </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -17,11 +17,19 @@ export class EmployeeService {
       ]
     } : {};
 
-    let orderByClause: any = orderBy || { createdAt: 'desc' };
+    let orderByClause: any;
     if (params.sortBy === 'role') {
-      orderByClause = { role: { name: params.sortOrder || 'asc' } };
-    } else if (orderBy) {
-      orderByClause = orderBy;
+      orderByClause = [
+        { role: { name: params.sortOrder || 'asc' } },
+        { name: 'asc' }
+      ];
+    } else if (params.sortBy) {
+      orderByClause = [
+        { [params.sortBy]: params.sortOrder || 'asc' },
+        { name: 'asc' }
+      ];
+    } else {
+      orderByClause = { createdAt: 'desc' };
     }
 
     const [employees, total] = await Promise.all([
@@ -69,12 +77,33 @@ export class EmployeeService {
   static async createEmployee(data: EmployeeInput) {
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const now = toEpoch();
+    const { 
+      joinTimestamp, 
+      dateOfBirth, 
+      employeeId, 
+      phone, 
+      address, 
+      gender, 
+      maritalStatus, 
+      nationality, 
+      designation, 
+      ...rest 
+    } = data;
+
     const employee = await prisma.employee.create({
       data: {
-        ...data,
+        ...rest,
         password: hashedPassword,
         salary: new Prisma.Decimal(data.salary),
-        joinTimestamp: data.joinTimestamp ? toEpoch(data.joinTimestamp) : null,
+        employeeId: employeeId || null,
+        phone: phone || null,
+        address: address || null,
+        gender: gender || null,
+        maritalStatus: maritalStatus || null,
+        nationality: nationality || null,
+        designation: designation || null,
+        joinTimestamp: joinTimestamp ? toEpoch(joinTimestamp) : null,
+        dateOfBirth: dateOfBirth ? toEpoch(dateOfBirth) : null,
         createdAt: now,
         updatedAt: now,
       },
@@ -93,6 +122,30 @@ export class EmployeeService {
     }
     if (data.joinTimestamp !== undefined) {
       updateData.joinTimestamp = data.joinTimestamp ? toEpoch(data.joinTimestamp) : null;
+    }
+    if (data.dateOfBirth !== undefined) {
+      updateData.dateOfBirth = data.dateOfBirth ? toEpoch(data.dateOfBirth) : null;
+    }
+    if (data.designation === "") {
+      updateData.designation = null;
+    }
+    if (data.phone === "") {
+      updateData.phone = null;
+    }
+    if (data.employeeId === "") {
+      updateData.employeeId = null;
+    }
+    if (data.address === "") {
+      updateData.address = null;
+    }
+    if (data.gender === "") {
+      updateData.gender = null;
+    }
+    if (data.maritalStatus === "") {
+      updateData.maritalStatus = null;
+    }
+    if (data.nationality === "") {
+      updateData.nationality = null;
     }
     const employee = await prisma.employee.update({
       where: { id },

@@ -7,6 +7,14 @@ export const EmployeeSchema = z.object({
   roleId: z.string(),
   salary: z.number().nonnegative(),
   joinTimestamp: z.string().optional(),
+  employeeId: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  gender: z.string().optional(),
+  maritalStatus: z.string().optional(),
+  nationality: z.string().optional(),
+  dateOfBirth: z.string().optional(),
+  designation: z.string().optional(),
 });
 
 export type EmployeeInput = z.infer<typeof EmployeeSchema>;

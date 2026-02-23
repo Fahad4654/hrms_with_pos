@@ -7,6 +7,7 @@ router.use(authenticate);
 
 router.get('/', ProductController.getAll);
 router.post('/', authorizePermission(['inventory', 'categories']), ProductController.create);
+router.post('/bulk', authorizePermission(['inventory', 'categories']), ProductController.bulkCreate);
 router.patch('/:id/inventory', authorizePermission(['inventory', 'pos']), ProductController.updateStock);
 router.put('/:id', authorizePermission(['inventory']), ProductController.update);
 router.delete('/:id', authorizePermission(['inventory']), ProductController.delete);

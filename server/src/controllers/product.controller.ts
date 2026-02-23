@@ -57,4 +57,17 @@ export class ProductController {
       res.status(400).json({ message: error.message });
     }
   }
+
+  static async bulkCreate(req: Request, res: Response) {
+    try {
+      const products = req.body;
+      if (!Array.isArray(products)) {
+        return res.status(400).json({ message: 'Input must be an array of products' });
+      }
+      const result = await ProductService.bulkCreateProducts(products);
+      res.status(201).json(result);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  }
 }

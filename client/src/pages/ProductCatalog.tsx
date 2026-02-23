@@ -3,6 +3,7 @@ import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import { useLocale } from '../context/LocaleContext';
+import * as XLSX from 'xlsx';
 
 interface Product {
   id: string;
@@ -32,7 +33,9 @@ const ProductCatalog: React.FC = () => {
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [formData, setFormData] = useState({ sku: '', name: '', categoryId: '', price: 0, stockLevel: 0 });
+  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -149,6 +152,32 @@ const ProductCatalog: React.FC = () => {
     setShowModal(true);
   };
 
+  const handleBulkImport = async (products: any[]) => {
+    setIsImporting(true);
+    try {
+      await api.post('/products/bulk', products);
+      showToast('Products imported successfully', 'success');
+      setShowImportModal(false);
+      fetchProducts();
+    } catch (error: any) {
+      console.error('Failed to import products', error);
+      showToast(error.response?.data?.message || 'Failed to import products', 'error');
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  const downloadExample = () => {
+    const data = [
+      { SKU: 'PROD001', Name: 'Example Product', Category: 'Electronics', Price: 29.99, Stock: 100 },
+      { SKU: 'PROD002', Name: 'Another Item', Category: 'Home', Price: 15.50, Stock: 50 },
+    ];
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Products");
+    XLSX.writeFile(wb, "products_import_template.xlsx");
+  };
+
   const handleDelete = async (id: string) => {
     const isConfirmed = await confirm({
       title: 'Delete Product',
@@ -184,6 +213,7 @@ const ProductCatalog: React.FC = () => {
             />
             <button type="submit" className="btn btn-primary">Search</button>
           </form>
+          <button className="btn" onClick={() => setShowImportModal(true)} style={{ border: '1px solid var(--glass-border)' }}>Import Products</button>
           <button className="btn btn-primary" onClick={openCreateModal}>+ New Product</button>
         </div>
       </div>
@@ -384,6 +414,86 @@ const ProductCatalog: React.FC = () => {
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>{editingProduct ? 'Update Product' : 'Create Product'}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Bulk Import Modal */}
+      {showImportModal && (
+        <div className="modal-overlay">
+          <div className="glass-card modal-content animate-fade-in" style={{ padding: '30px', width: '90%', maxWidth: '500px' }}>
+            <h2 style={{ marginBottom: '20px' }}>Import Products</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
+              Upload an Excel (.xlsx) or CSV file with columns: <strong>SKU, Name, Category, Price, Stock</strong>.
+            </p>
+            
+            <div 
+              style={{ 
+                border: '2px dashed var(--glass-border)', 
+                borderRadius: '12px', 
+                padding: '40px 20px', 
+                textAlign: 'center',
+                marginBottom: '20px',
+                cursor: 'pointer'
+              }}
+              onClick={() => document.getElementById('fileInput')?.click()}
+            >
+              <input 
+                id="fileInput"
+                type="file" 
+                accept=".xlsx, .xls, .csv" 
+                style={{ display: 'none' }} 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  
+                  const reader = new FileReader();
+                  reader.onload = (evt) => {
+                    const bstr = evt.target?.result;
+                    const wb = XLSX.read(bstr, { type: 'binary' });
+                    const wsname = wb.SheetNames[0];
+                    const ws = wb.Sheets[wsname];
+                    const data = XLSX.utils.sheet_to_json(ws);
+                    
+                    // Map headers to backend format
+                    const mappedData = data.map((item: any) => ({
+                      sku: item.SKU || item.sku,
+                      name: item.Name || item.name,
+                      category: item.Category || item.category,
+                      price: Number(item.Price || item.price),
+                      stockLevel: Number(item.Stock || item.stock || item.stockLevel)
+                    })).filter(p => p.sku && p.name && p.category);
+
+                    if (mappedData.length === 0) {
+                      showToast('No valid products found in file', 'error');
+                      return;
+                    }
+
+                    handleBulkImport(mappedData);
+                  };
+                  reader.readAsBinaryString(file);
+                }}
+              />
+              <p style={{ margin: 0 }}>{isImporting ? 'Importing...' : 'Click to Upload Excel or CSV'}</p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button 
+                className="btn" 
+                onClick={downloadExample} 
+                style={{ flex: 1, border: '1px solid var(--glass-border)' }}
+                disabled={isImporting}
+              >
+                Download Template
+              </button>
+              <button 
+                className="btn" 
+                onClick={() => setShowImportModal(false)}
+                style={{ flex: 1, border: '1px solid var(--glass-border)' }}
+                disabled={isImporting}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

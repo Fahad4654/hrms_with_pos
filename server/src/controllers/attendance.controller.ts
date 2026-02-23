@@ -47,7 +47,7 @@ export class AttendanceController {
       const startDate = req.query.startDate as string | undefined;
       const endDate = req.query.endDate as string | undefined;
       
-      const logs = await AttendanceService.getAttendanceLogs(employeeId, startDate, endDate);
+      const logs = await AttendanceService.getAttendanceLogs(employeeId as string, startDate, endDate);
       res.json(logs);
     } catch (error: any) {
       res.status(500).json({ message: error.message });

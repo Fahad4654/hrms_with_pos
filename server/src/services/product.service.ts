@@ -97,4 +97,61 @@ export class ProductService {
       where: { id },
     });
   }
+
+  static async bulkCreateProducts(products: any[]) {
+    const now = toEpoch();
+    const results = [];
+
+    // Group by category to minimize queries
+    const categoryNames = [...new Set(products.map(p => p.category))];
+    const categoryMap: Record<string, string> = {};
+
+    for (const name of categoryNames) {
+      if (!name) continue;
+      let category = await prisma.category.findUnique({ where: { name: String(name) } });
+      if (!category) {
+        category = await prisma.category.create({
+          data: {
+            name: String(name),
+            createdAt: now,
+            updatedAt: now
+          }
+        });
+      }
+      categoryMap[String(name)] = category.id;
+    }
+
+    // Prepare products for insertion
+    for (const p of products) {
+      const categoryId = categoryMap[p.category] || null;
+      if (!categoryId) continue;
+
+      try {
+        const created = await prisma.product.upsert({
+          where: { sku: p.sku },
+          update: {
+            name: p.name,
+            price: new Prisma.Decimal(p.price),
+            stockLevel: p.stockLevel,
+            categoryId,
+            updatedAt: now,
+          },
+          create: {
+            sku: p.sku,
+            name: p.name,
+            price: new Prisma.Decimal(p.price),
+            stockLevel: p.stockLevel,
+            categoryId,
+            createdAt: now,
+            updatedAt: now,
+          }
+        });
+        results.push(created);
+      } catch (error) {
+        console.error(`Failed to import product ${p.sku}:`, error);
+      }
+    }
+
+    return serializeBigInt(results);
+  }
 }

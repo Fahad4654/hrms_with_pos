@@ -24,9 +24,17 @@ enum LeaveStatus {
 
 model Employee {
   id            String         @id @default(uuid())
+  employeeId    String?        @unique @default(cuid())
   email         String         @unique
   password      String
   name          String
+  phone         String?
+  address       String?
+  gender        String?
+  maritalStatus String?
+  nationality   String?
+  dateOfBirth   BigInt?
+  designation   String?
   roleId        String
   role          Role           @relation(fields: [roleId], references: [id])
   salary        Decimal        @default(0)
