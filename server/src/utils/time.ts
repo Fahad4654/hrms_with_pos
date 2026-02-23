@@ -58,6 +58,7 @@ export const serializeBigInt = (obj: any): any => {
   if (typeof obj === 'bigint') return Number(obj);
   if (Array.isArray(obj)) return obj.map(serializeBigInt);
   if (typeof obj === 'object') {
+    if (obj instanceof Date) return obj;
     const newObj: any = {};
     for (const key in obj) {
       newObj[key] = serializeBigInt(obj[key]);

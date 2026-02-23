@@ -4,6 +4,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
+// Global BigInt serialization fix
+(BigInt.prototype as any).toJSON = function () {
+  return Number(this);
+};
+
 import authRoutes from './routes/auth.routes.js';
 import employeeRoutes from './routes/employee.routes.js';
 import attendanceRoutes from './routes/attendance.routes.js';

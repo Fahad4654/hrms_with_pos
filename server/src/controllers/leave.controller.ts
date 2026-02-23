@@ -7,10 +7,18 @@ export class LeaveController {
   static async request(req: AuthRequest, res: Response) {
     try {
       if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
+      
+      const { startTimestamp, endTimestamp, type, reason } = req.body;
+      
+      if (!startTimestamp || !endTimestamp) {
+        throw new Error('Start date and end date are required');
+      }
+
       const leave = await LeaveService.requestLeave(req.user.id, {
-        ...req.body,
-        startTimestamp: new Date(req.body.startTimestamp),
-        endTimestamp: new Date(req.body.endTimestamp),
+        type,
+        reason,
+        startTimestamp: new Date(startTimestamp),
+        endTimestamp: new Date(endTimestamp),
       });
       res.status(201).json(leave);
     } catch (error: any) {

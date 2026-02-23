@@ -35,8 +35,8 @@ const LeaveManagement: React.FC = () => {
 
   // Form State
   const [formData, setFormData] = useState({
-    startTimestamp: '',
-    endTimestamp: '',
+    startDate: '', // using startDate/endDate for internal state to match <input type="date"> behavior
+    endDate: '',
     type: '',
     reason: ''
   });
@@ -115,8 +115,12 @@ const LeaveManagement: React.FC = () => {
     e.preventDefault();
     
     // 1. Date Validation
-    const start = new Date(formData.startTimestamp);
-    const end = new Date(formData.endTimestamp);
+    if (!formData.startDate || !formData.endDate) {
+      showToast('Please select both start and end dates', 'error');
+      return;
+    }
+    const start = new Date(formData.startDate);
+    const end = new Date(formData.endDate);
     if (start > end) {
       showToast('Start date cannot be later than end date', 'error');
       return;
@@ -134,11 +138,16 @@ const LeaveManagement: React.FC = () => {
 
     setSubmitting(true);
     try {
-      await api.post('/leaves/request', formData);
+      const payload = {
+        ...formData,
+        startTimestamp: start.toISOString(),
+        endTimestamp: end.toISOString()
+      };
+      await api.post('/leaves/request', payload);
       showToast('Leave request submitted successfully', 'success');
       setFormData({ 
-        startTimestamp: '', 
-        endTimestamp: '', 
+        startDate: '', 
+        endDate: '', 
         type: leaveTypes[0]?.name || '', 
         reason: '' 
       });

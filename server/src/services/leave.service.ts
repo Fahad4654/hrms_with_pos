@@ -14,6 +14,10 @@ export class LeaveService {
       throw new Error('Start date cannot be later than end date');
     }
 
+    if (!start.isValid() || !end.isValid()) {
+      throw new Error('Invalid date range provided');
+    }
+
     const duration = end.diff(start, 'day') + 1;
 
     // 2. Quota Validation
@@ -45,11 +49,18 @@ export class LeaveService {
     }
 
     const now = BigInt(toEpoch());
-    const request = await prisma.leaveRequest.create({
+    const startVal = start.valueOf();
+    const endVal = end.valueOf();
+
+    if (isNaN(startVal) || isNaN(endVal)) {
+      throw new Error('Failed to process dates for BigInt conversion');
+    }
+
+    const request = await (prisma.leaveRequest as any).create({
       data: {
         employeeId,
-        startTimestamp: BigInt(start.valueOf()),
-        endTimestamp: BigInt(end.valueOf()),
+        startTimestamp: BigInt(startVal),
+        endTimestamp: BigInt(endVal),
         type: data.type,
         reason: data.reason ?? null,
         status: LeaveStatus.PENDING,
