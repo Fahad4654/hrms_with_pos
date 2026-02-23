@@ -191,6 +191,12 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
               permission: "categories",
             },
             {
+              label: "Companies",
+              icon: "🏢",
+              to: "/companies",
+              permission: "inventory",
+            },
+            {
               label: "Inventory",
               icon: "📦",
               to: "/products",

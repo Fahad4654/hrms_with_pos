@@ -14,8 +14,20 @@ interface Product {
     id: string;
     name: string;
   };
+  companyId: string | null;
+  company: {
+    id: string;
+    name: string;
+  } | null;
   price: number;
   stockLevel: number;
+  features: string | null;
+  image: string | null;
+}
+
+interface ProductCompany {
+  id: string;
+  name: string;
 }
 
 interface Category {
@@ -28,19 +40,39 @@ const ProductCatalog: React.FC = () => {
   const { confirm } = useConfirm();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [companies, setCompanies] = useState<ProductCompany[]>([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showModal, setShowModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [formData, setFormData] = useState({ sku: '', name: '', categoryId: '', price: 0, stockLevel: 0 });
+  const [formData, setFormData] = useState({ 
+    sku: '', 
+    name: '', 
+    categoryId: '', 
+    companyId: '', 
+    price: 0, 
+    stockLevel: 0,
+    features: '',
+    image: ''
+  });
   const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
+    fetchCompanies();
   }, [meta.page, meta.limit, sortBy, sortOrder]);
+
+  const fetchCompanies = async () => {
+    try {
+      const { data } = await api.get('/companies', { params: { limit: 1000 } });
+      setCompanies(data.data || []);
+    } catch (error) {
+      console.error('Failed to fetch companies', error);
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -107,7 +139,16 @@ const ProductCatalog: React.FC = () => {
     try {
       await api.post('/products', formData);
       setShowModal(false);
-      setFormData({ sku: '', name: '', categoryId: categories[0]?.id || '', price: 0, stockLevel: 0 });
+      setFormData({ 
+        sku: '', 
+        name: '', 
+        categoryId: categories[0]?.id || '', 
+        companyId: companies[0]?.id || '', 
+        price: 0, 
+        stockLevel: 0,
+        features: '',
+        image: ''
+      });
       fetchProducts();
       showToast('Product created successfully', 'success');
     } catch (error: any) {
@@ -124,7 +165,16 @@ const ProductCatalog: React.FC = () => {
       await api.put(`/products/${editingProduct.id}`, formData);
       setShowModal(false);
       setEditingProduct(null);
-      setFormData({ sku: '', name: '', categoryId: categories[0]?.id || '', price: 0, stockLevel: 0 });
+      setFormData({ 
+        sku: '', 
+        name: '', 
+        categoryId: categories[0]?.id || '', 
+        companyId: companies[0]?.id || '', 
+        price: 0, 
+        stockLevel: 0,
+        features: '',
+        image: ''
+      });
       fetchProducts();
       showToast('Product updated successfully', 'success');
     } catch (error: any) {
@@ -140,15 +190,27 @@ const ProductCatalog: React.FC = () => {
       sku: product.sku,
       name: product.name,
       categoryId: product.categoryId,
+      companyId: product.companyId || '',
       price: Number(Number(product.price).toFixed(2)),
-      stockLevel: product.stockLevel
+      stockLevel: product.stockLevel,
+      features: product.features || '',
+      image: product.image || ''
     });
     setShowModal(true);
   };
 
   const openCreateModal = () => {
     setEditingProduct(null);
-    setFormData({ sku: '', name: '', categoryId: categories[0]?.id || '', price: 0, stockLevel: 0 });
+    setFormData({ 
+      sku: '', 
+      name: '', 
+      categoryId: categories[0]?.id || '', 
+      companyId: '', 
+      price: 0, 
+      stockLevel: 0,
+      features: '',
+      image: ''
+    });
     setShowModal(true);
   };
 
@@ -167,10 +229,41 @@ const ProductCatalog: React.FC = () => {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      showToast('Preparing full export...', 'info');
+      // Fetch all products (high limit to ensure everything is captured)
+      const { data } = await api.get('/products', {
+        params: { limit: 10000 }
+      });
+      
+      const allProducts = data.data || [];
+      
+      const exportData = allProducts.map((p: Product) => ({
+        'SKU': p.sku,
+        'Name': p.name,
+        'Category': p.category?.name || 'N/A',
+        'Company': p.company?.name || 'N/A',
+        'Price': p.price,
+        'Stock': p.stockLevel,
+        'Features': p.features || ''
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Inventory");
+      XLSX.writeFile(wb, "inventory_export.xlsx");
+      showToast('Inventory exported successfully', 'success');
+    } catch (error) {
+      console.error('Export failed', error);
+      showToast('Failed to export inventory', 'error');
+    }
+  };
+
   const downloadExample = () => {
     const data = [
-      { SKU: 'PROD001', Name: 'Example Product', Category: 'Electronics', Price: 29.99, Stock: 100 },
-      { SKU: 'PROD002', Name: 'Another Item', Category: 'Home', Price: 15.50, Stock: 50 },
+      { SKU: 'PROD001', Name: 'Example Product', Category: 'Electronics', Company: 'Sony', Price: 29.99, Stock: 100, Features: 'High quality features' },
+      { SKU: '', Name: 'Auto SKU Item', Category: 'Home', Company: 'Samsung', Price: 15.50, Stock: 50, Features: 'Leave SKU empty to auto-generate' },
     ];
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -214,6 +307,7 @@ const ProductCatalog: React.FC = () => {
             <button type="submit" className="btn btn-primary">Search</button>
           </form>
           <button className="btn" onClick={() => setShowImportModal(true)} style={{ border: '1px solid var(--glass-border)' }}>Import Products</button>
+          <button className="btn" onClick={handleExport} style={{ border: '1px solid var(--glass-border)' }}>Export Inventory</button>
           <button className="btn btn-primary" onClick={openCreateModal}>+ New Product</button>
         </div>
       </div>
@@ -231,6 +325,9 @@ const ProductCatalog: React.FC = () => {
               <th onClick={() => toggleSort('category')} style={{ padding: '2% 3%', cursor: 'pointer', width: '15%' }}>
                 Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
+              <th onClick={() => toggleSort('company')} style={{ padding: '2% 3%', cursor: 'pointer', width: '15%' }}>
+                Company {sortBy === 'company' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
               <th onClick={() => toggleSort('price')} style={{ padding: '2% 3%', cursor: 'pointer', width: '10%' }}>
                 Price {sortBy === 'price' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
@@ -247,9 +344,10 @@ const ProductCatalog: React.FC = () => {
             ) : (
               products.map(product => (
                 <tr key={product.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: '2% 3%', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{product.sku}</td>
+                  <td style={{ padding: '2% 3%', fontWeight: '600', color: 'var(--primary)' }}>{product.sku}</td>
                   <td style={{ padding: '2% 3%', fontWeight: '500' }}>{product.name}</td>
                   <td style={{ padding: '2% 3%' }}>{product.category?.name || 'N/A'}</td>
+                  <td style={{ padding: '2% 3%' }}>{product.company?.name || 'N/A'}</td>
                   <td style={{ padding: '2% 3%', fontWeight: 'bold' }}>{useLocale().formatCurrency(product.price)}</td>
                   <td style={{ padding: '2% 3%' }}>{product.stockLevel} units</td>
                   <td style={{ padding: '2% 3%' }}>
@@ -380,8 +478,8 @@ const ProductCatalog: React.FC = () => {
             <form onSubmit={editingProduct ? handleUpdate : handleCreate}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4%' }}>
                 <div className="input-group">
-                  <label>SKU</label>
-                  <input required value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} />
+                  <label>SKU (Leave empty to auto-generate)</label>
+                  <input value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} placeholder="e.g. SKU-1234" />
                 </div>
                 <div className="input-group">
                   <label>Category</label>
@@ -395,9 +493,23 @@ const ProductCatalog: React.FC = () => {
                   </select>
                 </div>
               </div>
-              <div className="input-group">
-                <label>Product Name</label>
-                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4%' }}>
+                <div className="input-group">
+                  <label>Company / Brand</label>
+                  <select 
+                    value={formData.companyId} 
+                    onChange={e => setFormData({...formData, companyId: e.target.value})}
+                  >
+                    <option value="">Select Company</option>
+                    {companies.map(comp => (
+                      <option key={comp.id} value={comp.id}>{comp.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="input-group">
+                  <label>Product Name</label>
+                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4%' }}>
                 <div className="input-group">
@@ -405,9 +517,21 @@ const ProductCatalog: React.FC = () => {
                   <input type="number" step="0.01" required value={formData.price} onChange={e => setFormData({...formData, price: Number(e.target.value)})} />
                 </div>
                 <div className="input-group">
-                  <label>Initial Stock</label>
-                  <input type="number" required value={formData.stockLevel} onChange={e => setFormData({...formData, stockLevel: Number(e.target.value)})} />
+                   <label>Stock Level</label>
+                   <input type="number" required value={formData.stockLevel} onChange={e => setFormData({...formData, stockLevel: Number(e.target.value)})} />
                 </div>
+              </div>
+              <div className="input-group">
+                <label>Features / Description</label>
+                <textarea 
+                  value={formData.features} 
+                  onChange={e => setFormData({...formData, features: e.target.value})}
+                  style={{ width: '100%', minHeight: '80px', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
+                />
+              </div>
+              <div className="input-group">
+                <label>Image URL / Path</label>
+                <input value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} placeholder="https://..." />
               </div>
               <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
                 <button type="button" className="btn" onClick={() => setShowModal(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
@@ -423,7 +547,7 @@ const ProductCatalog: React.FC = () => {
           <div className="glass-card modal-content animate-fade-in" style={{ padding: '30px', width: '90%', maxWidth: '500px' }}>
             <h2 style={{ marginBottom: '20px' }}>Import Products</h2>
             <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
-              Upload an Excel (.xlsx) or CSV file with columns: <strong>SKU, Name, Category, Price, Stock</strong>.
+              Upload an Excel (.xlsx) or CSV file with columns: <strong>SKU, Name, Category, Company, Price, Stock, Features</strong>.
             </p>
             
             <div 
@@ -456,12 +580,14 @@ const ProductCatalog: React.FC = () => {
                     
                     // Map headers to backend format
                     const mappedData = data.map((item: any) => ({
-                      sku: item.SKU || item.sku,
-                      name: item.Name || item.name,
-                      category: item.Category || item.category,
-                      price: Number(item.Price || item.price),
-                      stockLevel: Number(item.Stock || item.stock || item.stockLevel)
-                    })).filter(p => p.sku && p.name && p.category);
+                      sku: item.SKU || item.sku || '',
+                      name: item.Name || item.name || item['Product Name'] || '',
+                      category: item.Category || item.category || '',
+                      company: item.Company || item.company || '',
+                      price: Number(item.Price || item.price || 0),
+                      stockLevel: Number(item.Stock || item.stock || item.stockLevel || 0),
+                      features: item.Features || item.features || ''
+                    })).filter(p => p.name && p.category);
 
                     if (mappedData.length === 0) {
                       showToast('No valid products found in file', 'error');

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 import bcrypt from 'bcrypt';
@@ -64,6 +64,22 @@ async function main() {
     dbCategories.push(cat);
   }
 
+  // Seed Companies
+  const companyNames = ['Sony', 'Apple', 'Dell', 'Logitech', 'Samsung'];
+  const dbCompanies: any[] = [];
+  for (const name of companyNames) {
+    const company = await prisma.productCompany.upsert({
+      where: { name },
+      update: { updatedAt: BigInt(now) },
+      create: { 
+        name,
+        createdAt: BigInt(now),
+        updatedAt: BigInt(now)
+      },
+    });
+    dbCompanies.push(company);
+  }
+
   // Seed 100 Employees
   for (let i = 1; i <= 100; i++) {
     const email = `employee${i}@example.com`;
@@ -94,25 +110,49 @@ async function main() {
 
   // Seed 100 Products
   for (let i = 1; i <= 100; i++) {
-    const sku = `SKU-${1000 + i}`;
+    const sku = `SKU-${String(i).padStart(4, '0')}`;
     const category = dbCategories[i % dbCategories.length];
+    const company = dbCompanies[i % dbCompanies.length];
+    
     await prisma.product.upsert({
       where: { sku },
       update: { 
         categoryId: category.id,
+        companyId: company.id,
         updatedAt: BigInt(now)
       },
       create: {
         sku,
         name: `Product ${i}`,
         categoryId: category.id,
-        price: 10 + (Math.random() * 90),
+        companyId: company.id,
+        price: new Prisma.Decimal(10 + (Math.random() * 90)),
         stockLevel: Math.floor(Math.random() * 100),
+        features: `Detailed features for product ${i}. Focus on quality and performance.`,
+        image: `https://picsum.photos/seed/prod${i}/400/300`,
         createdAt: BigInt(now),
         updatedAt: BigInt(now)
       },
     });
   }
+
+  // Seed Company Settings
+  await prisma.companySettings.upsert({
+    where: { id: 'default-settings' },
+    update: { updatedAt: BigInt(now) },
+    create: {
+      id: 'default-settings',
+      companyName: 'Apex Solutions',
+      workDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      workStartTime: '09:00',
+      workEndTime: '17:00',
+      enableOvertime: true,
+      country: 'US',
+      timezone: 'America/New_York',
+      currency: 'USD',
+      updatedAt: BigInt(now)
+    }
+  });
 
   console.log('Seed completed successfully');
 }

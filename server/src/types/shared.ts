@@ -19,12 +19,21 @@ export const EmployeeSchema = z.object({
 
 export type EmployeeInput = z.infer<typeof EmployeeSchema>;
 
+export const ProductCompanySchema = z.object({
+  name: z.string().min(2),
+});
+
+export type ProductCompanyInput = z.infer<typeof ProductCompanySchema>;
+
 export const ProductSchema = z.object({
-  sku: z.string().min(3),
+  sku: z.string().optional(),
   name: z.string().min(2),
   categoryId: z.string(),
+  companyId: z.string().optional(),
   price: z.number().positive(),
   stockLevel: z.number().int().nonnegative(),
+  features: z.string().optional(),
+  image: z.string().optional(),
 });
 
 export type ProductInput = z.infer<typeof ProductSchema>;

@@ -78,14 +78,26 @@ model Category {
   updatedAt BigInt
 }
 
+model ProductCompany {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  products  Product[]
+  createdAt BigInt
+  updatedAt BigInt
+}
+
 model Product {
-  id          String     @id @default(uuid())
-  sku         String     @unique
+  id          String         @id @default(uuid())
+  sku         String         @unique
   name        String
   categoryId  String
-  category    Category   @relation(fields: [categoryId], references: [id])
+  category    Category       @relation(fields: [categoryId], references: [id])
+  companyId   String?
+  company     ProductCompany? @relation(fields: [companyId], references: [id])
   price       Decimal
-  stockLevel  Int        @default(0)
+  stockLevel  Int            @default(0)
+  features    String?        @db.Text
+  image       String?        @db.Text
   createdAt   BigInt
   updatedAt   BigInt
   saleItems   SaleItem[]

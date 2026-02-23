@@ -18,6 +18,7 @@ import saleRoutes from './routes/sale.routes.js';
 import biRoutes from './routes/bi.routes.js';
 import roleRoutes from './routes/role.routes.js';
 import categoryRoutes from './routes/category.routes.js';
+import companyRoutes from './routes/company.routes.js';
 
 
 
@@ -44,6 +45,7 @@ app.use('/api/sales', saleRoutes);
 app.use('/api/bi', biRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/companies', companyRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

@@ -31,7 +31,7 @@ export class ProductService {
         skip,
         take,
         orderBy: orderByClause,
-        include: { category: true },
+        include: { category: true, company: true },
       }),
       prisma.product.count({ where }),
     ]);
@@ -55,15 +55,42 @@ export class ProductService {
 
   static async createProduct(data: ProductInput) {
     const now = toEpoch();
+    
+    // Auto-generate sku if not provided
+    let sku = data.sku;
+    if (!sku) {
+      const lastProduct = await prisma.product.findFirst({
+        where: { sku: { startsWith: 'SKU-' } },
+        orderBy: { sku: 'desc' },
+        select: { sku: true }
+      });
+      
+      let nextNum = 1;
+      if (lastProduct?.sku?.startsWith('SKU-')) {
+        const parts = lastProduct.sku.split('-');
+        if (parts.length > 1 && parts[1]) {
+          const currentNum = parseInt(parts[1]);
+          if (!isNaN(currentNum)) nextNum = currentNum + 1;
+        }
+      }
+      sku = `SKU-${String(nextNum).padStart(4, '0')}`;
+    }
+
+    const { companyId, features, image, ...rest } = data;
+
     const product = await prisma.product.create({
       data: {
-        ...data,
+        ...rest,
+        sku,
+        companyId: companyId || null,
+        features: features || null,
+        image: image || null,
         price: new Prisma.Decimal(data.price),
         stockLevel: data.stockLevel || 0,
         createdAt: now,
         updatedAt: now,
       },
-      include: { category: true },
+      include: { category: true, company: true },
     });
     return serializeBigInt(product);
   }
@@ -80,14 +107,19 @@ export class ProductService {
   }
 
   static async updateProduct(id: string, data: Partial<ProductInput>) {
-    const updateData: any = { ...data, updatedAt: toEpoch() };
-    if (data.price !== undefined) {
-      updateData.price = String(data.price);
+    const { price, companyId, features, image, ...rest } = data;
+    const updateData: any = { ...rest, updatedAt: toEpoch() };
+    if (price !== undefined) {
+      updateData.price = String(price);
     }
+    if (companyId !== undefined) updateData.companyId = companyId || null;
+    if (features !== undefined) updateData.features = features || null;
+    if (image !== undefined) updateData.image = image || null;
+    
     const product = await prisma.product.update({
       where: { id },
       data: updateData,
-      include: { category: true },
+      include: { category: true, company: true },
     });
     return serializeBigInt(product);
   }
@@ -121,10 +153,27 @@ export class ProductService {
       categoryMap[String(name)] = category.id;
     }
 
+    // Get last sku number for sequential coding in bulk
+    const lastProduct = await prisma.product.findFirst({
+      where: { sku: { startsWith: 'SKU-' } },
+      orderBy: { sku: 'desc' },
+      select: { sku: true }
+    });
+    let nextNum = 1;
+    if (lastProduct?.sku?.startsWith('SKU-')) {
+      const parts = lastProduct.sku.split('-');
+      if (parts.length > 1 && parts[1]) {
+        const currentNum = parseInt(parts[1]);
+        if (!isNaN(currentNum)) nextNum = currentNum + 1;
+      }
+    }
+
     // Prepare products for insertion
     for (const p of products) {
       const categoryId = categoryMap[p.category] || null;
       if (!categoryId) continue;
+
+      const sku = p.sku || `SKU-${String(nextNum++).padStart(4, '0')}`;
 
       try {
         const created = await prisma.product.upsert({
@@ -137,7 +186,7 @@ export class ProductService {
             updatedAt: now,
           },
           create: {
-            sku: p.sku,
+            sku,
             name: p.name,
             price: new Prisma.Decimal(p.price),
             stockLevel: p.stockLevel,

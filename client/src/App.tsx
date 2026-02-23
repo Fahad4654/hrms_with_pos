@@ -12,6 +12,7 @@ import LeaveApprovals from './pages/LeaveApprovals';
 import SystemConfig from './pages/SystemConfig';
 import ProductCatalog from './pages/ProductCatalog';
 import Categories from './pages/Categories';
+import Companies from './pages/Companies';
 import POSTerminal from './pages/POSTerminal';
 import SalesHistory from './pages/SalesHistory';
 import Analytics from './pages/Analytics';
@@ -69,6 +70,11 @@ const App: React.FC = () => {
           <Route path="/categories" element={
             <ProtectedRoute permission="categories">
               <Dashboard><Categories /></Dashboard>
+            </ProtectedRoute>
+          } />
+          <Route path="/companies" element={
+            <ProtectedRoute permission="inventory">
+              <Dashboard><Companies /></Dashboard>
             </ProtectedRoute>
           } />
           <Route path="/pos" element={
