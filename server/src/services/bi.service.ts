@@ -1,13 +1,15 @@
 import prisma from '../config/prisma.js';
+import { toEpoch, serializeBigInt } from '../utils/time.js';
+import dayjs from 'dayjs';
 
 export class BIService {
-  static async calculateCommissions(employeeId: string, startDate: Date, endDate: Date, commissionRate: number = 0.05) {
+  static async calculateCommissions(employeeId: string, startDate: Date | number, endDate: Date | number, commissionRate: number = 0.05) {
     const sales = await prisma.sale.findMany({
       where: {
         employeeId,
         timestamp: {
-          gte: startDate,
-          lte: endDate,
+          gte: BigInt(toEpoch(startDate)),
+          lte: BigInt(toEpoch(endDate)),
         },
       },
     });
@@ -32,7 +34,7 @@ export class BIService {
     });
 
     const totalHours = allAttendance.reduce((sum, log) => {
-      const duration = (log.clockOutTimestamp!.getTime() - log.clockInTimestamp.getTime()) / (1000 * 60 * 60);
+      const duration = (Number(log.clockOutTimestamp!) - Number(log.clockInTimestamp)) / (1000 * 60 * 60);
       return sum + duration;
     }, 0);
 
@@ -50,27 +52,29 @@ export class BIService {
 
     if (!employee) throw new Error('Employee not found');
 
-    const startDate = new Date(year, month, 1);
-    const endDate = new Date(year, month + 1, 0);
+    const startMonth = dayjs().year(year).month(month).startOf('month');
+    const endMonth = dayjs().year(year).month(month).endOf('month');
 
     // 1. Base Pay
     const basePay = Number(employee.salary);
 
     // 2. Commissions (assume 5% for now)
-    const commissions = await this.calculateCommissions(employeeId, startDate, endDate);
+    const commissions = await this.calculateCommissions(employeeId, startMonth.valueOf(), endMonth.valueOf());
 
     // 3. Deductions for Unpaid Leaves
     const leaves = await prisma.leaveRequest.findMany({
       where: {
         employeeId,
         status: 'APPROVED',
-        startTimestamp: { gte: startDate },
-        endTimestamp: { lte: endDate },
+        startTimestamp: { gte: BigInt(startMonth.valueOf()) },
+        endTimestamp: { lte: BigInt(endMonth.valueOf()) },
         type: 'UNPAID',
       },
     });
     const unpaidDays = leaves.reduce((sum, leave) => {
-      const days = (leave.endTimestamp.getTime() - leave.startTimestamp.getTime()) / (1000 * 60 * 60 * 24) + 1;
+      const s = dayjs(Number(leave.startTimestamp)).startOf('day');
+      const e = dayjs(Number(leave.endTimestamp)).startOf('day');
+      const days = e.diff(s, 'day') + 1;
       return sum + days;
     }, 0);
 

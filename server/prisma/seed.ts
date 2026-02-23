@@ -14,20 +14,36 @@ async function main() {
   const password = await bcrypt.hash('password123', saltRounds);
 
   // Seed Roles
+  const now = Date.now();
   const adminRole = await prisma.role.upsert({
     where: { name: 'ADMIN' },
-    update: {},
-    create: { name: 'ADMIN', permissions: ['all'] },
+    update: { updatedAt: BigInt(now) },
+    create: { 
+      name: 'ADMIN', 
+      permissions: ['all'],
+      createdAt: BigInt(now),
+      updatedAt: BigInt(now)
+    },
   });
   const managerRole = await prisma.role.upsert({
     where: { name: 'MANAGER' },
-    update: {},
-    create: { name: 'MANAGER', permissions: ['employees', 'attendance', 'products', 'sales', 'analytics'] },
+    update: { updatedAt: BigInt(now) },
+    create: { 
+      name: 'MANAGER', 
+      permissions: ['employees', 'attendance', 'products', 'sales', 'analytics'],
+      createdAt: BigInt(now),
+      updatedAt: BigInt(now)
+    },
   });
   const staffRole = await prisma.role.upsert({
     where: { name: 'STAFF' },
-    update: {},
-    create: { name: 'STAFF', permissions: ['attendance', 'pos'] },
+    update: { updatedAt: BigInt(now) },
+    create: { 
+      name: 'STAFF', 
+      permissions: ['attendance', 'pos'],
+      createdAt: BigInt(now),
+      updatedAt: BigInt(now)
+    },
   });
 
   const roleList = [adminRole, managerRole, staffRole];
@@ -38,8 +54,12 @@ async function main() {
   for (const name of catNames) {
     const cat = await prisma.category.upsert({
       where: { name },
-      update: {},
-      create: { name },
+      update: { updatedAt: BigInt(now) },
+      create: { 
+        name,
+        createdAt: BigInt(now),
+        updatedAt: BigInt(now)
+      },
     });
     dbCategories.push(cat);
   }
@@ -48,14 +68,16 @@ async function main() {
   for (let i = 1; i <= 100; i++) {
     const email = `employee${i}@example.com`;
     const role = roleList[i % 3];
-    const joinTimestamp = new Date();
-    joinTimestamp.setDate(joinTimestamp.getDate() - Math.floor(Math.random() * 365));
+    const joinDate = new Date();
+    joinDate.setDate(joinDate.getDate() - Math.floor(Math.random() * 365));
+    const joinTimestamp = BigInt(joinDate.getTime());
 
     await prisma.employee.upsert({
       where: { email },
       update: { 
         roleId: role.id,
-        joinTimestamp
+        joinTimestamp,
+        updatedAt: BigInt(now)
       },
       create: {
         email,
@@ -64,6 +86,8 @@ async function main() {
         roleId: role.id,
         salary: 40000 + (Math.random() * 20000),
         joinTimestamp,
+        createdAt: BigInt(now),
+        updatedAt: BigInt(now)
       },
     });
   }
@@ -74,13 +98,18 @@ async function main() {
     const category = dbCategories[i % dbCategories.length];
     await prisma.product.upsert({
       where: { sku },
-      update: { categoryId: category.id },
+      update: { 
+        categoryId: category.id,
+        updatedAt: BigInt(now)
+      },
       create: {
         sku,
         name: `Product ${i}`,
         categoryId: category.id,
         price: 10 + (Math.random() * 90),
         stockLevel: Math.floor(Math.random() * 100),
+        createdAt: BigInt(now),
+        updatedAt: BigInt(now)
       },
     });
   }

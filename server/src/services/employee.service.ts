@@ -3,6 +3,7 @@ import type { EmployeeInput } from '../types/shared.js';
 import bcrypt from 'bcrypt';
 import type { PaginationParams } from '../utils/pagination.js';
 import { getPaginationOptions } from '../utils/pagination.js';
+import { toEpoch, serializeBigInt } from '../utils/time.js';
 
 export class EmployeeService {
   static async getAllEmployees(params: PaginationParams) {
@@ -42,7 +43,7 @@ export class EmployeeService {
       prisma.employee.count({ where }),
     ]);
 
-    return {
+    return serializeBigInt({
       data: employees,
       meta: {
         total,
@@ -50,11 +51,11 @@ export class EmployeeService {
         limit,
         totalPages: Math.ceil(total / limit),
       },
-    };
+    });
   }
 
   static async getEmployeeById(id: string) {
-    return prisma.employee.findUnique({
+    const employee = await prisma.employee.findUnique({
       where: { id },
       include: {
         attendance: true,
@@ -62,23 +63,28 @@ export class EmployeeService {
         role: true,
       },
     });
+    return serializeBigInt(employee);
   }
 
   static async createEmployee(data: EmployeeInput) {
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    return prisma.employee.create({
+    const now = toEpoch();
+    const employee = await prisma.employee.create({
       data: {
         ...data,
         password: hashedPassword,
         salary: new Prisma.Decimal(data.salary),
-        joinTimestamp: data.joinTimestamp ? new Date(data.joinTimestamp) : null,
+        joinTimestamp: data.joinTimestamp ? toEpoch(data.joinTimestamp) : null,
+        createdAt: now,
+        updatedAt: now,
       },
       include: { role: true },
     });
+    return serializeBigInt(employee);
   }
 
   static async updateEmployee(id: string, data: Partial<EmployeeInput>) {
-    const updateData: any = { ...data };
+    const updateData: any = { ...data, updatedAt: toEpoch() };
     if (data.password) {
       updateData.password = await bcrypt.hash(data.password, 10);
     }
@@ -86,13 +92,14 @@ export class EmployeeService {
       updateData.salary = String(data.salary);
     }
     if (data.joinTimestamp !== undefined) {
-      updateData.joinTimestamp = data.joinTimestamp ? new Date(data.joinTimestamp) : null;
+      updateData.joinTimestamp = data.joinTimestamp ? toEpoch(data.joinTimestamp) : null;
     }
-    return prisma.employee.update({
+    const employee = await prisma.employee.update({
       where: { id },
       data: updateData,
       include: { role: true },
     });
+    return serializeBigInt(employee);
   }
 
   static async deleteEmployee(id: string) {

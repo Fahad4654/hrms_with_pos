@@ -1,6 +1,7 @@
 import prisma from '../config/prisma.js';
 import type { PaginationParams } from '../utils/pagination.js';
 import { getPaginationOptions } from '../utils/pagination.js';
+import { toEpoch, serializeBigInt } from '../utils/time.js';
 
 export class CategoryService {
   static async getAllCategories(params: PaginationParams) {
@@ -16,7 +17,7 @@ export class CategoryService {
       prisma.category.count(),
     ]);
 
-    return {
+    return serializeBigInt({
       data: categories,
       meta: {
         total,
@@ -24,7 +25,7 @@ export class CategoryService {
         limit,
         totalPages: Math.ceil(total / limit),
       },
-    };
+    });
   }
 
   static async getCategoryById(id: string) {
@@ -34,16 +35,26 @@ export class CategoryService {
   }
 
   static async createCategory(name: string) {
-    return prisma.category.create({
-      data: { name },
+    const now = toEpoch();
+    const category = await prisma.category.create({
+      data: { 
+        name,
+        createdAt: now,
+        updatedAt: now,
+      },
     });
+    return serializeBigInt(category);
   }
 
   static async updateCategory(id: string, name: string) {
-    return prisma.category.update({
+    const category = await prisma.category.update({
       where: { id },
-      data: { name },
+      data: { 
+        name,
+        updatedAt: toEpoch()
+      },
     });
+    return serializeBigInt(category);
   }
 
   static async deleteCategory(id: string) {

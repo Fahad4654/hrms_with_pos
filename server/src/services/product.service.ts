@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import type { PaginationParams } from '../utils/pagination.js';
 import { getPaginationOptions } from '../utils/pagination.js';
 import type { ProductInput } from '../types/shared.js';
+import { toEpoch, serializeBigInt } from '../utils/time.js';
 
 export class ProductService {
   static async getAllProducts(params: PaginationParams) {
@@ -35,7 +36,7 @@ export class ProductService {
       prisma.product.count({ where }),
     ]);
 
-    return {
+    return serializeBigInt({
       data: products,
       meta: {
         total,
@@ -43,7 +44,7 @@ export class ProductService {
         limit,
         totalPages: Math.ceil(total / limit),
       },
-    };
+    });
   }
 
   static async getProductBySku(sku: string) {
@@ -53,14 +54,18 @@ export class ProductService {
   }
 
   static async createProduct(data: ProductInput) {
-    return prisma.product.create({
+    const now = toEpoch();
+    const product = await prisma.product.create({
       data: {
         ...data,
         price: new Prisma.Decimal(data.price),
         stockLevel: data.stockLevel || 0,
+        createdAt: now,
+        updatedAt: now,
       },
       include: { category: true },
     });
+    return serializeBigInt(product);
   }
 
   static async updateInventory(id: string, quantityChange: number) {
@@ -75,15 +80,16 @@ export class ProductService {
   }
 
   static async updateProduct(id: string, data: Partial<ProductInput>) {
-    const updateData: any = { ...data };
+    const updateData: any = { ...data, updatedAt: toEpoch() };
     if (data.price !== undefined) {
       updateData.price = String(data.price);
     }
-    return prisma.product.update({
+    const product = await prisma.product.update({
       where: { id },
       data: updateData,
       include: { category: true },
     });
+    return serializeBigInt(product);
   }
 
   static async deleteProduct(id: string) {

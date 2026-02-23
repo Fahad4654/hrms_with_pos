@@ -1,4 +1,6 @@
 import prisma from '../config/prisma.js';
+import { toEpoch, serializeBigInt } from '../utils/time.js';
+import dayjs from 'dayjs';
 
 export class SettingsService {
   // --- Company Settings ---
@@ -6,6 +8,7 @@ export class SettingsService {
   static async getCompanySettings() {
     const settings = await prisma.companySettings.findFirst();
     if (!settings) {
+      const now = toEpoch();
       // Create default if not exists
       return prisma.companySettings.create({
         data: {
@@ -17,10 +20,11 @@ export class SettingsService {
           country: 'US',
           timezone: 'America/New_York',
           currency: 'USD',
+          updatedAt: now,
         },
       });
     }
-    return settings;
+    return serializeBigInt(settings);
   }
 
   static async updateCompanySettings(data: {
@@ -33,7 +37,8 @@ export class SettingsService {
     timezone?: string;
     currency?: string;
   }) {
-    const settings = await this.getCompanySettings(); // Ensure exists
+    const settings = await prisma.companySettings.findFirst(); // Direct get to avoid recursion or extra serialization
+    if (!settings) throw new Error('Settings not found');
     
     // Validation: Start Time < End Time
     const newStartTime = data.workStartTime || settings.workStartTime;
@@ -43,19 +48,24 @@ export class SettingsService {
       throw new Error('Work Start Time cannot be later than or equal to Work End Time');
     }
 
-    return prisma.companySettings.update({
+    const updated = await prisma.companySettings.update({
       where: { id: settings.id },
-      data,
+      data: {
+        ...data,
+        updatedAt: toEpoch()
+      },
     });
+    return serializeBigInt(updated);
   }
 
   // --- Leave Types ---
 
   static async getLeaveTypes(activeOnly = false) {
-    return prisma.leaveType.findMany({
+    const types = await prisma.leaveType.findMany({
       where: activeOnly ? { active: true } : {},
       orderBy: { name: 'asc' },
     });
+    return serializeBigInt(types);
   }
 
   static async createLeaveType(data: { name: string; daysAllowed: number }) {
@@ -63,7 +73,15 @@ export class SettingsService {
      const existing = await prisma.leaveType.findUnique({ where: { name: data.name } });
      if (existing) throw new Error('Leave type with this name already exists');
 
-     return prisma.leaveType.create({ data });
+     const now = toEpoch();
+     const type = await prisma.leaveType.create({ 
+       data: {
+         ...data,
+         createdAt: now,
+         updatedAt: now,
+       } 
+     });
+     return serializeBigInt(type);
   }
 
   static async updateLeaveType(id: string, data: { name?: string; daysAllowed?: number; active?: boolean }) {
@@ -71,10 +89,14 @@ export class SettingsService {
        const existing = await prisma.leaveType.findUnique({ where: { name: data.name } });
        if (existing && existing.id !== id) throw new Error('Leave type with this name already exists');
     }
-    return prisma.leaveType.update({
+    const type = await prisma.leaveType.update({
       where: { id },
-      data,
+      data: {
+        ...data,
+        updatedAt: toEpoch()
+      },
     });
+    return serializeBigInt(type);
   }
 
   static async deleteLeaveType(id: string) {
@@ -100,15 +122,10 @@ export class SettingsService {
     const utilization: Record<string, number> = {};
 
     for (const req of requests) {
-      // Calculate duration in days (Inclusive)
-      // Reset hours to ensure clean date difference
-      const start = new Date(req.startTimestamp);
-      const end = new Date(req.endTimestamp);
-      start.setHours(0,0,0,0);
-      end.setHours(0,0,0,0);
-      
-      const diffTime = Math.abs(end.getTime() - start.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
+      // Calculate duration in days using dayjs for clean math
+      const start = dayjs(Number(req.startTimestamp)).startOf('day');
+      const end = dayjs(Number(req.endTimestamp)).startOf('day');
+      const diffDays = end.diff(start, 'day') + 1; 
 
       const empName = req.employee.name;
       utilization[empName] = (utilization[empName] || 0) + diffDays;

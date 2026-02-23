@@ -14,9 +14,24 @@ interface DailyAttendance {
   overtimeDuration: number;
 }
 
+function getTodayString(tz: string): string {
+  // Use Intl.DateTimeFormat to get the date in the specific timezone
+  const formatter = new Intl.DateTimeFormat('en-CA', { // en-CA gives YYYY-MM-DD
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const parts = formatter.formatToParts(new Date());
+  const year = parts.find(p => p.type === 'year')?.value;
+  const month = parts.find(p => p.type === 'month')?.value;
+  const day = parts.find(p => p.type === 'day')?.value;
+  return `${year}-${month}-${day}`;
+}
+
 const Attendance: React.FC = () => {
   const { showToast } = useToast();
-  const { formatDateTime } = useLocale();
+  const { formatDateTime, formatDate, timezone } = useLocale();
   const [logs, setLogs] = useState<DailyAttendance[]>([]);
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -24,7 +39,7 @@ const Attendance: React.FC = () => {
 
   useEffect(() => {
     fetchLogs();
-  }, []);
+  }, [timezone]);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -32,7 +47,7 @@ const Attendance: React.FC = () => {
       const { data } = await api.get('/attendance/logs');
       setLogs(data);
       // Check if the most recent day (first item) is active
-      const today = new Date().toISOString().split('T')[0];
+      const today = getTodayString(timezone || 'UTC');
       const todayLog = data.find((l: DailyAttendance) => l.date === today);
       setIsClockedIn(!!todayLog?.isActive);
     } catch (error) {
@@ -121,7 +136,7 @@ const Attendance: React.FC = () => {
               {logs.map((log) => {
                 return (
                   <tr key={log.date} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                    <td style={{ padding: '2% 3%' }}>{formatDateTime(log.date)}</td>
+                    <td style={{ padding: '2% 3%' }}>{formatDate(log.date)}</td>
                     <td style={{ padding: '2% 3%' }}>{formatDateTime(log.firstClockIn)}</td>
                     <td style={{ padding: '2% 3%' }}>
                       {log.lastClockOut ? formatDateTime(log.lastClockOut) : '-'}

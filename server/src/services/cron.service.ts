@@ -1,6 +1,7 @@
 
 import cron from 'node-cron';
 import prisma from '../config/prisma.js';
+import { getTodayString, getWorkTimeInUTC, getEndOfDayInUTC, toEpoch, getDateString } from '../utils/time.js';
 
 export const startCronJobs = () => {
   // Run every minute
@@ -10,59 +11,50 @@ export const startCronJobs = () => {
       const settings = await prisma.companySettings.findFirst();
       if (!settings) return;
 
-      const { workEndTime, enableOvertime } = settings;
-      const now = new Date();
-      const todayString = now.toDateString();
+      const { workEndTime, enableOvertime, timezone = 'UTC' } = settings;
+      const todayString = getTodayString(timezone);
+      const nowEpoch = toEpoch();
 
       // Find all active sessions
       const activeSessions = await prisma.attendance.findMany({
         where: { clockOutTimestamp: null },
       });
       for (const session of activeSessions) {
-        const sessionDate = new Date(session.clockInTimestamp);
-        const sessionDateString = sessionDate.toDateString();
+        const sessionDateString = getDateString(session.clockInTimestamp, timezone);
         
         let shouldClose = false;
-        let closeTime = new Date(session.clockInTimestamp);
+        let closeTime = BigInt(0);
 
         if (enableOvertime) {
           // Overtime Enabled: Close if session is from a previous day
-          // Logic: If today is a differnt day than session day, close it at 23:59:59 of session day
           if (sessionDateString !== todayString) {
              shouldClose = true;
-             closeTime.setHours(23, 59, 59, 999);
+             closeTime = BigInt(getEndOfDayInUTC(session.clockInTimestamp, timezone));
           }
         } else {
           // Overtime Disabled: Close if past workEndTime
-          // Case 1: Session is from previous day -> active for too long -> close at workEndTime of session day
-          // Case 2: Session is from today -> check if now > workEndTime
-          
-          const [endH, endM] = (workEndTime || '17:00').split(':').map(Number);
-          const workEndDateTime = new Date(session.clockInTimestamp);
-          workEndDateTime.setHours(endH || 17, endM || 0, 0, 0);
+          const workEndEpoch = getWorkTimeInUTC(session.clockInTimestamp, workEndTime || '17:00', timezone);
 
           if (sessionDateString !== todayString) {
-            // Previous day session, definitely close
             shouldClose = true;
-            closeTime = workEndDateTime;
-          } else if (now > workEndDateTime) {
-            // Today's session, but past work end time
+            closeTime = BigInt(workEndEpoch);
+          } else if (nowEpoch > workEndEpoch) {
             shouldClose = true;
-            closeTime = workEndDateTime;
+            closeTime = BigInt(workEndEpoch);
           }
         }
 
         if (shouldClose) {
           // Ensure closeTime is not before clockIn
-          if (closeTime < session.clockInTimestamp) {
-             closeTime = new Date(session.clockInTimestamp.getTime() + 1000);
+          if (closeTime < (session.clockInTimestamp as any)) {
+             closeTime = (session.clockInTimestamp as any) + BigInt(1000);
           }
           
-          console.log(`[Cron] Auto-closing session ${session.id} for employee ${session.employeeId}. ClockOut: ${closeTime.toISOString()}`);
+          console.log(`[Cron] Auto-closing session ${session.id} for employee ${session.employeeId}. ClockOut: ${closeTime.toString()}`);
           
-          await prisma.attendance.update({
+          await (prisma.attendance as any).update({
             where: { id: session.id },
-            data: { clockOutTimestamp: closeTime },
+            data: { clockOutTimestamp: closeTime! as any },
           });
         }
       }

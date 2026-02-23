@@ -12,8 +12,8 @@ model Role {
   level       Int        @default(10) // 1 = Highest (Super Admin), 10 = Lowest (Staff)
   permissions String[]   // e.g., ["all", "employees", "attendance", "products", "pos", "sales", "analytics"]
   employees   Employee[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   BigInt
+  updatedAt   BigInt
 }
 
 enum LeaveStatus {
@@ -30,10 +30,10 @@ model Employee {
   roleId        String
   role          Role           @relation(fields: [roleId], references: [id])
   salary        Decimal        @default(0)
-  joinTimestamp DateTime?
+  joinTimestamp BigInt?
   refreshToken  String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     BigInt
+  updatedAt     BigInt
   attendance    Attendance[]
   leaveRequests LeaveRequest[]
   sales         Sale[]
@@ -44,8 +44,8 @@ model Attendance {
   id               String   @id @default(uuid())
   employeeId       String
   employee         Employee @relation(fields: [employeeId], references: [id])
-  clockInTimestamp  DateTime @default(now())
-  clockOutTimestamp DateTime?
+  clockInTimestamp  BigInt
+  clockOutTimestamp BigInt?
   latitude         Float?
   longitude        Float?
   ipAddress        String?
@@ -55,8 +55,8 @@ model LeaveRequest {
   id             String      @id @default(uuid())
   employeeId     String
   employee       Employee    @relation(fields: [employeeId], references: [id])
-  startTimestamp DateTime
-  endTimestamp   DateTime
+  startTimestamp BigInt
+  endTimestamp   BigInt
   type           String
   status         LeaveStatus @default(PENDING)
   reason         String?
@@ -66,8 +66,8 @@ model Category {
   id        String    @id @default(uuid())
   name      String    @unique
   products  Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt BigInt
+  updatedAt BigInt
 }
 
 model Product {
@@ -78,8 +78,8 @@ model Product {
   category    Category   @relation(fields: [categoryId], references: [id])
   price       Decimal
   stockLevel  Int        @default(0)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   BigInt
+  updatedAt   BigInt
   saleItems   SaleItem[]
 }
 
@@ -88,7 +88,7 @@ model Sale {
   employeeId  String
   employee    Employee     @relation(fields: [employeeId], references: [id])
   totalAmount Decimal
-  timestamp   DateTime     @default(now())
+  timestamp   BigInt
   items       SaleItem[]
   commissions Commission[]
 }
@@ -111,7 +111,7 @@ model Commission {
   saleId     String
   sale       Sale     @relation(fields: [saleId], references: [id])
   amount     Decimal
-  createdAt  DateTime @default(now())
+  createdAt  BigInt
 }
 
 model LeaveType {
@@ -119,8 +119,8 @@ model LeaveType {
   name        String   @unique
   daysAllowed Int
   active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   BigInt
+  updatedAt   BigInt
 }
 
 model CompanySettings {
@@ -133,5 +133,5 @@ model CompanySettings {
   country       String   @default("US")
   timezone      String   @default("America/New_York")
   currency      String   @default("USD")
-  updatedAt     DateTime @updatedAt
+  updatedAt     BigInt
 }

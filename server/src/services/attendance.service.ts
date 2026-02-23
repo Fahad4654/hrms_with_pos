@@ -1,4 +1,5 @@
 import prisma from '../config/prisma.js';
+import { getTodayString, getWorkTimeInUTC, getEndOfDayInUTC, toEpoch, serializeBigInt, getDateString } from '../utils/time.js';
 
 export class AttendanceService {
   static async clockIn(employeeId: string, location?: { lat: number; lng: number; ip?: string }) {
@@ -11,8 +12,11 @@ export class AttendanceService {
     });
 
     if (activeSession) {
-      const sessionDate = new Date(activeSession.clockInTimestamp).toDateString();
-      const todayDate = new Date().toDateString();
+      const settings = await prisma.companySettings.findFirst();
+      const timezone = settings?.timezone || 'UTC';
+      
+      const sessionDate = getDateString(activeSession.clockInTimestamp, timezone);
+      const todayDate = getTodayString(timezone);
 
       if (sessionDate === todayDate) {
         console.log(`[AttendanceService] Clock-in rejected for employee ${employeeId}: Already has active session ${activeSession.id}`);
@@ -21,20 +25,16 @@ export class AttendanceService {
         // Stale session from previous day. Auto-close it.
         console.log(`[AttendanceService] Found stale session ${activeSession.id} from ${sessionDate}. Auto-closing.`);
         
-        // Get settings to determine end time
-        const settings = await prisma.companySettings.findFirst();
+        // Construct clockOut time for that previous day
         const workEndTime = settings?.workEndTime || '17:00';
         const enableOvertime = settings?.enableOvertime || false;
-        
-        // Construct clockOut time for that previous day
-        let autoClockOutTime = new Date(activeSession.clockInTimestamp);
+        let autoClockOutTime: number;
 
         if (enableOvertime) {
-            // If overtime is enabled, auto-clock out at 23:59:59
-            autoClockOutTime.setHours(23, 59, 59, 999);
+            // If overtime is enabled, auto-clock out at 23:59:59 of that day
+            autoClockOutTime = getEndOfDayInUTC(activeSession.clockInTimestamp, timezone);
         } else {
-             const [endH, endM] = (workEndTime || '17:00').split(':').map(Number);
-             autoClockOutTime.setHours(endH || 17, endM || 0, 0, 0);
+            autoClockOutTime = getWorkTimeInUTC(activeSession.clockInTimestamp, workEndTime, timezone);
         }
 
         // If clockIn was actually AFTER workEndTime (e.g. valid late night work), 
@@ -43,27 +43,30 @@ export class AttendanceService {
         // Better: if workEndTime < clockIn, maybe set to 23:59:59? 
         // For simplicity: Set to workEndTime. If duration negative, handle it? 
         // Let's ensure it's at least clockIn time.
-        if (autoClockOutTime < activeSession.clockInTimestamp) {
-             autoClockOutTime.setTime(activeSession.clockInTimestamp.getTime() + 1000); // 1 sec later
+        if (autoClockOutTime < Number(activeSession.clockInTimestamp)) {
+             autoClockOutTime = Number(activeSession.clockInTimestamp) + 1000; // 1 sec later
         }
 
-        await prisma.attendance.update({
+        await (prisma.attendance as any).update({
           where: { id: activeSession.id },
-          data: { clockOutTimestamp: autoClockOutTime },
+          data: { clockOutTimestamp: BigInt(autoClockOutTime) },
         });
-        console.log(`[AttendanceService] Stale session ${activeSession.id} auto-closed at ${autoClockOutTime.toISOString()}`);
+        console.log(`[AttendanceService] Stale session ${activeSession.id} auto-closed at ${new Date(autoClockOutTime).toISOString()}`);
       }
     }
 
     console.log(`[AttendanceService] Clocking in employee ${employeeId}`);
-    return prisma.attendance.create({
+    const now = toEpoch();
+    const session = await (prisma.attendance as any).create({
       data: {
         employeeId,
+        clockInTimestamp: BigInt(now),
         latitude: location?.lat ?? null,
         longitude: location?.lng ?? null,
         ipAddress: location?.ip ?? null,
       },
     });
+    return serializeBigInt(session);
   }
 
   static async clockOut(employeeId: string) {
@@ -79,10 +82,11 @@ export class AttendanceService {
       throw new Error('No active clock-in session found');
     }
 
-    return prisma.attendance.update({
+    const session = await (prisma.attendance as any).update({
       where: { id: activeSession.id },
-      data: { clockOutTimestamp: new Date() },
+      data: { clockOutTimestamp: BigInt(toEpoch()) },
     });
+    return serializeBigInt(session);
   }
 
   static async getAttendanceLogs(employeeId: string) {
@@ -92,34 +96,30 @@ export class AttendanceService {
     });
 
     const settings = await prisma.companySettings.findFirst();
+    const timezone = settings?.timezone || 'UTC';
     const workDays = settings?.workDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
     const workStartTime = settings?.workStartTime || '09:00';
     const workEndTime = settings?.workEndTime || '17:00';
 
-    // Parse work hours to minutes for duration calculation
-    const [startH, startM] = (workStartTime || '09:00').split(':').map(Number);
-    const [endH, endM] = (workEndTime || '17:00').split(':').map(Number);
-    const expectedDurationMs = (((endH || 17) * 60 + (endM || 0)) - ((startH || 9) * 60 + (startM || 0))) * 60 * 1000;
+    // Parse work hours for duration calculation
+    const [startH = 9, startM = 0] = (workStartTime || '09:00').split(':').map(Number);
+    const [endH = 17, endM = 0] = (workEndTime || '17:00').split(':').map(Number);
+    const expectedDurationMs = ((endH * 60 + endM) - (startH * 60 + startM)) * 60 * 1000;
 
     const groupedLogs: Record<string, any> = {};
 
     for (const log of rawLogs) {
-      // Get date string YYYY-MM-DD
-      const date = new Date(log.clockInTimestamp).toISOString().split('T')[0] as string;
+      // Get date string YYYY-MM-DD in company timezone
+      const date = getDateString(log.clockInTimestamp, timezone);
 
       if (!groupedLogs[date]) {
-        // Determine if Off Day
-        const dayName = new Date(log.clockInTimestamp).toLocaleDateString('en-US', { weekday: 'long' });
+        // Determine if Off Day (respecting timezone)
+        const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: timezone }).format(Number(log.clockInTimestamp));
         const isOffDay = !workDays.includes(dayName);
 
-        // Determine if Late
-        const clockInTime = new Date(log.clockInTimestamp);
-        const workStartDate = new Date(log.clockInTimestamp);
-        workStartDate.setHours(startH || 9, startM || 0, 0, 0);
-        
-        // 15 mins grace period? User didn't specify, but let's be strict for now or add small buffer.
-        // Let's say strict > workStartTime is Late.
-        const isLate = clockInTime.getTime() > workStartDate.getTime();
+        // Determine if Late (respecting timezone)
+        const workStartInUTC = getWorkTimeInUTC(log.clockInTimestamp, workStartTime, timezone);
+        const isLate = Number(log.clockInTimestamp) > workStartInUTC;
 
         groupedLogs[date] = {
           date,
@@ -136,16 +136,15 @@ export class AttendanceService {
 
       // Update lastClockOut if this session ended later (or is active)
       if (log.clockOutTimestamp) {
-        // ... existing logic ...
-        const currentLast = groupedLogs[date].lastClockOut ? new Date(groupedLogs[date].lastClockOut).getTime() : 0;
-        const newOut = new Date(log.clockOutTimestamp).getTime();
+        const currentLast = groupedLogs[date].lastClockOut ? Number(groupedLogs[date].lastClockOut) : 0;
+        const newOut = Number(log.clockOutTimestamp);
         
         if (newOut > currentLast) {
            groupedLogs[date].lastClockOut = log.clockOutTimestamp;
         }
 
         // Add duration
-        const durationMs = newOut - new Date(log.clockInTimestamp).getTime();
+        const durationMs = newOut - Number(log.clockInTimestamp);
         groupedLogs[date].totalDuration += durationMs;
       } else {
         // Active session
@@ -164,6 +163,8 @@ export class AttendanceService {
     });
 
     // Convert object to array and sort desc by date
-    return Object.values(groupedLogs).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return Object.values(groupedLogs)
+      .map(serializeBigInt)
+      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 }

@@ -1,6 +1,7 @@
 import prisma, { Prisma } from '../config/prisma.js';
 import type { PaginationParams } from '../utils/pagination.js';
 import { getPaginationOptions } from '../utils/pagination.js';
+import { toEpoch, serializeBigInt } from '../utils/time.js';
 
 export interface SaleItemInput {
   productId: string;
@@ -22,6 +23,7 @@ export class SaleService {
         data: {
           employeeId,
           totalAmount: new Prisma.Decimal(totalAmount),
+          timestamp: BigInt(toEpoch()),
           items: {
             create: items.map(item => ({
               productId: item.productId,
@@ -45,7 +47,7 @@ export class SaleService {
         });
       }
 
-      return sale;
+      return serializeBigInt(sale);
     });
   }
 
@@ -73,7 +75,7 @@ export class SaleService {
       prisma.sale.count({ where }),
     ]);
 
-    return {
+    return serializeBigInt({
       data: sales,
       meta: {
         total,
@@ -81,7 +83,7 @@ export class SaleService {
         limit,
         totalPages: Math.ceil(total / limit),
       },
-    };
+    });
   }
 
   static async getEmployeeSales(employeeId: string) {

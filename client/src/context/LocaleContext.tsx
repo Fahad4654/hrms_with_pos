@@ -5,10 +5,11 @@ interface LocaleContextType {
   country: string;
   timezone: string;
   currency: string;
-  formatDate: (date: string | Date | null | undefined) => string;
-  formatTime: (date: string | Date | null | undefined) => string;
-  formatDateTime: (date: string | Date | null | undefined) => string;
+  formatDate: (date: string | Date | number | null | undefined) => string;
+  formatTime: (date: string | Date | number | null | undefined) => string;
+  formatDateTime: (date: string | Date | number | null | undefined) => string;
   formatCurrency: (amount: number | string | null | undefined) => string;
+  refreshSettings: (data?: any) => Promise<void>;
 }
 
 const LocaleContext = createContext<LocaleContextType>({
@@ -19,6 +20,7 @@ const LocaleContext = createContext<LocaleContextType>({
   formatTime: (d) => d ? new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--',
   formatDateTime: (d) => d ? new Date(d).toLocaleString() : '--',
   formatCurrency: (a) => `$${Number(a || 0).toFixed(2)}`,
+  refreshSettings: async () => {},
 });
 
 // Map country code to IANA locale (BCP 47)
@@ -68,38 +70,62 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [timezone, setTimezone] = useState('America/New_York');
   const [currency, setCurrency] = useState('USD');
 
-  useEffect(() => {
+  const fetchSettings = async () => {
     const token = localStorage.getItem('accessToken');
     if (token) {
-      api.get('/settings/company').then(res => {
+      try {
+        const res = await api.get(`/settings/company?t=${Date.now()}`);
         if (res.data.country) setCountry(res.data.country);
         if (res.data.timezone) setTimezone(res.data.timezone);
         if (res.data.currency) setCurrency(res.data.currency);
-      }).catch(() => {}); // Silently fail - use defaults
+      } catch (err) {
+        console.error('Failed to fetch settings:', err);
+      }
     }
+  };
+
+  useEffect(() => {
+    fetchSettings();
   }, []);
+
+  const refreshSettings = async (data?: any) => {
+    if (data) {
+      if (data.country) setCountry(data.country);
+      if (data.timezone) setTimezone(data.timezone);
+      if (data.currency) setCurrency(data.currency);
+    } else {
+      await fetchSettings();
+    }
+  };
 
   const locale = countryToLocale(country);
 
-  const formatDate = (date: string | Date | null | undefined): string => {
+  const formatDate = (date: string | Date | number | null | undefined): string => {
     if (!date) return '--';
     try {
-      return new Date(date).toLocaleDateString(locale, { timeZone: timezone, year: 'numeric', month: 'short', day: 'numeric' });
-    } catch { return new Date(date).toLocaleDateString(); }
+      // If it's a YYYY-MM-DD string, parse it as a local date to avoid UTC shifts
+      const dateObj = typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date) 
+        ? new Date(date + 'T00:00:00') 
+        : new Date(Number(date) || date);
+      
+      return dateObj.toLocaleDateString(locale, { timeZone: timezone, year: 'numeric', month: 'short', day: 'numeric' });
+    } catch { return String(date); }
   };
 
-  const formatTime = (date: string | Date | null | undefined): string => {
+  const formatTime = (date: string | Date | number | null | undefined): string => {
     if (!date) return '--';
     try {
       return new Date(date).toLocaleTimeString(locale, { timeZone: timezone, hour: '2-digit', minute: '2-digit' });
     } catch { return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
   };
 
-  const formatDateTime = (date: string | Date | null | undefined): string => {
+  const formatDateTime = (date: string | Date | number | null | undefined): string => {
     if (!date) return '--';
     try {
-      return new Date(date).toLocaleString(locale, { timeZone: timezone, year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    } catch { return new Date(date).toLocaleString(); }
+      const d = typeof date === 'bigint' ? Number(date) : date;
+      const dateObj = new Date(d as any);
+      return dateObj.toLocaleString(locale, { timeZone: timezone, year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch { return String(date); }
   };
 
   const formatCurrency = (amount: number | string | null | undefined): string => {
@@ -115,7 +141,7 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   return (
-    <LocaleContext.Provider value={{ country, timezone, currency, formatDate, formatTime, formatDateTime, formatCurrency }}>
+    <LocaleContext.Provider value={{ country, timezone, currency, formatDate, formatTime, formatDateTime, formatCurrency, refreshSettings }}>
       {children}
     </LocaleContext.Provider>
   );

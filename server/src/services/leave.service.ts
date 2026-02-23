@@ -1,20 +1,20 @@
 import prisma from '../config/prisma.js';
 import { LeaveStatus, Prisma } from '@prisma/client';
 import { type PaginationParams, getPaginationOptions } from '../utils/pagination.js';
+import { toEpoch, serializeBigInt } from '../utils/time.js';
+import dayjs from 'dayjs';
 
 export class LeaveService {
-  static async requestLeave(employeeId: string, data: { startTimestamp: Date, endTimestamp: Date, type: string, reason?: string }) {
-    // 1. Date Validation
-    const start = new Date(data.startTimestamp);
-    const end = new Date(data.endTimestamp);
-    start.setHours(0,0,0,0);
-    end.setHours(0,0,0,0);
+  static async requestLeave(employeeId: string, data: { startTimestamp: number | Date, endTimestamp: number | Date, type: string, reason?: string }) {
+    // 1. Date Validation using dayjs
+    const start = dayjs(data.startTimestamp).startOf('day');
+    const end = dayjs(data.endTimestamp).startOf('day');
 
-    if (start > end) {
+    if (start.isAfter(end)) {
       throw new Error('Start date cannot be later than end date');
     }
 
-    const duration = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const duration = end.diff(start, 'day') + 1;
 
     // 2. Quota Validation
     const leaveType = await prisma.leaveType.findFirst({
@@ -35,34 +35,35 @@ export class LeaveService {
     });
 
     const daysTaken = approvedRequests.reduce((acc, req) => {
-      const s = new Date(req.startTimestamp);
-      const e = new Date(req.endTimestamp);
-      s.setHours(0,0,0,0);
-      e.setHours(0,0,0,0);
-      return acc + (Math.ceil(Math.abs(e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      const s = dayjs(Number(req.startTimestamp)).startOf('day');
+      const e = dayjs(Number(req.endTimestamp)).startOf('day');
+      return acc + (e.diff(s, 'day') + 1);
     }, 0);
 
     if (daysTaken + duration > leaveType.daysAllowed) {
       throw new Error(`Insufficient leave balance. Remaining: ${leaveType.daysAllowed - daysTaken} days, Requested: ${duration} days`);
     }
 
-    return prisma.leaveRequest.create({
+    const now = BigInt(toEpoch());
+    const request = await prisma.leaveRequest.create({
       data: {
         employeeId,
-        startTimestamp: data.startTimestamp,
-        endTimestamp: data.endTimestamp,
+        startTimestamp: BigInt(start.valueOf()),
+        endTimestamp: BigInt(end.valueOf()),
         type: data.type,
         reason: data.reason ?? null,
         status: LeaveStatus.PENDING,
       },
     });
+    return serializeBigInt(request);
   }
 
   static async updateLeaveStatus(leaveId: string, status: LeaveStatus) {
-    return prisma.leaveRequest.update({
+    const request = await prisma.leaveRequest.update({
       where: { id: leaveId },
       data: { status },
     });
+    return serializeBigInt(request);
   }
 
   static async getEmployeeLeaves(employeeId: string, params: PaginationParams) {
@@ -178,14 +179,16 @@ export class LeaveService {
       },
     });
 
-    return this.enrichLeaveRequests(pendingRequests);
+    return serializeBigInt(await this.enrichLeaveRequests(pendingRequests));
   }
 
   private static async enrichLeaveRequests(requests: any[]) {
     const leaveTypes = await prisma.leaveType.findMany({ where: { active: true } });
 
     return Promise.all(requests.map(async (req) => {
-      const daysRequested = Math.ceil(Math.abs(req.endTimestamp.getTime() - req.startTimestamp.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const s = dayjs(Number(req.startTimestamp)).startOf('day');
+      const e = dayjs(Number(req.endTimestamp)).startOf('day');
+      const daysRequested = e.diff(s, 'day') + 1;
 
       const typeConfig = leaveTypes.find(t => t.name === req.type);
       let daysRemaining = 0;
@@ -201,7 +204,9 @@ export class LeaveService {
           });
 
           const daysTaken = approvedForType.reduce((acc, r) => {
-            return acc + (Math.ceil(Math.abs(r.endTimestamp.getTime() - r.startTimestamp.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+            const rs = dayjs(Number(r.startTimestamp)).startOf('day');
+            const re = dayjs(Number(r.endTimestamp)).startOf('day');
+            return acc + (re.diff(rs, 'day') + 1);
           }, 0);
 
           daysRemaining = Math.max(0, typeConfig.daysAllowed - daysTaken);
@@ -246,13 +251,9 @@ export class LeaveService {
     const summary = leaveTypes.map((type) => {
       const typeRequests = approvedRequests.filter((r) => r.type === type.name);
       const daysTaken = typeRequests.reduce((acc, req) => {
-        const start = new Date(req.startTimestamp);
-        const end = new Date(req.endTimestamp);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(0, 0, 0, 0);
-        const diffTime = Math.abs(end.getTime() - start.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        return acc + diffDays;
+        const s = dayjs(Number(req.startTimestamp)).startOf('day');
+        const e = dayjs(Number(req.endTimestamp)).startOf('day');
+        return acc + (e.diff(s, 'day') + 1);
       }, 0);
 
       return {

@@ -1,23 +1,22 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext.js';
-import { LocaleProvider } from './context/LocaleContext.js';
+import { useAuth } from './context/AuthContext';
 import './index.css';
 
-import Login from './pages/Login.js';
-import Dashboard from './pages/Dashboard.js';
-import EmployeeManagement from './pages/EmployeeManagement.js';
-import Attendance from './pages/Attendance.js';
-import LeaveManagement from './pages/LeaveManagement.js';
-import LeaveApprovals from './pages/LeaveApprovals.js';
-import SystemConfig from './pages/SystemConfig.js';
-import ProductCatalog from './pages/ProductCatalog.js';
-import Categories from './pages/Categories.js';
-import POSTerminal from './pages/POSTerminal.js';
-import SalesHistory from './pages/SalesHistory.js';
-import Analytics from './pages/Analytics.js';
-import AdminSettings from './pages/AdminSettings.js';
-import NoAccess from './pages/NoAccess.js';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import EmployeeManagement from './pages/EmployeeManagement';
+import Attendance from './pages/Attendance';
+import LeaveManagement from './pages/LeaveManagement';
+import LeaveApprovals from './pages/LeaveApprovals';
+import SystemConfig from './pages/SystemConfig';
+import ProductCatalog from './pages/ProductCatalog';
+import Categories from './pages/Categories';
+import POSTerminal from './pages/POSTerminal';
+import SalesHistory from './pages/SalesHistory';
+import Analytics from './pages/Analytics';
+import AdminSettings from './pages/AdminSettings';
+import NoAccess from './pages/NoAccess';
 
 const ProtectedRoute = ({ children, permission }: { children: React.ReactNode, permission?: string }) => {
   const { user, loading } = useAuth();
@@ -33,9 +32,7 @@ const ProtectedRoute = ({ children, permission }: { children: React.ReactNode, p
 
 const App: React.FC = () => {
   return (
-    <LocaleProvider>
-    <AuthProvider>
-      <Router>
+    <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/no-access" element={<NoAccess />} />
@@ -101,8 +98,6 @@ const App: React.FC = () => {
           } />
         </Routes>
       </Router>
-    </AuthProvider>
-    </LocaleProvider>
   );
 };
 

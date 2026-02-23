@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api.js';
 import { useAuth } from '../context/AuthContext.js';
+import { useLocale } from '../context/LocaleContext.js';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -9,6 +10,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { refreshSettings } = useLocale();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,6 +21,7 @@ const Login: React.FC = () => {
     try {
       const { data } = await api.post('/auth/login', { email, password });
       login(data.accessToken, data.refreshToken, data.employee);
+      await refreshSettings();
       
       // Redirect based on user permissions
       const permissions = data.employee.permissions || [];

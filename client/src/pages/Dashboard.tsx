@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "../context/AuthContext";
 import { useLocale } from "../context/LocaleContext";
 
 const LiveClock: React.FC = () => {

@@ -6,6 +6,7 @@ export class SettingsController {
   static async getCompany(req: Request, res: Response) {
     try {
       const settings = await SettingsService.getCompanySettings();
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
       res.json(settings);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
