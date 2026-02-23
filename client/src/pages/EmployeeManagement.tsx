@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import { useAuth } from '../context/AuthContext';
 import { useLocale } from '../context/LocaleContext';
+import { exportAttendanceToPDF } from '../utils/pdfExport';
 
 interface Employee {
   id: string;
@@ -39,6 +40,10 @@ const EmployeeManagement: React.FC = () => {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { confirm } = useConfirm();
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const { timezone } = useLocale();
+  const companyName = 'HRMS POS';
 
   // Filter roles based on hierarchy
   // Level 1 can see all. Level > 1 can only see strictly lower hierarchy (higher level number)
@@ -207,18 +212,55 @@ const EmployeeManagement: React.FC = () => {
     }
   };
 
+  const handleExportAttendance = async (employeeId: string, employeeName: string) => {
+    try {
+      const { data } = await api.get(`/attendance/logs/${employeeId}`, {
+        params: { startDate, endDate }
+      });
+      exportAttendanceToPDF(data, {
+        employeeName,
+        companyName,
+        startDate,
+        endDate,
+        timezone: timezone || 'UTC'
+      });
+      showToast('Attendance report generated', 'success');
+    } catch (error: any) {
+      console.error('Failed to export attendance', error);
+      showToast('Failed to generate attendance report', 'error');
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4%', flexWrap: 'wrap', gap: '2%' }}>
         <h1 style={{ margin: 0 }}>Employees</h1>
-        <div style={{ display: 'flex', gap: '2%', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
+            <label style={{ fontSize: '0.875rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>From</label>
+            <input 
+              type="date" 
+              value={startDate} 
+              onChange={e => setStartDate(e.target.value)}
+              style={{ padding: '8px 12px', width: 'auto' }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
+            <label style={{ fontSize: '0.875rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>To</label>
+            <input 
+              type="date" 
+              value={endDate} 
+              onChange={e => setEndDate(e.target.value)}
+              style={{ padding: '8px 12px', width: 'auto' }}
+            />
+          </div>
           <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px' }}>
             <input 
               type="text" 
-              placeholder="Search name or email..." 
+              placeholder="Search..." 
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', maxWidth: '200px' }}
+              style={{ width: '120px' }}
             />
             <button type="submit" className="btn btn-primary">Search</button>
           </form>
@@ -271,7 +313,7 @@ const EmployeeManagement: React.FC = () => {
                   <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%', color: 'var(--text-muted)' }}>
                     {emp.joinTimestamp ? formatDateTime(emp.joinTimestamp) : '--'}
                   </td>
-                  <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>
+                    <td style={{ padding: window.innerWidth <= 480 ? '2% 3%' : '2% 3%' }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button 
                         className="btn btn-primary"
@@ -279,6 +321,13 @@ const EmployeeManagement: React.FC = () => {
                         onClick={() => openEditModal(emp)}
                       >
                         Edit
+                      </button>
+                      <button 
+                        className="btn btn-primary"
+                        style={{ padding: '6px 12px', fontSize: '0.875rem', background: 'var(--accent)' }} 
+                        onClick={() => handleExportAttendance(emp.id, emp.name)}
+                      >
+                        PDF
                       </button>
                       <button 
                         className="btn btn-danger"

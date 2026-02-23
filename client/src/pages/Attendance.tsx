@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
 import { useLocale } from '../context/LocaleContext';
+import { exportAttendanceToPDF } from '../utils/pdfExport';
+import { useAuth } from '../context/AuthContext';
 
 interface DailyAttendance {
   date: string;
@@ -36,15 +38,21 @@ const Attendance: React.FC = () => {
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const { user } = useAuth();
+  const companyName = 'HRMS POS'; // Hardcoded for now, or fetch from settings
 
   useEffect(() => {
     fetchLogs();
-  }, [timezone]);
+  }, [timezone, startDate, endDate]);
 
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/attendance/logs');
+      const { data } = await api.get('/attendance/logs', {
+        params: { startDate, endDate }
+      });
       setLogs(data);
       // Check if the most recent day (first item) is active
       const today = getTodayString(timezone || 'UTC');
@@ -117,7 +125,43 @@ const Attendance: React.FC = () => {
         </button>
       </div>
 
-      <h2 style={{ marginBottom: '2%' }}>Recent History</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2%', flexWrap: 'wrap', gap: '16px' }}>
+        <h2>History</h2>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            <label style={{ fontSize: '0.875rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>From</label>
+            <input 
+              type="date" 
+              value={startDate} 
+              onChange={e => setStartDate(e.target.value)}
+              style={{ padding: '8px 12px', width: 'auto' }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            <label style={{ fontSize: '0.875rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>To</label>
+            <input 
+              type="date" 
+              value={endDate} 
+              onChange={e => setEndDate(e.target.value)}
+              style={{ padding: '8px 12px', width: 'auto' }}
+            />
+          </div>
+          <button 
+            className="btn btn-primary"
+            onClick={() => exportAttendanceToPDF(logs, {
+              employeeName: user?.name || 'Employee',
+              companyName: companyName,
+              startDate,
+              endDate,
+              timezone: timezone || 'UTC'
+            })}
+            disabled={logs.length === 0}
+            style={{ padding: '8px 16px', fontSize: '0.875rem' }}
+          >
+            Download PDF
+          </button>
+        </div>
+      </div>
       <div className="glass-card table-container">
         {logs.length === 0 ? (
           <p style={{ padding: '4%', color: 'var(--text-muted)', textAlign: 'center' }}>No recent activity found. Your logs will appear here.</p>

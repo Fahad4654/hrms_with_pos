@@ -1,5 +1,6 @@
 import prisma from '../config/prisma.js';
 import { getTodayString, getWorkTimeInUTC, getEndOfDayInUTC, toEpoch, serializeBigInt, getDateString } from '../utils/time.js';
+import dayjs from 'dayjs';
 
 export class AttendanceService {
   static async clockIn(employeeId: string, location?: { lat: number; lng: number; ip?: string }) {
@@ -89,9 +90,26 @@ export class AttendanceService {
     return serializeBigInt(session);
   }
 
-  static async getAttendanceLogs(employeeId: string) {
+  static async getAttendanceLogs(employeeId: string, startDate?: string, endDate?: string) {
+    const where: any = { employeeId };
+    
+    // Add date range filter using BigInt timestamps
+    if (startDate || endDate) {
+      where.clockInTimestamp = {};
+      if (startDate) {
+        // Start of startDate in UTC/specified-timezone? 
+        // We'll treat startDate as YYYY-MM-DD
+        const startEpoch = dayjs(startDate).startOf('day').valueOf();
+        where.clockInTimestamp.gte = BigInt(startEpoch);
+      }
+      if (endDate) {
+        const endEpoch = dayjs(endDate).endOf('day').valueOf();
+        where.clockInTimestamp.lte = BigInt(endEpoch);
+      }
+    }
+
     const rawLogs = await prisma.attendance.findMany({
-      where: { employeeId },
+      where,
       orderBy: { clockInTimestamp: 'asc' }, // Order by asc to process chronologically
     });
 

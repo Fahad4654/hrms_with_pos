@@ -117,6 +117,18 @@ input, select {
   color-scheme: dark;
 }
 
+input[type="date"] {
+  min-width: 150px;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Custom icon placement to avoid overlap */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
 input:focus {
   border-color: var(--primary);
 }

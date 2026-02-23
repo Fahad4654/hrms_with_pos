@@ -9,5 +9,6 @@ router.use(authenticate);
 router.post('/clock-in', AttendanceController.clockIn);
 router.post('/clock-out', AttendanceController.clockOut);
 router.get('/logs', AttendanceController.getLogs);
+router.get('/logs/:employeeId', AttendanceController.getEmployeeLogs);
 
 export default router;

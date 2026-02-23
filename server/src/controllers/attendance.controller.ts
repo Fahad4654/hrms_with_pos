@@ -30,7 +30,24 @@ export class AttendanceController {
     try {
       if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
       
-      const logs = await AttendanceService.getAttendanceLogs(req.user.id);
+      const startDate = req.query.startDate as string | undefined;
+      const endDate = req.query.endDate as string | undefined;
+      const logs = await AttendanceService.getAttendanceLogs(req.user.id, startDate, endDate);
+      res.json(logs);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  static async getEmployeeLogs(req: AuthRequest, res: Response) {
+    try {
+      const { employeeId } = req.params;
+      if (!employeeId) throw new Error('Employee ID is required');
+
+      const startDate = req.query.startDate as string | undefined;
+      const endDate = req.query.endDate as string | undefined;
+      
+      const logs = await AttendanceService.getAttendanceLogs(employeeId, startDate, endDate);
       res.json(logs);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
