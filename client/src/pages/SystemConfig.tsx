@@ -331,23 +331,32 @@ const SystemConfig: React.FC = () => {
             </button>
           </div>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="table-container">
+          <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--glass-border)', textAlign: 'left', color: 'var(--text-muted)' }}>
-                <th style={{ padding: '2%', width: '10%' }}>#</th>
-                <th style={{ padding: '2%' }}>Type Name</th>
-                <th style={{ padding: '2%' }}>Days Allowed / Year</th>
-                <th style={{ padding: '2%' }}>Status</th>
-                <th style={{ padding: '2%', textAlign: 'right' }}>Actions</th>
+              <tr style={{ borderBottom: '1px solid var(--glass-border)', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                <th style={{ padding: '12px 16px', width: '5%' }}>#</th>
+                <th style={{ padding: '12px 16px' }}>Type Name</th>
+                <th style={{ padding: '12px 16px' }}>Days Allowed / Year</th>
+                <th style={{ padding: '12px 16px' }}>Status</th>
+                <th className="actions-cell" style={{ padding: '12px 16px', textAlign: 'right', 
+                  position: 'sticky', 
+                  right: 0, 
+                  width: '250px',
+                  background: '#1e293b', 
+                  zIndex: 20,
+                  borderLeft: '2px solid var(--glass-border)',
+                  boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+                }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {leaveTypes.map((type, index) => (
                 <tr key={type.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: '2%' }}>{index + 1}</td>
-                  <td style={{ padding: '2%', fontWeight: 'bold' }}>{type.name}</td>
-                  <td style={{ padding: '2%' }}>{type.daysAllowed} days</td>
-                  <td style={{ padding: '2%' }}>
+                  <td style={{ padding: '12px 16px' }}>{index + 1}</td>
+                  <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>{type.name}</td>
+                  <td style={{ padding: '12px 16px' }}>{type.daysAllowed} days</td>
+                  <td style={{ padding: '12px 16px' }}>
                     <span className="badge" style={{ 
                       background: type.active ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                       color: type.active ? 'var(--success)' : 'var(--error)'
@@ -355,10 +364,18 @@ const SystemConfig: React.FC = () => {
                       {type.active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
-                  <td style={{ padding: '2%' }}>
+                  <td className="actions-cell" style={{ 
+                    padding: '12px 16px',
+                    position: 'sticky',
+                    right: 0,
+                    background: '#1e293b',
+                    zIndex: 10,
+                    borderLeft: '2px solid var(--glass-border)',
+                    boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+                  }}>
                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                         <button className="btn" style={{ padding: '6px 12px', fontSize: '0.875rem', border: '1px solid var(--glass-border)', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }} onClick={() => fetchUtilization(type.name)}>Usage</button>
-                        <button className="btn" style={{ padding: '6px 12px', fontSize: '0.875rem', border: '1px solid var(--glass-border)' }} onClick={() => { setEditingLeave(type); setIsLeaveModalOpen(true); }}>Edit</button>
+                        <button className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.875rem' }} onClick={() => { setEditingLeave(type); setIsLeaveModalOpen(true); }}>Edit</button>
                         <button className="btn btn-danger" style={{ padding: '6px 12px', fontSize: '0.875rem' }} onClick={() => handleDeleteLeaveType(type.id)}>Delete</button>
                      </div>
                   </td>
@@ -366,6 +383,7 @@ const SystemConfig: React.FC = () => {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

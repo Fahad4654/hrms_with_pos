@@ -326,9 +326,9 @@ const EmployeeManagement: React.FC = () => {
               <th onClick={() => toggleSort('joinTimestamp')} style={{ padding: '12px 16px', cursor: 'pointer', width: '15%' }}>
                 Join Date {sortBy === 'joinTimestamp' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th style={{ 
+              <th className="actions-cell" style={{ 
                 padding: '12px 16px', 
-                width: '130px', 
+                width: '320px', 
                 position: 'sticky', 
                 right: 0, 
                 background: '#1e293b', 
@@ -347,7 +347,7 @@ const EmployeeManagement: React.FC = () => {
               employees.map((emp, index) => (
                 <tr key={emp.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                   <td style={{ padding: '12px 16px' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
-                  <td style={{ padding: '12px 16px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={emp.name}>
+                  <td className="td-wrap" style={{ padding: '12px 16px', fontWeight: '500' }} title={emp.name}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       {emp.image ? (
                         <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '1px solid var(--glass-border)' }}>
@@ -361,7 +361,7 @@ const EmployeeManagement: React.FC = () => {
                       <span>{emp.name}</span>
                     </div>
                   </td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={emp.designation || 'N/A'}>{emp.designation || 'N/A'}</td>
+                  <td className="td-wrap" style={{ padding: '12px 16px' }} title={emp.designation || 'N/A'}>{emp.designation || 'N/A'}</td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{ 
                       padding: '0.5% 1.5%', 
@@ -373,12 +373,9 @@ const EmployeeManagement: React.FC = () => {
                       {emp.role?.name || 'N/A'}
                     </span>
                   </td>
-                   <td style={{ 
+                   <td className="td-wrap" style={{ 
                     padding: '12px 16px', 
-                    color: 'var(--text-muted)',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
+                    color: 'var(--text-muted)'
                   }} title={emp.email}>
                     {emp.email}
                   </td>
@@ -386,7 +383,7 @@ const EmployeeManagement: React.FC = () => {
                   <td style={{ padding: '12px 16px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                     {emp.joinTimestamp ? formatDateTime(emp.joinTimestamp) : '--'}
                   </td>
-                    <td style={{ 
+                    <td className="actions-cell" style={{ 
                       padding: '12px 16px',
                       position: 'sticky',
                       right: 0,

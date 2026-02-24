@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
@@ -16,9 +16,25 @@ const AdminSettings: React.FC = () => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   
+  // Sorting & Pagination State
+  const [sortBy, setSortBy] = useState<'name' | 'level'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  
   // Role Edit State
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Partial<Role> | null>(null);
+
+  const toggleSort = (field: 'name' | 'level') => {
+    if (sortBy === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+    setPage(1);
+  };
 
   const availablePermissions = [
     'all',
@@ -115,6 +131,18 @@ const AdminSettings: React.FC = () => {
 
   if (loading) return <div>Loading settings...</div>;
 
+  // Client-side sort + paginate
+  const sortedRoles = [...roles].sort((a, b) => {
+    const valA = sortBy === 'name' ? a.name.toLowerCase() : a.level;
+    const valB = sortBy === 'name' ? b.name.toLowerCase() : b.level;
+    if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+    if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+  const totalRoles = sortedRoles.length;
+  const totalPages = Math.max(1, Math.ceil(totalRoles / limit));
+  const paginatedRoles = sortedRoles.slice((page - 1) * limit, page * limit);
+
   return (
     <div className="animate-fade-in">
       <h1 style={{ marginBottom: '4%' }}>Permissions</h1>
@@ -126,32 +154,53 @@ const AdminSettings: React.FC = () => {
             + New Role
           </button>
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div className="table-container">
+        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--glass-border)', textAlign: 'left' }}>
-              <th style={{ padding: '1.5%', width: '10%' }}>#</th>
-              <th style={{ padding: '1.5%' }}>Role Name</th>
-              <th style={{ padding: '1.5%' }}>Level</th>
-              <th style={{ padding: '1.5%' }}>Permissions</th>
-              <th style={{ padding: '1.5%', textAlign: 'right' }}>Actions</th>
+            <tr style={{ borderBottom: '1px solid var(--glass-border)', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+              <th style={{ padding: '12px 16px', width: '5%' }}>#</th>
+              <th onClick={() => toggleSort('name')} style={{ padding: '12px 16px', cursor: 'pointer' }}>
+                Role Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => toggleSort('level')} style={{ padding: '12px 16px', cursor: 'pointer', width: '12%' }}>
+                Level {sortBy === 'level' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th style={{ padding: '12px 16px' }}>Permissions</th>
+              <th className="actions-cell" style={{ padding: '12px 16px', textAlign: 'right',
+                position: 'sticky',
+                right: 0,
+                width: '170px',
+                background: '#1e293b',
+                zIndex: 20,
+                borderLeft: '2px solid var(--glass-border)',
+                boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+              }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {roles.map((role, index) => (
+            {paginatedRoles.map((role, index) => (
               <tr key={role.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                <td style={{ padding: '1.5%' }}>{index + 1}</td>
-                <td style={{ padding: '1.5%', fontWeight: 'bold' }}>{role.name}</td>
-                <td style={{ padding: '1.5%' }}>{role.level}</td>
-                <td style={{ padding: '1.5%' }}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5%' }}>
+                <td style={{ padding: '12px 16px' }}>{(page - 1) * limit + index + 1}</td>
+                <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>{role.name}</td>
+                <td style={{ padding: '12px 16px' }}>{role.level}</td>
+                <td style={{ padding: '12px 16px' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }} className="flex-wrap">
                     {role.permissions.map(p => (
-                      <span key={p} style={{ fontSize: '0.75rem', padding: '0.5% 1.5%', background: 'rgba(99, 102, 241, 0.2)', borderRadius: '4px', color: 'var(--primary)' }}>
+                      <span key={p} style={{ fontSize: '0.75rem', padding: '2px 8px', background: 'rgba(99, 102, 241, 0.2)', borderRadius: '4px', color: 'var(--primary)' }}>
                         {p}
                       </span>
                     ))}
                   </div>
                 </td>
-                <td style={{ padding: '1.5%' }}>
+                <td className="actions-cell" style={{
+                    padding: '12px 16px',
+                    position: 'sticky',
+                    right: 0,
+                    background: '#1e293b',
+                    zIndex: 10,
+                    borderLeft: '2px solid var(--glass-border)',
+                    boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+                  }}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                     <button className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.875rem' }} onClick={() => { setEditingRole(role); setIsRoleModalOpen(true); }}>Edit</button>
                     <button className="btn btn-danger" style={{ padding: '6px 12px', fontSize: '0.875rem' }} onClick={() => handleDeleteRole(role.id)}>Delete</button>
@@ -161,6 +210,43 @@ const AdminSettings: React.FC = () => {
             ))}
           </tbody>
         </table>
+        </div>
+
+        {/* Pagination */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '3%', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: 0 }}>
+              Showing {Math.min((page - 1) * limit + 1, totalRoles)}-{Math.min(page * limit, totalRoles)} of {totalRoles} roles
+            </p>
+            <select
+              value={limit}
+              onChange={e => { setLimit(Number(e.target.value)); setPage(1); }}
+              style={{ padding: '6px 12px', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid var(--glass-border)', borderRadius: '4px', color: 'white', fontSize: '0.875rem' }}
+            >
+              {[5, 10, 20, 50].map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="btn" disabled={page <= 1} onClick={() => setPage(p => p - 1)} style={{ border: '1px solid var(--glass-border)', padding: '6px 12px', fontSize: '0.875rem' }}>Previous</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || (p >= page - 1 && p <= page + 1))
+              .map((p, i, arr) => {
+                const showEllipsis = i > 0 && p !== arr[i - 1] + 1;
+                return (
+                  <React.Fragment key={p}>
+                    {showEllipsis && <span style={{ color: 'var(--text-muted)', padding: '6px 4px' }}>...</span>}
+                    <button
+                      onClick={() => setPage(p)}
+                      className={`btn ${page === p ? 'btn-primary' : ''}`}
+                      style={{ minWidth: '36px', padding: '6px', border: '1px solid var(--glass-border)', fontSize: '0.875rem' }}
+                    >{p}</button>
+                  </React.Fragment>
+                );
+              })
+            }
+            <button className="btn" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} style={{ border: '1px solid var(--glass-border)', padding: '6px 12px', fontSize: '0.875rem' }}>Next</button>
+          </div>
+        </div>
       </div>
 
       {/* Role Modal */}

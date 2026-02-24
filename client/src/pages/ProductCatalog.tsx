@@ -367,9 +367,9 @@ const ProductCatalog: React.FC = () => {
                 Stock {sortBy === 'stockLevel' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
               <th style={{ padding: '12px 16px', width: '10%' }}>Status</th>
-              <th style={{ 
+              <th className="actions-cell" style={{ 
                 padding: '12px 16px', 
-                width: '160px', 
+                width: '240px', 
                 position: 'sticky', 
                 right: 0, 
                 background: '#1e293b', 
@@ -387,9 +387,9 @@ const ProductCatalog: React.FC = () => {
                 <tr key={product.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                   <td style={{ padding: '12px 16px' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
                   <td style={{ padding: '12px 16px', fontWeight: '600', color: 'var(--primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.sku}</td>
-                  <td style={{ padding: '12px 16px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.category?.name || 'N/A'}</td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.company?.name || 'N/A'}</td>
+                  <td className="td-wrap" style={{ padding: '12px 16px', fontWeight: '500' }}>{product.name}</td>
+                  <td className="td-wrap" style={{ padding: '12px 16px' }}>{product.category?.name || 'N/A'}</td>
+                  <td className="td-wrap" style={{ padding: '12px 16px' }}>{product.company?.name || 'N/A'}</td>
                   <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>{useLocale().formatCurrency(product.price)}</td>
                   <td style={{ padding: '12px 16px' }}>{product.stockLevel} units</td>
                   <td style={{ padding: '12px 16px' }}>
@@ -403,7 +403,7 @@ const ProductCatalog: React.FC = () => {
                       {product.stockLevel < 10 ? 'Low Stock' : 'In Stock'}
                     </span>
                   </td>
-                  <td style={{ 
+                  <td className="actions-cell" style={{ 
                     padding: '12px 16px',
                     position: 'sticky',
                     right: 0,

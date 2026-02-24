@@ -283,28 +283,28 @@ const LeaveManagement: React.FC = () => {
         ) : myLeaves.length === 0 ? (
           <p style={{ padding: '3%', color: 'var(--text-muted)' }}>No leave requests found.</p>
         ) : (
-          <table style={{ width: '100%', minWidth: '900px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
+          <table style={{ width: '100%', minWidth: '900px', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                <th style={{ padding: '2% 3%', width: '5%' }}>#</th>
-                <th onClick={() => toggleSort('type')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
-                   Leave Details {sortBy === 'type' && (sortOrder === 'asc' ? '↑' : '↓')}
+                <th style={{ padding: '12px 16px', width: '5%' }}>#</th>
+                <th onClick={() => toggleSort('type')} style={{ padding: '12px 16px', cursor: 'pointer', width: '18%' }}>
+                  Leave Details {sortBy === 'type' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
-                <th style={{ padding: '2% 3%' }}>Current Balance</th>
-                <th onClick={() => toggleSort('startTimestamp')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
-                   Timestamps {sortBy === 'startTimestamp' && (sortOrder === 'asc' ? '↑' : '↓')}
+                <th style={{ padding: '12px 16px', width: '18%' }}>Current Balance</th>
+                <th onClick={() => toggleSort('startTimestamp')} style={{ padding: '12px 16px', cursor: 'pointer', width: '22%' }}>
+                  Timestamps {sortBy === 'startTimestamp' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
-                <th style={{ padding: '2% 3%' }}>Reason</th>
-                <th onClick={() => toggleSort('status')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
-                   Status {sortBy === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
+                <th style={{ padding: '12px 16px', width: '17%' }}>Reason</th>
+                <th onClick={() => toggleSort('status')} style={{ padding: '12px 16px', cursor: 'pointer', width: '12%' }}>
+                  Status {sortBy === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
               </tr>
             </thead>
             <tbody>
               {myLeaves.map((leave, index) => (
                 <tr key={leave.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: '2% 3%' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
-                  <td style={{ padding: '2% 3%' }}>
+                  <td style={{ padding: '12px 16px' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
+                  <td style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                       <span className="badge">{leave.type}</span>
                     </div>
@@ -312,7 +312,7 @@ const LeaveManagement: React.FC = () => {
                       {leave.daysRequested} {leave.daysRequested === 1 ? 'Day' : 'Days'}
                     </div>
                   </td>
-                  <td style={{ padding: '2% 3%' }}>
+                  <td style={{ padding: '12px 16px' }}>
                     <div style={{ fontSize: '0.875rem' }}>
                       <span style={{ fontWeight: 'bold', color: leave.daysRemaining < leave.daysRequested && leave.status === 'PENDING' ? 'var(--error)' : 'var(--success)' }}>
                         {leave.daysRemaining}
@@ -320,12 +320,12 @@ const LeaveManagement: React.FC = () => {
                       <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>Days left</span>
                     </div>
                   </td>
-                  <td style={{ padding: '2% 3%', fontSize: '0.875rem' }}>
+                  <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>
                     <div style={{ whiteSpace: 'nowrap' }}>{formatDateTime(leave.startTimestamp)}</div>
                     <div style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>to {formatDateTime(leave.endTimestamp)}</div>
                   </td>
-                  <td style={{ padding: '2% 3%', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{leave.reason || '--'}</td>
-                  <td style={{ padding: '2% 3%' }}>
+                  <td className="td-wrap" style={{ padding: '12px 16px', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{leave.reason || '--'}</td>
+                  <td style={{ padding: '12px 16px' }}>
                     <span 
                       style={{ 
                         padding: '4px 12px', 

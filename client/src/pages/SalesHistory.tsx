@@ -87,13 +87,13 @@ const SalesHistory: React.FC = () => {
         <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th style={{ padding: '2% 3%', width: '10%' }}>#</th>
-              <th style={{ padding: '2% 3%' }}>Timestamp</th>
-              <th style={{ padding: '2% 3%' }}>Customer</th>
-              <th style={{ padding: '2% 3%' }}>Employee</th>
-              <th style={{ padding: '2% 3%' }}>Items</th>
-              <th style={{ padding: '2% 3%' }}>Total Amount</th>
-              <th style={{ padding: '2% 3%' }}>ID</th>
+              <th style={{ padding: '12px 16px', width: '50px' }}>#</th>
+              <th style={{ padding: '12px 16px', width: '180px' }}>Timestamp</th>
+              <th style={{ padding: '12px 16px', width: '20%' }}>Customer</th>
+              <th style={{ padding: '12px 16px', width: '20%' }}>Employee</th>
+              <th style={{ padding: '12px 16px', width: '100px' }}>Items</th>
+              <th style={{ padding: '12px 16px', width: '150px' }}>Total Amount</th>
+              <th style={{ padding: '12px 16px', width: '100px' }}>ID</th>
             </tr>
           </thead>
           <tbody>
@@ -104,13 +104,13 @@ const SalesHistory: React.FC = () => {
             ) : (
               sales.map((sale, index) => (
                 <tr key={sale.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: '2% 3%' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
-                  <td style={{ padding: '2% 3%' }}>{formatDateTime(sale.timestamp)}</td>
-                  <td style={{ padding: '2% 3%', fontWeight: '500', color: 'var(--accent)' }}>
+                  <td style={{ padding: '12px 16px' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
+                  <td style={{ padding: '12px 16px' }}>{formatDateTime(sale.timestamp)}</td>
+                  <td className="td-wrap" style={{ padding: '12px 16px', fontWeight: '500', color: 'var(--accent)' }}>
                     {sale.customer?.name || <span style={{ color: 'var(--text-muted)' }}>Walk-in</span>}
                   </td>
-                  <td style={{ padding: '2% 3%', fontWeight: '500' }}>{sale.employee?.name}</td>
-                  <td style={{ padding: '2% 3%' }}>
+                  <td className="td-wrap" style={{ padding: '12px 16px', fontWeight: '500' }}>{sale.employee?.name}</td>
+                  <td style={{ padding: '12px 16px' }}>
                     <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                       {sale.items.length} items
                     </div>

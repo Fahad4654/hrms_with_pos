@@ -145,20 +145,29 @@ const Categories: React.FC = () => {
       </div>
 
       <div className="glass-card table-container">
-        <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th style={{ padding: '2% 3%', width: '10%' }}>#</th>
-              <th onClick={() => toggleSort('name')} style={{ padding: '2% 3%', cursor: 'pointer', width: '25%' }}>
+              <th style={{ padding: '12px 16px', width: '8%' }}>#</th>
+              <th onClick={() => toggleSort('name')} style={{ padding: '12px 16px', cursor: 'pointer' }}>
                 Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('createdAt')} style={{ padding: '2% 3%', cursor: 'pointer', width: '25%' }}>
+              <th onClick={() => toggleSort('createdAt')} style={{ padding: '12px 16px', cursor: 'pointer' }}>
                 Created At {sortBy === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('productsCount')} style={{ padding: '2% 3%', cursor: 'pointer', width: '20%' }}>
+              <th onClick={() => toggleSort('productsCount')} style={{ padding: '12px 16px', cursor: 'pointer' }}>
                 Products Count {sortBy === 'productsCount' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th style={{ padding: '2% 3%', width: '20%' }}>Actions</th>
+              <th className="actions-cell" style={{
+                padding: '12px 16px',
+                width: '170px',
+                position: 'sticky',
+                right: 0,
+                background: '#1e293b',
+                zIndex: 20,
+                borderLeft: '2px solid var(--glass-border)',
+                boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+              }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -169,14 +178,22 @@ const Categories: React.FC = () => {
             ) : (
               categories.map((cat, index) => (
                 <tr key={cat.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: '2% 3%' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
-                  <td style={{ padding: '2% 3%', fontWeight: '500' }}>{cat.name}</td>
-                  <td style={{ padding: '2% 3%' }}>{cat.createdAt ? formatDateTime(cat.createdAt) : '--'}</td>
-                  <td style={{ padding: '2% 3%' }}>{cat._count?.products || 0} items</td>
-                  <td style={{ padding: '2% 3%' }}>
+                  <td style={{ padding: '12px 16px' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
+                  <td style={{ padding: '12px 16px', fontWeight: '500' }}>{cat.name}</td>
+                  <td style={{ padding: '12px 16px' }}>{cat.createdAt ? formatDateTime(cat.createdAt) : '--'}</td>
+                  <td style={{ padding: '12px 16px' }}>{cat._count?.products || 0} items</td>
+                  <td className="actions-cell" style={{
+                    padding: '12px 16px',
+                    position: 'sticky',
+                    right: 0,
+                    background: '#1e293b',
+                    zIndex: 10,
+                    borderLeft: '2px solid var(--glass-border)',
+                    boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+                  }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn btn-primary" style={{ padding: '4px 12px' }} onClick={() => openEditModal(cat)}>Edit</button>
-                      <button className="btn btn-danger" style={{ padding: '4px 12px' }} onClick={() => handleDelete(cat.id)}>Delete</button>
+                      <button className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.875rem' }} onClick={() => openEditModal(cat)}>Edit</button>
+                      <button className="btn btn-danger" style={{ padding: '6px 12px', fontSize: '0.875rem' }} onClick={() => handleDelete(cat.id)}>Delete</button>
                     </div>
                   </td>
                 </tr>

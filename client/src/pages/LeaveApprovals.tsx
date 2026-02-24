@@ -140,35 +140,44 @@ const LeaveApprovals: React.FC = () => {
         ) : leaves.length === 0 ? (
           <p style={{ padding: '3%', color: 'var(--text-muted)' }}>No leave requests found.</p>
         ) : (
-          <table style={{ width: '100%', minWidth: '950px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
+          <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                <th style={{ padding: '2% 3%', width: '5%' }}>#</th>
-                <th onClick={() => toggleSort('employee')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
+                <th style={{ padding: '12px 16px', width: '5%' }}>#</th>
+                <th onClick={() => toggleSort('employee')} style={{ padding: '12px 16px', cursor: 'pointer', width: '15%' }}>
                   Employee {sortBy === 'employee' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => toggleSort('type')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
+                <th onClick={() => toggleSort('type')} style={{ padding: '12px 16px', cursor: 'pointer', width: '18%' }}>
                   Leave Details {sortBy === 'type' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
-                <th style={{ padding: '2% 3%' }}>Current Balance</th>
-                <th onClick={() => toggleSort('startTimestamp')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
+                <th style={{ padding: '12px 16px', width: '14%' }}>Current Balance</th>
+                <th onClick={() => toggleSort('startTimestamp')} style={{ padding: '12px 16px', cursor: 'pointer', width: '18%' }}>
                   Timestamps {sortBy === 'startTimestamp' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => toggleSort('status')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
+                <th onClick={() => toggleSort('status')} style={{ padding: '12px 16px', cursor: 'pointer', width: '12%' }}>
                   Status {sortBy === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
-                <th style={{ padding: '2% 3%' }}>Actions</th>
+                <th className="actions-cell" style={{
+                  padding: '12px 16px',
+                  width: '170px',
+                  position: 'sticky',
+                  right: 0,
+                  background: '#1e293b',
+                  zIndex: 20,
+                  borderLeft: '2px solid var(--glass-border)',
+                  boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+                }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {leaves.map((leave, index) => (
                 <tr key={leave.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: '2% 3%' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
-                  <td style={{ padding: '2% 3%' }}>
+                  <td style={{ padding: '12px 16px' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
+                  <td className="td-wrap" style={{ padding: '12px 16px' }}>
                     <div style={{ fontWeight: '500' }}>{leave.employee?.name}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{leave.employee?.role}</div>
                   </td>
-                  <td style={{ padding: '2% 3%' }}>
+                  <td style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                       <span className="badge">{leave.type}</span>
                     </div>
@@ -176,7 +185,7 @@ const LeaveApprovals: React.FC = () => {
                       {leave.daysRequested} {leave.daysRequested === 1 ? 'Day' : 'Days'}
                     </div>
                   </td>
-                  <td style={{ padding: '2% 3%' }}>
+                  <td style={{ padding: '12px 16px' }}>
                     <div style={{ fontSize: '0.875rem' }}>
                       <span style={{ fontWeight: 'bold', color: leave.daysRemaining < leave.daysRequested && leave.status === 'PENDING' ? 'var(--error)' : 'var(--success)' }}>
                         {leave.daysRemaining}
@@ -184,11 +193,11 @@ const LeaveApprovals: React.FC = () => {
                       <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>Days left</span>
                     </div>
                   </td>
-                  <td style={{ padding: '2% 3%', fontSize: '0.875rem' }}>
+                  <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>
                     <div style={{ whiteSpace: 'nowrap' }}>{formatDateTime(leave.startTimestamp)}</div>
                     <div style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>to {formatDateTime(leave.endTimestamp)}</div>
                   </td>
-                  <td style={{ padding: '2% 3%' }}>
+                  <td style={{ padding: '12px 16px' }}>
                     <span 
                       style={{ 
                         padding: '4px 12px', 
@@ -204,13 +213,29 @@ const LeaveApprovals: React.FC = () => {
                       {leave.status}
                     </span>
                   </td>
-                  <td style={{ padding: '2% 3%' }}>
+                  <td className="actions-cell" style={{
+                    padding: '12px 16px',
+                    position: 'sticky',
+                    right: 0,
+                    background: '#1e293b',
+                    zIndex: 10,
+                    borderLeft: '2px solid var(--glass-border)',
+                    boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+                  }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       {leave.status !== 'APPROVED' && (
-                        <button onClick={() => handleUpdateStatus(leave.id, 'APPROVED')} className="btn" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)', padding: '4px 12px' }}>Approve</button>
+                        <button
+                          onClick={() => handleUpdateStatus(leave.id, 'APPROVED')}
+                          className="btn btn-primary"
+                          style={{ padding: '6px 12px', fontSize: '0.875rem', background: 'var(--success)' }}
+                        >Approve</button>
                       )}
                       {leave.status !== 'REJECTED' && (
-                        <button onClick={() => handleUpdateStatus(leave.id, 'REJECTED')} className="btn" style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)', padding: '4px 12px' }}>Reject</button>
+                        <button
+                          onClick={() => handleUpdateStatus(leave.id, 'REJECTED')}
+                          className="btn btn-danger"
+                          style={{ padding: '6px 12px', fontSize: '0.875rem' }}
+                        >Reject</button>
                       )}
                     </div>
                   </td>

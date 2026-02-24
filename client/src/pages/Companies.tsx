@@ -116,29 +116,29 @@ const Companies: React.FC = () => {
       </div>
       
       <div className="glass-card table-container">
-        <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
+        <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th style={{ padding: '2% 3%', width: '10%' }}>#</th>
-              <th 
-                style={{ padding: '2% 3%', cursor: 'pointer', userSelect: 'none', width: '40%' }} 
-                onClick={() => toggleSort('name')}
-              >
+              <th style={{ padding: '12px 16px', width: '8%' }}>#</th>
+              <th style={{ padding: '12px 16px', cursor: 'pointer' }} onClick={() => toggleSort('name')}>
                 Company Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th 
-                style={{ padding: '2% 3%', cursor: 'pointer', userSelect: 'none', width: '25%' }} 
-                onClick={() => toggleSort('createdAt')}
-              >
+              <th style={{ padding: '12px 16px', cursor: 'pointer' }} onClick={() => toggleSort('createdAt')}>
                 Created At {sortBy === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th 
-                style={{ padding: '2% 3%', cursor: 'pointer', userSelect: 'none', width: '20%' }} 
-                onClick={() => toggleSort('productsCount')}
-              >
+              <th style={{ padding: '12px 16px', cursor: 'pointer' }} onClick={() => toggleSort('productsCount')}>
                 Products Count {sortBy === 'productsCount' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th style={{ padding: '2% 3%', textAlign: 'right', width: '20%' }}>Actions</th>
+              <th className="actions-cell" style={{
+                padding: '12px 16px',
+                width: '170px',
+                position: 'sticky',
+                right: 0,
+                background: '#1e293b',
+                zIndex: 20,
+                borderLeft: '2px solid var(--glass-border)',
+                boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+              }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -147,26 +147,30 @@ const Companies: React.FC = () => {
             ) : (
               companies.map((company, index) => (
                 <tr key={company.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: '2% 3%' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
-                  <td style={{ padding: '2% 3%', fontWeight: '500' }}>{company.name}</td>
-                  <td style={{ padding: '2% 3%' }}>{formatDateTime(company.createdAt)}</td>
-                  <td style={{ padding: '2% 3%' }}>{company._count?.products || 0} items</td>
-                  <td style={{ padding: '2% 3%' }}>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                      <button 
-                        className="btn btn-primary" 
-                        style={{ padding: '6px 12px', fontSize: '0.875rem' }} 
+                  <td style={{ padding: '12px 16px' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
+                  <td style={{ padding: '12px 16px', fontWeight: '500' }}>{company.name}</td>
+                  <td style={{ padding: '12px 16px' }}>{formatDateTime(company.createdAt)}</td>
+                  <td style={{ padding: '12px 16px' }}>{company._count?.products || 0} items</td>
+                  <td className="actions-cell" style={{
+                    padding: '12px 16px',
+                    position: 'sticky',
+                    right: 0,
+                    background: '#1e293b',
+                    zIndex: 10,
+                    borderLeft: '2px solid var(--glass-border)',
+                    boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+                  }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        className="btn btn-primary"
+                        style={{ padding: '6px 12px', fontSize: '0.875rem' }}
                         onClick={() => { setEditingCompany(company); setShowModal(true); }}
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        className="btn btn-danger" 
-                        style={{ padding: '6px 12px', fontSize: '0.875rem' }} 
+                      >Edit</button>
+                      <button
+                        className="btn btn-danger"
+                        style={{ padding: '6px 12px', fontSize: '0.875rem' }}
                         onClick={() => handleDeleteCompany(company.id)}
-                      >
-                        Delete
-                      </button>
+                      >Delete</button>
                     </div>
                   </td>
                 </tr>

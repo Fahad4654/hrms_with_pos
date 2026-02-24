@@ -179,10 +179,53 @@ h1, h2, h3 {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Global stable table layout */
+.table-container table {
+  table-layout: fixed;
+}
+
+/* Fixed, stable row height for all table cells */
+.table-container th,
+.table-container td {
+  height: 56px;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+}
+
+/* Utility to allow text wrapping in cells (height becomes auto) */
+.table-container td.td-wrap {
+  white-space: normal;
+  height: auto;
+  min-height: 56px;
+  overflow: visible;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* Action column cells: always fully visible, never cropped */
+.table-container th.actions-cell,
+.table-container td.actions-cell {
+  overflow: visible;
+  white-space: nowrap;
+  height: 56px;
+  vertical-align: middle;
+}
+
+/* Badge/tag cells (e.g. permissions list) */
+.table-container td:has(.flex-wrap) {
+  height: auto;
+  white-space: normal;
+  overflow: visible;
+}
+
 /* Table Zebra Striping */
 tbody tr:nth-child(even) {
   background-color: rgba(255, 255, 255, 0.02);
 }
+
 
 .badge {
   padding: 4px 10px;
