@@ -283,7 +283,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
               }}
             >
               {user?.image ? (
-                <img src={user.image} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={user.image.startsWith('/') ? `${import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000'}${user.image}` : user.image} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
                 user?.name?.charAt(0) || "U"
               )}

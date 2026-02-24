@@ -349,7 +349,7 @@ const EmployeeManagement: React.FC = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       {emp.image ? (
                         <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '1px solid var(--glass-border)' }}>
-                          <img src={emp.image} alt={emp.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={emp.image.startsWith('/') ? `${import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000'}${emp.image}` : emp.image} alt={emp.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
                       ) : (
                         <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', flexShrink: 0, border: '1px dashed var(--glass-border)' }}>
@@ -701,7 +701,7 @@ const DetailsModal: React.FC<DetailsModalProps> = ({ employee, onClose, formatDa
            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {employee.image ? (
                 <div style={{ width: '120px', height: '120px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--primary)', alignSelf: 'center', marginBottom: '16px' }}>
-                  <img src={employee.image} alt={employee.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={employee.image.startsWith('/') ? `${import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000'}${employee.image}` : employee.image} alt={employee.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               ) : (
                 <div style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--glass-border)', alignSelf: 'center', marginBottom: '16px', color: 'var(--text-muted)' }}>

@@ -40,3 +40,8 @@ Thumbs.db
 
 # Prisma
 /server/prisma/migrations/
+
+# Uploads
+/server/uploads/
+/client/uploads/
+ 

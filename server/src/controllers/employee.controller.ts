@@ -48,6 +48,28 @@ export class EmployeeController {
     }
   }
 
+  static async uploadAvatar(req: Request, res: Response) {
+    try {
+      const id = (req as AuthRequest).user?.id;
+      if (!id) return res.status(401).json({ message: 'Unauthorized' });
+
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      const imageUrl = `/uploads/avatars/${req.file.filename}`;
+      const employee = await EmployeeService.updateEmployee(id, { image: imageUrl });
+
+      res.json({ 
+        message: 'Avatar uploaded successfully', 
+        image: imageUrl,
+        employee 
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
   static async getById(req: Request, res: Response) {
     try {
       const id = req.params.id as string;

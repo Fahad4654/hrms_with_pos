@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocale } from '../context/LocaleContext';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import Dashboard from './Dashboard';
 import api from '../services/api.js';
 
@@ -80,9 +81,11 @@ const InfoItem: React.FC<InfoItemProps> = ({
 const UserProfile: React.FC = () => {
   const { formatCurrency, formatDate } = useLocale();
   const { showToast } = useToast();
+  const { updateUser, user } = useAuth();
   const [profile, setProfile] = useState<FullUserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -143,6 +146,38 @@ const UserProfile: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    setUploading(true);
+    try {
+      const { data } = await api.post('/employees/upload-avatar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      setProfile(prev => prev ? { ...prev, image: data.image } : null);
+      
+      // Update global auth user if this is the logged in user
+      if (user && user.id === data.employee.id) {
+        updateUser({
+          ...user,
+          image: data.image
+        });
+      }
+
+      showToast('Profile picture updated', 'success');
+    } catch (err: any) {
+      showToast(err.response?.data?.message || 'Upload failed', 'error');
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (loading) return (
@@ -218,11 +253,42 @@ const UserProfile: React.FC = () => {
                 margin: '0 auto'
               }}>
                 {profile.image ? (
-                  <img src={profile.image} alt={profile.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={profile.image.startsWith('/') ? `${import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000'}${profile.image}` : profile.image} alt={profile.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   profile.name.charAt(0)
                 )}
               </div>
+              
+              {/* Overlay Upload Button */}
+              <label 
+                style={{
+                  position: 'absolute',
+                  bottom: '8px',
+                  right: '8px',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: 'var(--primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                  border: '2px solid var(--glass-border)',
+                  transition: 'transform 0.2s',
+                  zIndex: 10
+                }}
+                className="upload-btn-hover"
+              >
+                <input type="file" hidden accept="image/*" onChange={handleImageUpload} disabled={uploading} />
+                {uploading ? (
+                  <div className="mini-loader"></div>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                )}
+              </label>
             </div>
             
             {isEditing ? (
