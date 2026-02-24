@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import { useLocale } from '../context/LocaleContext';
 
 interface Category {
   id: string;
   name: string;
+  createdAt?: string;
   _count?: {
     products: number;
   };
@@ -14,6 +16,7 @@ interface Category {
 const Categories: React.FC = () => {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
+  const { formatDateTime } = useLocale();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -146,25 +149,29 @@ const Categories: React.FC = () => {
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
               <th style={{ padding: '2% 3%', width: '10%' }}>#</th>
-              <th onClick={() => toggleSort('name')} style={{ padding: '2% 3%', cursor: 'pointer', width: '30%' }}>
+              <th onClick={() => toggleSort('name')} style={{ padding: '2% 3%', cursor: 'pointer', width: '25%' }}>
                 Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('productsCount')} style={{ padding: '2% 3%', cursor: 'pointer', width: '30%' }}>
+              <th onClick={() => toggleSort('createdAt')} style={{ padding: '2% 3%', cursor: 'pointer', width: '25%' }}>
+                Created At {sortBy === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => toggleSort('productsCount')} style={{ padding: '2% 3%', cursor: 'pointer', width: '20%' }}>
                 Products Count {sortBy === 'productsCount' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th style={{ padding: '2% 3%', width: '30%' }}>Actions</th>
+              <th style={{ padding: '2% 3%', width: '20%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={4} style={{ padding: '5%', textAlign: 'center' }}>Loading...</td></tr>
+              <tr><td colSpan={5} style={{ padding: '5%', textAlign: 'center' }}>Loading...</td></tr>
             ) : categories.length === 0 ? (
-              <tr><td colSpan={4} style={{ padding: '5%', textAlign: 'center' }}>No categories found</td></tr>
+              <tr><td colSpan={5} style={{ padding: '5%', textAlign: 'center' }}>No categories found</td></tr>
             ) : (
               categories.map((cat, index) => (
                 <tr key={cat.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                   <td style={{ padding: '2% 3%' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
                   <td style={{ padding: '2% 3%', fontWeight: '500' }}>{cat.name}</td>
+                  <td style={{ padding: '2% 3%' }}>{cat.createdAt ? formatDateTime(cat.createdAt) : '--'}</td>
                   <td style={{ padding: '2% 3%' }}>{cat._count?.products || 0} items</td>
                   <td style={{ padding: '2% 3%' }}>
                     <div style={{ display: 'flex', gap: '8px' }}>

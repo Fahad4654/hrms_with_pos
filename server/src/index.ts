@@ -19,6 +19,7 @@ import biRoutes from './routes/bi.routes.js';
 import roleRoutes from './routes/role.routes.js';
 import categoryRoutes from './routes/category.routes.js';
 import companyRoutes from './routes/company.routes.js';
+import customerRoutes from './routes/customer.routes.js';
 
 
 
@@ -50,6 +51,7 @@ app.use('/api/bi', biRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/companies', companyRoutes);
+app.use('/api/customers', customerRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

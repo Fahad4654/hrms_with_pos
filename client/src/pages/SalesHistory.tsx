@@ -7,6 +7,7 @@ interface Sale {
   totalAmount: number;
   timestamp: string;
   employee: { name: string };
+  customer?: { name: string; phone?: string; };
   items: Array<{
     id: string;
     quantity: number;
@@ -88,6 +89,7 @@ const SalesHistory: React.FC = () => {
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
               <th style={{ padding: '2% 3%', width: '10%' }}>#</th>
               <th style={{ padding: '2% 3%' }}>Timestamp</th>
+              <th style={{ padding: '2% 3%' }}>Customer</th>
               <th style={{ padding: '2% 3%' }}>Employee</th>
               <th style={{ padding: '2% 3%' }}>Items</th>
               <th style={{ padding: '2% 3%' }}>Total Amount</th>
@@ -96,14 +98,17 @@ const SalesHistory: React.FC = () => {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} style={{ padding: '5%', textAlign: 'center' }}>Loading transactions...</td></tr>
+              <tr><td colSpan={7} style={{ padding: '5%', textAlign: 'center' }}>Loading transactions...</td></tr>
             ) : sales.length === 0 ? (
-              <tr><td colSpan={6} style={{ padding: '5%', textAlign: 'center' }}>No transactions found</td></tr>
+              <tr><td colSpan={7} style={{ padding: '5%', textAlign: 'center' }}>No transactions found</td></tr>
             ) : (
               sales.map((sale, index) => (
                 <tr key={sale.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                   <td style={{ padding: '2% 3%' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
                   <td style={{ padding: '2% 3%' }}>{formatDateTime(sale.timestamp)}</td>
+                  <td style={{ padding: '2% 3%', fontWeight: '500', color: 'var(--accent)' }}>
+                    {sale.customer?.name || <span style={{ color: 'var(--text-muted)' }}>Walk-in</span>}
+                  </td>
                   <td style={{ padding: '2% 3%', fontWeight: '500' }}>{sale.employee?.name}</td>
                   <td style={{ padding: '2% 3%' }}>
                     <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>

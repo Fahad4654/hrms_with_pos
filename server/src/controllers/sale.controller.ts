@@ -7,12 +7,12 @@ export class SaleController {
     try {
       if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
       
-      const { items } = req.body;
+      const { items, customer } = req.body;
       if (!items || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ message: 'Cart is empty' });
       }
 
-      const sale = await SaleService.createSale(req.user.id, items);
+      const sale = await SaleService.createSale(req.user.id, items, customer);
       res.status(201).json(sale);
     } catch (error: any) {
       res.status(400).json({ message: error.message });

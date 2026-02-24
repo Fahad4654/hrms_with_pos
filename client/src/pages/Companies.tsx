@@ -130,20 +130,27 @@ const Companies: React.FC = () => {
                 style={{ padding: '2% 3%', cursor: 'pointer', userSelect: 'none', width: '25%' }} 
                 onClick={() => toggleSort('createdAt')}
               >
-                Created Timestamp {sortBy === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
+                Created At {sortBy === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th style={{ padding: '2% 3%', textAlign: 'right', width: '25%' }}>Actions</th>
+              <th 
+                style={{ padding: '2% 3%', cursor: 'pointer', userSelect: 'none', width: '20%' }} 
+                onClick={() => toggleSort('productsCount')}
+              >
+                Products Count {sortBy === 'productsCount' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th style={{ padding: '2% 3%', textAlign: 'right', width: '20%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {companies.length === 0 ? (
-              <tr><td colSpan={4} style={{ padding: '5%', textAlign: 'center' }}>No companies found</td></tr>
+              <tr><td colSpan={5} style={{ padding: '5%', textAlign: 'center' }}>No companies found</td></tr>
             ) : (
               companies.map((company, index) => (
                 <tr key={company.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                   <td style={{ padding: '2% 3%' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
                   <td style={{ padding: '2% 3%', fontWeight: '500' }}>{company.name}</td>
                   <td style={{ padding: '2% 3%' }}>{formatDateTime(company.createdAt)}</td>
+                  <td style={{ padding: '2% 3%' }}>{company._count?.products || 0} items</td>
                   <td style={{ padding: '2% 3%' }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                       <button 

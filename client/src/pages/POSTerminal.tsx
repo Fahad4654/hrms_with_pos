@@ -22,6 +22,41 @@ const POSTerminal: React.FC = () => {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [customer, setCustomer] = useState({ name: '', email: '', phone: '', address: '' });
+  const [searchingCustomer, setSearchingCustomer] = useState(false);
+  const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCustomerSearch = (field: 'phone' | 'email', value: string) => {
+    setCustomer(prev => ({ ...prev, [field]: value }));
+    
+    if (value.length >= 3) {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      const timeout = setTimeout(async () => {
+        setSearchingCustomer(true);
+        try {
+          const { data } = await api.get('/customers/search', { params: { q: value } });
+          const matches = data.data;
+          if (matches && matches.length > 0) {
+            // Auto-fill from the first match
+            const match = matches[0];
+            setCustomer({
+              name: match.name || '',
+              email: match.email || '',
+              phone: match.phone || '',
+              address: match.address || ''
+            });
+            showToast('Customer details auto-filled', 'success');
+          }
+        } catch (error) {
+          console.error('Error searching customer', error);
+        } finally {
+          setSearchingCustomer(false);
+        }
+      }, 600);
+      setSearchTimeout(timeout);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -73,13 +108,15 @@ const POSTerminal: React.FC = () => {
         productId: item.id,
         quantity: item.quantity,
         priceAtSale: Number(item.price),
-      }))
+      })),
+      customer: customer.name ? customer : undefined
     };
 
     try {
       await api.post('/sales/checkout', saleData);
       showToast('Sale completed successfully!', 'success');
       setCart([]);
+      setCustomer({ name: '', email: '', phone: '', address: '' });
       fetchProducts();
     } catch (error: any) {
       console.error('Checkout failed, saving to offline queue', error);
@@ -172,10 +209,46 @@ const POSTerminal: React.FC = () => {
       </div>
 
       {/* Cart / Checkout Area */}
-      <div className="glass-card pos-cart" style={{ width: '30%', minWidth: '300px', display: 'flex', flexDirection: 'column', padding: '3%' }}>
-        <h2 style={{ marginBottom: '5%' }}>Current Sale</h2>
+      <div className="glass-card pos-cart" style={{ width: '30%', minWidth: '350px', display: 'flex', flexDirection: 'column', padding: '2% 3%' }}>
+        <h2 style={{ marginBottom: '4%' }}>Current Sale</h2>
         
-        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '5%' }}>
+        {/* Customer Information Form */}
+        <div style={{ marginBottom: '15px', padding: '12px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+          <h3 style={{ fontSize: '0.9rem', marginBottom: '12px', color: 'var(--text-main)' }}>Customer Details (Optional)</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <input 
+              type="text" 
+              placeholder="Name *" 
+              value={customer.name}
+              onChange={e => setCustomer(prev => ({ ...prev, name: e.target.value }))}
+              style={{ background: 'rgba(0, 0, 0, 0.2)', border: '1px solid var(--glass-border)', padding: '8px 10px', borderRadius: '4px', color: 'white', fontSize: '0.85rem' }}
+            />
+            <input 
+              type="text" 
+              placeholder="Phone (Search)" 
+              value={customer.phone}
+              onChange={e => handleCustomerSearch('phone', e.target.value)}
+              style={{ background: 'rgba(0, 0, 0, 0.2)', border: '1px solid var(--glass-border)', padding: '8px 10px', borderRadius: '4px', color: 'white', fontSize: '0.85rem' }}
+            />
+            <input 
+              type="email" 
+              placeholder="Email (Search)" 
+              value={customer.email}
+              onChange={e => handleCustomerSearch('email', e.target.value)}
+              style={{ background: 'rgba(0, 0, 0, 0.2)', border: '1px solid var(--glass-border)', padding: '8px 10px', borderRadius: '4px', color: 'white', fontSize: '0.85rem', gridColumn: '1 / span 2' }}
+            />
+            <input 
+              type="text" 
+              placeholder="Address" 
+              value={customer.address}
+              onChange={e => setCustomer(prev => ({ ...prev, address: e.target.value }))}
+              style={{ background: 'rgba(0, 0, 0, 0.2)', border: '1px solid var(--glass-border)', padding: '8px 10px', borderRadius: '4px', color: 'white', fontSize: '0.85rem', gridColumn: '1 / span 2' }}
+            />
+          </div>
+          {searchingCustomer && <p style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '8px', margin: 0 }}>Searching customer...</p>}
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '4%' }}>
           {cart.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '10%' }}>Cart is empty</p>
           ) : (

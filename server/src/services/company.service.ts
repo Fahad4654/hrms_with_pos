@@ -6,12 +6,16 @@ import { toEpoch, serializeBigInt } from '../utils/time.js';
 export class CompanyService {
   static async getAllCompanies(params: PaginationParams) {
     const { skip, take, orderBy, page, limit } = getPaginationOptions(params);
-    
+    let prismaOrderBy: any = orderBy || { name: 'asc' };
+    if (params.sortBy === 'productsCount') {
+      prismaOrderBy = { products: { _count: params.sortOrder || 'asc' } };
+    }
+
     const [companies, total] = await Promise.all([
       prisma.productCompany.findMany({
         skip,
         take,
-        orderBy: orderBy || { name: 'asc' },
+        orderBy: prismaOrderBy,
         include: { _count: { select: { products: true } } }
       }),
       prisma.productCompany.count(),

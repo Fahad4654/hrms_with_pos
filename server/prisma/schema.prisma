@@ -10,7 +10,7 @@ model Role {
   id          String     @id @default(uuid())
   name        String     @unique
   level       Int        @default(10) // 1 = Highest (Super Admin), 10 = Lowest (Staff)
-  permissions String[]   // e.g., ["all", "employees", "attendance", "products", "pos", "sales", "analytics"]
+  permissions String[] // e.g., ["all", "employees", "attendance", "products", "pos", "sales", "analytics"]
   employees   Employee[]
   createdAt   BigInt
   updatedAt   BigInt
@@ -50,14 +50,14 @@ model Employee {
 }
 
 model Attendance {
-  id               String   @id @default(uuid())
-  employeeId       String
-  employee         Employee @relation(fields: [employeeId], references: [id])
+  id                String   @id @default(uuid())
+  employeeId        String
+  employee          Employee @relation(fields: [employeeId], references: [id])
   clockInTimestamp  BigInt
   clockOutTimestamp BigInt?
-  latitude         Float?
-  longitude        Float?
-  ipAddress        String?
+  latitude          Float?
+  longitude         Float?
+  ipAddress         String?
 }
 
 model LeaveRequest {
@@ -88,26 +88,39 @@ model ProductCompany {
 }
 
 model Product {
-  id          String         @id @default(uuid())
-  sku         String         @unique
-  name        String
-  categoryId  String
-  category    Category       @relation(fields: [categoryId], references: [id])
-  companyId   String?
-  company     ProductCompany? @relation(fields: [companyId], references: [id])
-  price       Decimal
-  stockLevel  Int            @default(0)
-  features    String?        @db.Text
-  image       String?        @db.Text
-  createdAt   BigInt
-  updatedAt   BigInt
-  saleItems   SaleItem[]
+  id         String          @id @default(uuid())
+  sku        String          @unique
+  name       String
+  categoryId String
+  category   Category        @relation(fields: [categoryId], references: [id])
+  companyId  String?
+  company    ProductCompany? @relation(fields: [companyId], references: [id])
+  price      Decimal
+  stockLevel Int             @default(0)
+  features   String?         @db.Text
+  image      String?         @db.Text
+  createdAt  BigInt
+  updatedAt  BigInt
+  saleItems  SaleItem[]
+}
+
+model Customer {
+  id        String  @id @default(uuid())
+  name      String
+  email     String? @unique
+  phone     String? @unique
+  address   String? @db.Text
+  createdAt BigInt
+  updatedAt BigInt
+  sales     Sale[]
 }
 
 model Sale {
   id          String       @id @default(uuid())
   employeeId  String
   employee    Employee     @relation(fields: [employeeId], references: [id])
+  customerId  String?
+  customer    Customer?    @relation(fields: [customerId], references: [id])
   totalAmount Decimal
   timestamp   BigInt
   items       SaleItem[]
@@ -124,7 +137,6 @@ model SaleItem {
   priceAtSale Decimal
 }
 
-
 model Commission {
   id         String   @id @default(uuid())
   employeeId String
@@ -136,23 +148,23 @@ model Commission {
 }
 
 model LeaveType {
-  id          String   @id @default(uuid())
-  name        String   @unique
+  id          String  @id @default(uuid())
+  name        String  @unique
   daysAllowed Int
-  active      Boolean  @default(true)
+  active      Boolean @default(true)
   createdAt   BigInt
   updatedAt   BigInt
 }
 
 model CompanySettings {
-  id            String   @id @default(uuid())
-  companyName   String   @default("My Company")
-  workDays      String[] @default(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
-  workStartTime String   @default("09:00")
-  workEndTime   String   @default("17:00")
-  enableOvertime Boolean @default(false)
-  country       String   @default("US")
-  timezone      String   @default("America/New_York")
-  currency      String   @default("USD")
-  updatedAt     BigInt
+  id             String   @id @default(uuid())
+  companyName    String   @default("My Company")
+  workDays       String[] @default(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
+  workStartTime  String   @default("09:00")
+  workEndTime    String   @default("17:00")
+  enableOvertime Boolean  @default(false)
+  country        String   @default("US")
+  timezone       String   @default("America/New_York")
+  currency       String   @default("USD")
+  updatedAt      BigInt
 }
