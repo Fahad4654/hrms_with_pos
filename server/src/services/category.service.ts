@@ -7,14 +7,19 @@ export class CategoryService {
   static async getAllCategories(params: PaginationParams) {
     const { skip, take, orderBy, page, limit } = getPaginationOptions(params);
     
+    // SQLite uses basic contains, we don't need mode: 'insensitive' for simple matching if the collation handles it,
+    // but Prisma typically doesn't support mode: 'insensitive' on SQLite natively anyway, so we just use contains.
+    const where = params.search ? { name: { contains: params.search } } : {};
+    
     const [categories, total] = await Promise.all([
       prisma.category.findMany({
+        where,
         skip,
         take,
         orderBy: orderBy || { name: 'asc' },
         include: { _count: { select: { products: true } } }
       }),
-      prisma.category.count(),
+      prisma.category.count({ where }),
     ]);
 
     return serializeBigInt({
