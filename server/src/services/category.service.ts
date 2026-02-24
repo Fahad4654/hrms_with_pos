@@ -11,12 +11,18 @@ export class CategoryService {
     // but Prisma typically doesn't support mode: 'insensitive' on SQLite natively anyway, so we just use contains.
     const where = params.search ? { name: { contains: params.search } } : {};
     
+    // Handle custom sorting for products count
+    let prismaOrderBy: any = orderBy || { name: 'asc' };
+    if (params.sortBy === 'productsCount') {
+      prismaOrderBy = { products: { _count: params.sortOrder || 'asc' } };
+    }
+
     const [categories, total] = await Promise.all([
       prisma.category.findMany({
         where,
         skip,
         take,
-        orderBy: orderBy || { name: 'asc' },
+        orderBy: prismaOrderBy,
         include: { _count: { select: { products: true } } }
       }),
       prisma.category.count({ where }),

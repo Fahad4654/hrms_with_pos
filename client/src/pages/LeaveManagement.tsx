@@ -286,6 +286,7 @@ const LeaveManagement: React.FC = () => {
           <table style={{ width: '100%', minWidth: '900px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                <th style={{ padding: '2% 3%', width: '5%' }}>#</th>
                 <th onClick={() => toggleSort('type')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
                    Leave Details {sortBy === 'type' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
@@ -300,8 +301,9 @@ const LeaveManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {myLeaves.map(leave => (
+              {myLeaves.map((leave, index) => (
                 <tr key={leave.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                  <td style={{ padding: '2% 3%' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
                   <td style={{ padding: '2% 3%' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                       <span className="badge">{leave.type}</span>

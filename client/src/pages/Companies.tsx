@@ -119,8 +119,9 @@ const Companies: React.FC = () => {
         <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+              <th style={{ padding: '2% 3%', width: '10%' }}>#</th>
               <th 
-                style={{ padding: '2% 3%', cursor: 'pointer', userSelect: 'none', width: '50%' }} 
+                style={{ padding: '2% 3%', cursor: 'pointer', userSelect: 'none', width: '40%' }} 
                 onClick={() => toggleSort('name')}
               >
                 Company Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
@@ -136,10 +137,11 @@ const Companies: React.FC = () => {
           </thead>
           <tbody>
             {companies.length === 0 ? (
-              <tr><td colSpan={3} style={{ padding: '5%', textAlign: 'center' }}>No companies found</td></tr>
+              <tr><td colSpan={4} style={{ padding: '5%', textAlign: 'center' }}>No companies found</td></tr>
             ) : (
-              companies.map(company => (
+              companies.map((company, index) => (
                 <tr key={company.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                  <td style={{ padding: '2% 3%' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
                   <td style={{ padding: '2% 3%', fontWeight: '500' }}>{company.name}</td>
                   <td style={{ padding: '2% 3%' }}>{formatDateTime(company.createdAt)}</td>
                   <td style={{ padding: '2% 3%' }}>

@@ -347,6 +347,7 @@ const ProductCatalog: React.FC = () => {
         <table style={{ width: '100%', minWidth: '1200px', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+              <th style={{ padding: '12px 16px', width: '5%' }}>#</th>
               <th onClick={() => toggleSort('sku')} style={{ padding: '12px 16px', cursor: 'pointer', width: '12%' }}>
                 SKU {sortBy === 'sku' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
@@ -380,10 +381,11 @@ const ProductCatalog: React.FC = () => {
           </thead>
           <tbody>
             {products.length === 0 ? (
-              <tr><td colSpan={7} style={{ padding: '5%', textAlign: 'center' }}>No products found</td></tr>
+              <tr><td colSpan={8} style={{ padding: '5%', textAlign: 'center' }}>No products found</td></tr>
             ) : (
-              products.map(product => (
+              products.map((product, index) => (
                 <tr key={product.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                  <td style={{ padding: '12px 16px' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
                   <td style={{ padding: '12px 16px', fontWeight: '600', color: 'var(--primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.sku}</td>
                   <td style={{ padding: '12px 16px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</td>
                   <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.category?.name || 'N/A'}</td>

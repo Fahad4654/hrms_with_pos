@@ -145,23 +145,25 @@ const Categories: React.FC = () => {
         <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th onClick={() => toggleSort('name')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
+              <th style={{ padding: '2% 3%', width: '10%' }}>#</th>
+              <th onClick={() => toggleSort('name')} style={{ padding: '2% 3%', cursor: 'pointer', width: '30%' }}>
                 Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th style={{ padding: '2% 3%' }}>
-                Products Count
+              <th onClick={() => toggleSort('productsCount')} style={{ padding: '2% 3%', cursor: 'pointer', width: '30%' }}>
+                Products Count {sortBy === 'productsCount' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th style={{ padding: '2% 3%', width: '20%' }}>Actions</th>
+              <th style={{ padding: '2% 3%', width: '30%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={3} style={{ padding: '5%', textAlign: 'center' }}>Loading...</td></tr>
+              <tr><td colSpan={4} style={{ padding: '5%', textAlign: 'center' }}>Loading...</td></tr>
             ) : categories.length === 0 ? (
-              <tr><td colSpan={3} style={{ padding: '5%', textAlign: 'center' }}>No categories found</td></tr>
+              <tr><td colSpan={4} style={{ padding: '5%', textAlign: 'center' }}>No categories found</td></tr>
             ) : (
-              categories.map(cat => (
+              categories.map((cat, index) => (
                 <tr key={cat.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                  <td style={{ padding: '2% 3%' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
                   <td style={{ padding: '2% 3%', fontWeight: '500' }}>{cat.name}</td>
                   <td style={{ padding: '2% 3%' }}>{cat._count?.products || 0} items</td>
                   <td style={{ padding: '2% 3%' }}>

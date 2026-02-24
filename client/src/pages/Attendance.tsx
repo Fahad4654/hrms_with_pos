@@ -169,6 +169,7 @@ const Attendance: React.FC = () => {
           <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                <th style={{ padding: '2%', width: '5%' }}>#</th>
                 <th style={{ padding: '2%', width: '15%' }}>Timestamp</th>
                 <th style={{ padding: '2%', width: '15%' }}>Clock In</th>
                 <th style={{ padding: '2%', width: '15%' }}>Clock Out</th>
@@ -177,9 +178,10 @@ const Attendance: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {logs.map((log) => {
+              {logs.map((log, index) => {
                 return (
                   <tr key={log.date} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                    <td style={{ padding: '2% 3%' }}>{index + 1}</td>
                     <td style={{ padding: '2% 3%' }}>{formatDate(log.date)}</td>
                     <td style={{ padding: '2% 3%' }}>{formatDateTime(log.firstClockIn)}</td>
                     <td style={{ padding: '2% 3%' }}>

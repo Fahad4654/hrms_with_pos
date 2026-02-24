@@ -129,6 +129,7 @@ const AdminSettings: React.FC = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', textAlign: 'left' }}>
+              <th style={{ padding: '1.5%', width: '10%' }}>#</th>
               <th style={{ padding: '1.5%' }}>Role Name</th>
               <th style={{ padding: '1.5%' }}>Level</th>
               <th style={{ padding: '1.5%' }}>Permissions</th>
@@ -136,8 +137,9 @@ const AdminSettings: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {roles.map(role => (
+            {roles.map((role, index) => (
               <tr key={role.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                <td style={{ padding: '1.5%' }}>{index + 1}</td>
                 <td style={{ padding: '1.5%', fontWeight: 'bold' }}>{role.name}</td>
                 <td style={{ padding: '1.5%' }}>{role.level}</td>
                 <td style={{ padding: '1.5%' }}>

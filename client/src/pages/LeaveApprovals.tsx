@@ -143,6 +143,7 @@ const LeaveApprovals: React.FC = () => {
           <table style={{ width: '100%', minWidth: '950px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                <th style={{ padding: '2% 3%', width: '5%' }}>#</th>
                 <th onClick={() => toggleSort('employee')} style={{ padding: '2% 3%', cursor: 'pointer' }}>
                   Employee {sortBy === 'employee' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
@@ -160,8 +161,9 @@ const LeaveApprovals: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {leaves.map(leave => (
+              {leaves.map((leave, index) => (
                 <tr key={leave.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                  <td style={{ padding: '2% 3%' }}>{(meta.page - 1) * meta.limit + index + 1}</td>
                   <td style={{ padding: '2% 3%' }}>
                     <div style={{ fontWeight: '500' }}>{leave.employee?.name}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{leave.employee?.role}</div>

@@ -334,6 +334,7 @@ const SystemConfig: React.FC = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)', textAlign: 'left', color: 'var(--text-muted)' }}>
+                <th style={{ padding: '2%', width: '10%' }}>#</th>
                 <th style={{ padding: '2%' }}>Type Name</th>
                 <th style={{ padding: '2%' }}>Days Allowed / Year</th>
                 <th style={{ padding: '2%' }}>Status</th>
@@ -341,8 +342,9 @@ const SystemConfig: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {leaveTypes.map(type => (
+              {leaveTypes.map((type, index) => (
                 <tr key={type.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                  <td style={{ padding: '2%' }}>{index + 1}</td>
                   <td style={{ padding: '2%', fontWeight: 'bold' }}>{type.name}</td>
                   <td style={{ padding: '2%' }}>{type.daysAllowed} days</td>
                   <td style={{ padding: '2%' }}>
@@ -427,6 +429,7 @@ const SystemConfig: React.FC = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--glass-border)', textAlign: 'left', color: 'var(--text-muted)' }}>
+                    <th style={{ padding: '3%', width: '10%' }}>#</th>
                     <th style={{ padding: '3%' }}>Employee</th>
                     <th style={{ padding: '3%', textAlign: 'right' }}>Days Taken</th>
                   </tr>
@@ -434,6 +437,7 @@ const SystemConfig: React.FC = () => {
                 <tbody>
                   {utilizationData.map((row, i) => (
                     <tr key={i} style={{ borderBottom: i === utilizationData.length - 1 ? 'none' : '1px solid var(--glass-border)' }}>
+                      <td style={{ padding: '3%' }}>{i + 1}</td>
                       <td style={{ padding: '3%' }}>{row.employeeName}</td>
                       <td style={{ padding: '3%', textAlign: 'right', fontWeight: 'bold' }}>{row.daysTaken} days</td>
                     </tr>
