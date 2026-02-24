@@ -216,9 +216,9 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
               permission: "analytics",
             },
             {
-              label: "Admin Settings",
+              label: "Permissions",
               icon: "⚙️",
-              to: "/settings",
+              to: "/permissions",
               permission: "all",
             },
             {

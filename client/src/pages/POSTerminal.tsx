@@ -25,9 +25,12 @@ const POSTerminal: React.FC = () => {
   const [customer, setCustomer] = useState({ name: '', email: '', phone: '', address: '' });
   const [searchingCustomer, setSearchingCustomer] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const handleCustomerSearch = (field: 'phone' | 'email', value: string) => {
     setCustomer(prev => ({ ...prev, [field]: value }));
+    setShowSuggestions(true);
     
     if (value.length >= 3) {
       if (searchTimeout) clearTimeout(searchTimeout);
@@ -35,26 +38,30 @@ const POSTerminal: React.FC = () => {
         setSearchingCustomer(true);
         try {
           const { data } = await api.get('/customers/search', { params: { q: value } });
-          const matches = data.data;
-          if (matches && matches.length > 0) {
-            // Auto-fill from the first match
-            const match = matches[0];
-            setCustomer({
-              name: match.name || '',
-              email: match.email || '',
-              phone: match.phone || '',
-              address: match.address || ''
-            });
-            showToast('Customer details auto-filled', 'success');
-          }
+          setSuggestions(data.data || []);
         } catch (error) {
           console.error('Error searching customer', error);
+          setSuggestions([]);
         } finally {
           setSearchingCustomer(false);
         }
       }, 600);
       setSearchTimeout(timeout);
+    } else {
+      setSuggestions([]);
     }
+  };
+
+  const handleSelectSuggestion = (match: any) => {
+    setCustomer({
+      name: match.name || '',
+      email: match.email || '',
+      phone: match.phone || '',
+      address: match.address || ''
+    });
+    setSuggestions([]);
+    setShowSuggestions(false);
+    showToast('Customer details loaded', 'success');
   };
 
   useEffect(() => {
@@ -213,7 +220,7 @@ const POSTerminal: React.FC = () => {
         <h2 style={{ marginBottom: '4%' }}>Current Sale</h2>
         
         {/* Customer Information Form */}
-        <div style={{ marginBottom: '15px', padding: '12px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+        <div style={{ marginBottom: '15px', padding: '12px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', border: '1px solid var(--glass-border)', position: 'relative' }}>
           <h3 style={{ fontSize: '0.9rem', marginBottom: '12px', color: 'var(--text-main)' }}>Customer Details (Optional)</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             <input 
@@ -246,6 +253,45 @@ const POSTerminal: React.FC = () => {
             />
           </div>
           {searchingCustomer && <p style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '8px', margin: 0 }}>Searching customer...</p>}
+          
+          {/* Suggestions Dropdown */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              background: 'rgba(30, 41, 59, 0.95)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '8px',
+              marginTop: '4px',
+              zIndex: 10,
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+              maxHeight: '200px',
+              overflowY: 'auto'
+            }}>
+              {suggestions.map((s, i) => (
+                <div 
+                  key={s.id || i}
+                  onClick={() => handleSelectSuggestion(s)}
+                  style={{
+                    padding: '10px 12px',
+                    borderBottom: i === suggestions.length - 1 ? 'none' : '1px solid rgba(255, 255, 255, 0.05)',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{ fontWeight: '500', fontSize: '0.85rem' }}>{s.name}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    {s.phone && <span style={{ marginRight: '8px' }}>📞 {s.phone}</span>}
+                    {s.email && <span>✉️ {s.email}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', marginBottom: '4%' }}>

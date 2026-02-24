@@ -117,7 +117,7 @@ const AdminSettings: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <h1 style={{ marginBottom: '4%' }}>Role Management</h1>
+      <h1 style={{ marginBottom: '4%' }}>Permissions</h1>
       
       <div className="glass-card" style={{ padding: '3%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3%' }}>

@@ -93,7 +93,7 @@ const App: React.FC = () => {
               <Dashboard><Analytics /></Dashboard>
             </ProtectedRoute>
           } />
-          <Route path="/settings" element={
+          <Route path="/permissions" element={
             <ProtectedRoute permission="all">
               <Dashboard><AdminSettings /></Dashboard>
             </ProtectedRoute>
