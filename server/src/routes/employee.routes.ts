@@ -1,14 +1,15 @@
 import { Router } from 'express';
 import { EmployeeController } from '../controllers/employee.controller.js';
 import { authenticate, authorizePermission } from '../middleware/auth.js';
-import { upload } from '../middleware/upload.js';
+import { createUploadMiddleware } from '../middleware/upload.js';
 const router = Router();
 
 router.use(authenticate);
 
 router.get('/me', EmployeeController.getMe);
 router.put('/me', EmployeeController.updateMe);
-router.post('/upload-avatar', upload.single('avatar'), EmployeeController.uploadAvatar);
+const avatarUpload = createUploadMiddleware('avatars');
+router.post('/upload-avatar', avatarUpload.single('avatar'), EmployeeController.uploadAvatar);
 router.get('/', authorizePermission(['employees']), EmployeeController.getAll);
 router.get('/:id', authorizePermission(['employees']), EmployeeController.getById);
 router.post('/', authorizePermission(['employees']), EmployeeController.create);

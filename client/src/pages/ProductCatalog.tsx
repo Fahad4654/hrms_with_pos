@@ -60,6 +60,7 @@ const ProductCatalog: React.FC = () => {
     image: ''
   });
   const [isImporting, setIsImporting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -115,6 +116,34 @@ const ProductCatalog: React.FC = () => {
     } catch (error) {
       console.error('Failed to fetch products', error);
       showToast('Failed to fetch products', 'error');
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image file size must be less than 5MB', 'error');
+      return;
+    }
+
+    const uploadData = new FormData();
+    uploadData.append('image', file);
+
+    setUploadingImage(true);
+    try {
+      const { data } = await api.post('/products/upload-image', uploadData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      setFormData(prev => ({ ...prev, image: data.imageUrl }));
+      showToast('Image uploaded successfully', 'success');
+    } catch (err: any) {
+      showToast(err.response?.data?.message || 'Upload failed', 'error');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -556,8 +585,71 @@ const ProductCatalog: React.FC = () => {
                 />
               </div>
               <div className="input-group">
-                <label>Image URL / Path</label>
-                <input value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} placeholder="https://..." />
+                <label>Product Image</label>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                  {/* Image Preview */}
+                  <div style={{ 
+                    width: '100px', 
+                    height: '100px', 
+                    borderRadius: '8px', 
+                    background: 'rgba(255,255,255,0.05)', 
+                    border: '1px dashed var(--glass-border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    flexShrink: 0
+                  }}>
+                    {formData.image ? (
+                      <img 
+                        src={formData.image.startsWith('/') ? `${import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000'}${formData.image}` : formData.image} 
+                        alt="Preview" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      />
+                    ) : (
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>No Image</span>
+                    )}
+                  </div>
+                  
+                  {/* Upload Controls */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input 
+                        value={formData.image} 
+                        onChange={e => setFormData({...formData, image: e.target.value})} 
+                        placeholder="Image URL or upload a file" 
+                        style={{ flex: 1 }}
+                      />
+                      <label 
+                        className="btn" 
+                        style={{ 
+                          border: '1px solid var(--glass-border)', 
+                          cursor: uploadingImage ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <input 
+                          type="file" 
+                          hidden 
+                          accept="image/*" 
+                          onChange={handleImageUpload} 
+                          disabled={uploadingImage} 
+                        />
+                        {uploadingImage ? (
+                          <>
+                            <div className="mini-loader"></div> Uploading...
+                          </>
+                        ) : 'Upload File'}
+                      </label>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      Upload an image file (max 5MB) or paste an external direct image URL.
+                    </p>
+                  </div>
+                </div>
               </div>
               <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
                 <button type="button" className="btn" onClick={() => setShowModal(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>
@@ -690,7 +782,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, onCl
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {product.image ? (
               <div style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
-                <img src={product.image} alt={product.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                <img src={product.image.startsWith('/') ? `${import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000'}${product.image}` : product.image} alt={product.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
               </div>
             ) : (
               <div style={{ 

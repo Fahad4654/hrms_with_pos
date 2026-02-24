@@ -70,4 +70,21 @@ export class ProductController {
       res.status(400).json({ message: error.message });
     }
   }
+
+  static async uploadImage(req: Request, res: Response) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No image file provided' });
+      }
+
+      const imageUrl = `/uploads/products/${req.file.filename}`;
+      
+      res.json({ 
+        message: 'Image uploaded successfully',
+        imageUrl: imageUrl
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error?.message || 'Upload failed' });
+    }
+  }
 }

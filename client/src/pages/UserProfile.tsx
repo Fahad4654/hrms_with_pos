@@ -152,6 +152,11 @@ const UserProfile: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image file size must be less than 5MB', 'error');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('avatar', file);
 
