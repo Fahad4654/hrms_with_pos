@@ -39,6 +39,7 @@ model Employee {
   role          Role           @relation(fields: [roleId], references: [id])
   salary        Decimal        @default(0)
   joinTimestamp BigInt?
+  image         String?        @db.Text
   refreshToken  String?
   createdAt     BigInt
   updatedAt     BigInt

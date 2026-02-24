@@ -47,6 +47,8 @@ const ProductCatalog: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showModal, setShowModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({ 
     sku: '', 
     name: '', 
@@ -313,29 +315,38 @@ const ProductCatalog: React.FC = () => {
       </div>
 
       <div className="glass-card table-container">
-        <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', tableLayout: 'fixed', textAlign: 'left' }}>
+        <table style={{ width: '100%', minWidth: '1200px', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th onClick={() => toggleSort('sku')} style={{ padding: '2% 3%', cursor: 'pointer', width: '15%' }}>
+              <th onClick={() => toggleSort('sku')} style={{ padding: '12px 16px', cursor: 'pointer', width: '12%' }}>
                 SKU {sortBy === 'sku' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('name')} style={{ padding: '2% 3%', cursor: 'pointer', width: '25%' }}>
+              <th onClick={() => toggleSort('name')} style={{ padding: '12px 16px', cursor: 'pointer', width: '20%' }}>
                 Product Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('category')} style={{ padding: '2% 3%', cursor: 'pointer', width: '15%' }}>
+              <th onClick={() => toggleSort('category')} style={{ padding: '12px 16px', cursor: 'pointer', width: '12%' }}>
                 Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('company')} style={{ padding: '2% 3%', cursor: 'pointer', width: '15%' }}>
+              <th onClick={() => toggleSort('company')} style={{ padding: '12px 16px', cursor: 'pointer', width: '12%' }}>
                 Company {sortBy === 'company' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('price')} style={{ padding: '2% 3%', cursor: 'pointer', width: '10%' }}>
+              <th onClick={() => toggleSort('price')} style={{ padding: '12px 16px', cursor: 'pointer', width: '10%' }}>
                 Price {sortBy === 'price' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('stockLevel')} style={{ padding: '2% 3%', cursor: 'pointer', width: '10%' }}>
+              <th onClick={() => toggleSort('stockLevel')} style={{ padding: '12px 16px', cursor: 'pointer', width: '10%' }}>
                 Stock {sortBy === 'stockLevel' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th style={{ padding: '2% 3%', width: '10%' }}>Status</th>
-              <th style={{ padding: '2% 3%', width: '15%' }}>Actions</th>
+              <th style={{ padding: '12px 16px', width: '10%' }}>Status</th>
+              <th style={{ 
+                padding: '12px 16px', 
+                width: '160px', 
+                position: 'sticky', 
+                right: 0, 
+                background: '#1e293b', 
+                zIndex: 20,
+                borderLeft: '2px solid var(--glass-border)',
+                boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+              }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -344,13 +355,13 @@ const ProductCatalog: React.FC = () => {
             ) : (
               products.map(product => (
                 <tr key={product.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: '2% 3%', fontWeight: '600', color: 'var(--primary)' }}>{product.sku}</td>
-                  <td style={{ padding: '2% 3%', fontWeight: '500' }}>{product.name}</td>
-                  <td style={{ padding: '2% 3%' }}>{product.category?.name || 'N/A'}</td>
-                  <td style={{ padding: '2% 3%' }}>{product.company?.name || 'N/A'}</td>
-                  <td style={{ padding: '2% 3%', fontWeight: 'bold' }}>{useLocale().formatCurrency(product.price)}</td>
-                  <td style={{ padding: '2% 3%' }}>{product.stockLevel} units</td>
-                  <td style={{ padding: '2% 3%' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: '600', color: 'var(--primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.sku}</td>
+                  <td style={{ padding: '12px 16px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</td>
+                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.category?.name || 'N/A'}</td>
+                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.company?.name || 'N/A'}</td>
+                  <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>{useLocale().formatCurrency(product.price)}</td>
+                  <td style={{ padding: '12px 16px' }}>{product.stockLevel} units</td>
+                  <td style={{ padding: '12px 16px' }}>
                     <span style={{ 
                       padding: '0.5% 1.5%', 
                       borderRadius: '20px', 
@@ -361,18 +372,33 @@ const ProductCatalog: React.FC = () => {
                       {product.stockLevel < 10 ? 'Low Stock' : 'In Stock'}
                     </span>
                   </td>
-                  <td style={{ padding: '2% 3%' }}>
+                  <td style={{ 
+                    padding: '12px 16px',
+                    position: 'sticky',
+                    right: 0,
+                    background: '#1e293b',
+                    zIndex: 10,
+                    borderLeft: '2px solid var(--glass-border)',
+                    boxShadow: '-4px 0 8px rgba(0,0,0,0.3)'
+                  }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button 
                         className="btn btn-primary"
-                        style={{ padding: '4px 12px', fontSize: '0.875rem' }} 
+                        style={{ padding: '6px 12px', fontSize: '0.875rem' }} 
+                        onClick={() => { setViewingProduct(product); setShowDetailsModal(true); }}
+                      >
+                        Details
+                      </button>
+                      <button 
+                        className="btn btn-primary"
+                        style={{ padding: '6px 12px', fontSize: '0.875rem' }} 
                         onClick={() => openEditModal(product)}
                       >
                         Edit
                       </button>
                       <button 
                         className="btn btn-danger" 
-                        style={{ padding: '4px 12px', fontSize: '0.875rem' }} 
+                        style={{ padding: '6px 12px', fontSize: '0.875rem' }} 
                         onClick={() => handleDelete(product.id)}
                       >
                         Delete
@@ -623,6 +649,107 @@ const ProductCatalog: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Product Details Modal */}
+      {showDetailsModal && viewingProduct && (
+        <ProductDetailsModal 
+          product={viewingProduct} 
+          onClose={() => { setShowDetailsModal(false); setViewingProduct(null); }} 
+        />
+      )}
+    </div>
+  );
+};
+
+interface ProductDetailsModalProps {
+  product: Product;
+  onClose: () => void;
+}
+
+const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, onClose }) => {
+  const { formatCurrency } = useLocale();
+  
+  return (
+    <div className="modal-overlay" style={{ 
+      position: 'fixed', 
+      inset: 0, 
+      background: 'rgba(0,0,0,0.8)', 
+      display: 'flex', 
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflowY: 'auto',
+      zIndex: 1000,
+      padding: '20px'
+    }}>
+      <div className="glass-card modal-content animate-fade-in" style={{ padding: '30px', width: '100%', maxWidth: '700px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h2 style={{ margin: 0 }}>Product Details</h2>
+          <button className="btn" onClick={onClose} style={{ border: '1px solid var(--glass-border)' }}>Close</button>
+        </div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {product.image ? (
+              <div style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
+                <img src={product.image} alt={product.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
+              </div>
+            ) : (
+              <div style={{ 
+                width: '100%', 
+                aspectRatio: '16/9', 
+                borderRadius: '12px', 
+                background: 'rgba(255,255,255,0.05)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                border: '1px dashed var(--glass-border)',
+                color: 'var(--text-muted)'
+              }}>
+                No Image
+              </div>
+            )}
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <p><strong>Status:</strong> 
+                <span style={{ 
+                  marginLeft: '8px',
+                  padding: '2px 8px', 
+                  borderRadius: '12px', 
+                  fontSize: '0.75rem', 
+                  background: product.stockLevel < 10 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                  color: product.stockLevel < 10 ? 'var(--error)' : 'var(--success)'
+                }}>
+                  {product.stockLevel < 10 ? 'Low Stock' : 'In Stock'}
+                </span>
+              </p>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <p><strong>Product Name:</strong> {product.name}</p>
+            <p><strong>SKU:</strong> {product.sku}</p>
+            <p><strong>Category:</strong> {product.category?.name || 'N/A'}</p>
+            <p><strong>Company / Brand:</strong> {product.company?.name || 'N/A'}</p>
+            <p><strong>Price:</strong> {formatCurrency(product.price)}</p>
+            <p><strong>Stock Level:</strong> {product.stockLevel} units</p>
+            <div style={{ marginTop: '12px' }}>
+              <p><strong>Features / Description:</strong></p>
+              <div style={{ 
+                marginTop: '8px', 
+                padding: '16px', 
+                background: 'rgba(0,0,0,0.2)', 
+                borderRadius: '8px', 
+                border: '1px solid var(--glass-border)',
+                fontSize: '0.9rem',
+                lineHeight: '1.5',
+                color: 'var(--text-muted)',
+                whiteSpace: 'pre-wrap'
+              }}>
+                {product.features || 'No features described for this product.'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

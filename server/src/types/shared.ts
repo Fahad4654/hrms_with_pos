@@ -15,6 +15,7 @@ export const EmployeeSchema = z.object({
   nationality: z.string().optional(),
   dateOfBirth: z.string().optional(),
   designation: z.string().optional(),
+  image: z.string().optional(),
 });
 
 export type EmployeeInput = z.infer<typeof EmployeeSchema>;

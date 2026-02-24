@@ -80,28 +80,50 @@ export class EmployeeService {
     const { 
       joinTimestamp, 
       dateOfBirth, 
-      employeeId, 
+      employeeId: providedId, 
       phone, 
       address, 
       gender, 
       maritalStatus, 
       nationality, 
       designation, 
+      image,
       ...rest 
     } = data;
+
+    // Auto-generate employeeId if not provided
+    let employeeId = providedId;
+    if (!employeeId) {
+      const lastEmployee = await prisma.employee.findFirst({
+        where: { employeeId: { startsWith: 'EMP-' } },
+        orderBy: { employeeId: 'desc' },
+        select: { employeeId: true }
+      });
+      
+      let nextNum = 1;
+      if (lastEmployee?.employeeId?.startsWith('EMP-')) {
+        const parts = lastEmployee.employeeId.split('-');
+        if (parts.length > 1 && parts[1]) {
+          const currentNum = parseInt(parts[1]);
+          if (!isNaN(currentNum)) nextNum = currentNum + 1;
+        }
+      }
+      employeeId = `EMP-${String(nextNum).padStart(4, '0')}`;
+    }
 
     const employee = await prisma.employee.create({
       data: {
         ...rest,
         password: hashedPassword,
         salary: new Prisma.Decimal(data.salary),
-        employeeId: employeeId || null,
+        employeeId,
         phone: phone || null,
         address: address || null,
         gender: gender || null,
         maritalStatus: maritalStatus || null,
         nationality: nationality || null,
         designation: designation || null,
+        image: image || null,
         joinTimestamp: joinTimestamp ? toEpoch(joinTimestamp) : null,
         dateOfBirth: dateOfBirth ? toEpoch(dateOfBirth) : null,
         createdAt: now,
@@ -113,40 +135,30 @@ export class EmployeeService {
   }
 
   static async updateEmployee(id: string, data: Partial<EmployeeInput>) {
-    const updateData: any = { ...data, updatedAt: toEpoch() };
-    if (data.password) {
-      updateData.password = await bcrypt.hash(data.password, 10);
+    const { password, salary, joinTimestamp, dateOfBirth, ...rest } = data;
+    const updateData: any = { ...rest, updatedAt: toEpoch() };
+    
+    if (password) {
+      updateData.password = await bcrypt.hash(password, 10);
     }
-    if (data.salary !== undefined) {
-      updateData.salary = String(data.salary);
+    if (salary !== undefined) {
+      updateData.salary = String(salary);
     }
-    if (data.joinTimestamp !== undefined) {
-      updateData.joinTimestamp = data.joinTimestamp ? toEpoch(data.joinTimestamp) : null;
+    if (joinTimestamp !== undefined) {
+      updateData.joinTimestamp = joinTimestamp ? toEpoch(joinTimestamp) : null;
     }
-    if (data.dateOfBirth !== undefined) {
-      updateData.dateOfBirth = data.dateOfBirth ? toEpoch(data.dateOfBirth) : null;
+    if (dateOfBirth !== undefined) {
+      updateData.dateOfBirth = dateOfBirth ? toEpoch(dateOfBirth) : null;
     }
-    if (data.designation === "") {
-      updateData.designation = null;
+
+    // Handle empty strings for nullable fields
+    const nullableFields = ['designation', 'phone', 'employeeId', 'address', 'gender', 'maritalStatus', 'nationality', 'image'] as const;
+    for (const field of nullableFields) {
+      if ((data as any)[field] === "") {
+        updateData[field] = null;
+      }
     }
-    if (data.phone === "") {
-      updateData.phone = null;
-    }
-    if (data.employeeId === "") {
-      updateData.employeeId = null;
-    }
-    if (data.address === "") {
-      updateData.address = null;
-    }
-    if (data.gender === "") {
-      updateData.gender = null;
-    }
-    if (data.maritalStatus === "") {
-      updateData.maritalStatus = null;
-    }
-    if (data.nationality === "") {
-      updateData.nationality = null;
-    }
+
     const employee = await prisma.employee.update({
       where: { id },
       data: updateData,

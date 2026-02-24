@@ -15,12 +15,15 @@ export class ProductService {
         { name: { contains: search, mode: 'insensitive' } },
         { sku: { contains: search, mode: 'insensitive' } },
         { category: { name: { contains: search, mode: 'insensitive' } } },
+        { company: { name: { contains: search, mode: 'insensitive' } } },
       ]
     } : {};
 
     let orderByClause: any = orderBy || { name: 'asc' };
     if (params.sortBy === 'category') {
       orderByClause = { category: { name: params.sortOrder || 'asc' } };
+    } else if (params.sortBy === 'company') {
+      orderByClause = { company: { name: params.sortOrder || 'asc' } };
     } else if (orderBy) {
       orderByClause = orderBy;
     }

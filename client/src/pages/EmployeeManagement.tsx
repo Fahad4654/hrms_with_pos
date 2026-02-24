@@ -25,6 +25,7 @@ interface Employee {
   nationality?: string;
   dateOfBirth?: string;
   designation?: string;
+  image?: string;
 }
 
 interface Role {
@@ -58,7 +59,8 @@ const EmployeeManagement: React.FC = () => {
     maritalStatus: '',
     nationality: '',
     dateOfBirth: '',
-    designation: ''
+    designation: '',
+    image: ''
   });
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -184,7 +186,8 @@ const EmployeeManagement: React.FC = () => {
       maritalStatus: employee.maritalStatus || '',
       nationality: employee.nationality || '',
       dateOfBirth: employee.dateOfBirth ? new Date(Number(employee.dateOfBirth)).toISOString().split('T')[0] : '',
-      designation: employee.designation || ''
+      designation: employee.designation || '',
+      image: employee.image || ''
     });
     setIsEditModalOpen(true);
   };
@@ -192,7 +195,7 @@ const EmployeeManagement: React.FC = () => {
   const resetForm = () => {
     setFormData({ 
       name: '', email: '', password: '', roleId: roles[0]?.id || '', salary: 0, joinTimestamp: '',
-      employeeId: '', phone: '', address: '', gender: '', maritalStatus: '', nationality: '', dateOfBirth: '', designation: ''
+      employeeId: '', phone: '', address: '', gender: '', maritalStatus: '', nationality: '', dateOfBirth: '', designation: '', image: ''
     });
   };
 
@@ -342,7 +345,20 @@ const EmployeeManagement: React.FC = () => {
             ) : (
               employees.map(emp => (
                 <tr key={emp.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                  <td style={{ padding: '12px 16px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={emp.name}>{emp.name}</td>
+                  <td style={{ padding: '12px 16px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={emp.name}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      {emp.image ? (
+                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '1px solid var(--glass-border)' }}>
+                          <img src={emp.image} alt={emp.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      ) : (
+                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', flexShrink: 0, border: '1px dashed var(--glass-border)' }}>
+                          {emp.name.charAt(0)}
+                        </div>
+                      )}
+                      <span>{emp.name}</span>
+                    </div>
+                  </td>
                   <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={emp.designation || 'N/A'}>{emp.designation || 'N/A'}</td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{ 
@@ -568,12 +584,16 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ onSubmit, title, onCancel, 
               <input type="password" required={!title.includes('Edit')} minLength={6} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} placeholder={title.includes('Edit') ? '********' : ''} />
             </div>
             <div className="input-group">
-              <label>Employee ID</label>
-              <input value={formData.employeeId} onChange={e => setFormData({...formData, employeeId: e.target.value})} placeholder="EMP001" />
+              <label>Employee ID (Leave empty to auto-generate)</label>
+              <input value={formData.employeeId} onChange={e => setFormData({...formData, employeeId: e.target.value})} placeholder="e.g. EMP001" />
             </div>
             <div className="input-group">
               <label>Designation</label>
               <input value={formData.designation} onChange={e => setFormData({...formData, designation: e.target.value})} placeholder="Software Engineer" />
+            </div>
+            <div className="input-group">
+              <label>Profile Picture URL</label>
+              <input value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} placeholder="https://..." />
             </div>
           </div>
 
@@ -678,14 +698,25 @@ const DetailsModal: React.FC<DetailsModalProps> = ({ employee, onClose, formatDa
         </div>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
-           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <p><strong>Name:</strong> {employee.name}</p>
-              <p><strong>Employee ID:</strong> {employee.employeeId || 'N/A'}</p>
-              <p><strong>Designation:</strong> {employee.designation || 'N/A'}</p>
-              <p><strong>Email:</strong> {employee.email}</p>
-              <p><strong>Phone:</strong> {employee.phone || 'N/A'}</p>
-              <p><strong>Salary:</strong> {formatCurrency(employee.salary)}</p>
-              <p><strong>Role:</strong> {employee.role?.name}</p>
+           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {employee.image ? (
+                <div style={{ width: '120px', height: '120px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--primary)', alignSelf: 'center', marginBottom: '16px' }}>
+                  <img src={employee.image} alt={employee.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              ) : (
+                <div style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--glass-border)', alignSelf: 'center', marginBottom: '16px', color: 'var(--text-muted)' }}>
+                  No Photo
+                </div>
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <p><strong>Name:</strong> {employee.name}</p>
+                <p><strong>Employee ID:</strong> {employee.employeeId || 'N/A'}</p>
+                <p><strong>Designation:</strong> {employee.designation || 'N/A'}</p>
+                <p><strong>Email:</strong> {employee.email}</p>
+                <p><strong>Phone:</strong> {employee.phone || 'N/A'}</p>
+                <p><strong>Salary:</strong> {formatCurrency(employee.salary)}</p>
+                <p><strong>Role:</strong> {employee.role?.name}</p>
+              </div>
            </div>
            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <p><strong>Gender:</strong> {employee.gender || 'N/A'}</p>
