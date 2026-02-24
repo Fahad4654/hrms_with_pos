@@ -5,6 +5,8 @@ const router = Router();
 
 router.use(authenticate);
 
+router.get('/me', EmployeeController.getMe);
+router.put('/me', EmployeeController.updateMe);
 router.get('/', authorizePermission(['employees']), EmployeeController.getAll);
 router.get('/:id', authorizePermission(['employees']), EmployeeController.getById);
 router.post('/', authorizePermission(['employees']), EmployeeController.create);

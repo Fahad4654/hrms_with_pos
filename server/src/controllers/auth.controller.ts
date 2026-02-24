@@ -49,6 +49,7 @@ export class AuthController {
           name: employee.name,
           role: employee.role.name,
           permissions: employee.role.permissions,
+          image: employee.image,
         },
       });
     } catch (error: any) {

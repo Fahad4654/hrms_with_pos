@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express';
 import { EmployeeService } from '../services/employee.service.js';
 import { RoleService } from '../services/role.service.js';
-import type { AuthRequest } from '../middleware/auth.js';
 import { EmployeeSchema } from '../types/shared.js';
+import type { AuthRequest } from '../middleware/auth.js';
 
 export class EmployeeController {
   static async getAll(req: Request, res: Response) {
@@ -16,6 +16,33 @@ export class EmployeeController {
         search: search as string,
       });
       res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  static async getMe(req: Request, res: Response) {
+    try {
+      const id = (req as AuthRequest).user?.id;
+      if (!id) return res.status(401).json({ message: 'Unauthorized' });
+      const employee = await EmployeeService.getEmployeeById(id);
+      if (!employee) return res.status(404).json({ message: 'User not found' });
+      res.json(employee);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  static async updateMe(req: Request, res: Response) {
+    try {
+      const id = (req as AuthRequest).user?.id;
+      if (!id) return res.status(401).json({ message: 'Unauthorized' });
+
+      const { phone, address, gender, maritalStatus, nationality, dateOfBirth, image } = req.body;
+      const updateData = { phone, address, gender, maritalStatus, nationality, dateOfBirth, image };
+
+      const employee = await EmployeeService.updateEmployee(id, updateData);
+      res.json(employee);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

@@ -18,6 +18,7 @@ import SalesHistory from './pages/SalesHistory';
 import Analytics from './pages/Analytics';
 import AdminSettings from './pages/AdminSettings';
 import NoAccess from './pages/NoAccess';
+import UserProfile from './pages/UserProfile';
 
 const ProtectedRoute = ({ children, permission }: { children: React.ReactNode, permission?: string }) => {
   const { user, loading } = useAuth();
@@ -100,6 +101,11 @@ const App: React.FC = () => {
           <Route path="/system-config" element={
             <ProtectedRoute permission="all">
               <Dashboard><SystemConfig /></Dashboard>
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <UserProfile />
             </ProtectedRoute>
           } />
         </Routes>

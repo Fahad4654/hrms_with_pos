@@ -7,6 +7,7 @@ interface User {
   role: string;
   level: number;
   permissions: string[];
+  image: string | null;
 }
 
 interface AuthContextType {

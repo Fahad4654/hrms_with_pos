@@ -250,51 +250,55 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
             borderTop: "1px solid var(--glass-border)",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
+          <Link 
+            to="/profile" 
+            style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "12px", 
               marginBottom: "20px",
+              textDecoration: "none",
+              color: "inherit",
+              padding: "8px",
+              borderRadius: "12px",
+              transition: "background 0.2s",
+              cursor: "pointer"
             }}
+            className="sidebar-profile-link"
           >
             <div
               style={{
-                width: "32px",
-                height: "32px",
+                width: "40px",
+                height: "40px",
                 borderRadius: "50%",
-                background: "var(--primary)",
+                background: user?.image ? "transparent" : "var(--primary)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "0.75rem",
+                fontSize: "0.875rem",
                 fontWeight: "bold",
+                flexShrink: 0,
+                overflow: "hidden",
+                border: user?.image ? "2px solid var(--primary)" : "none"
               }}
             >
-              {user?.name?.charAt(0) || "U"}
+              {user?.image ? (
+                <img src={user.image} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                user?.name?.charAt(0) || "U"
+              )}
             </div>
-            {!(windowWidth <= 1200 && !isMobileMenuOpen) && (
-              <div className="hide-on-mobile">
-                <p style={{ fontSize: "0.875rem", fontWeight: "bold" }}>
+            {(isMobileMenuOpen || windowWidth > 1200) && (
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontSize: "0.875rem", fontWeight: "bold", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {user?.name}
                 </p>
-                <p style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {user?.role}
                 </p>
               </div>
             )}
-            {/* On mobile, show the name always if sidebar is open */}
-            {isMobileMenuOpen && (
-              <div>
-                <p style={{ fontSize: "0.875rem", fontWeight: "bold" }}>
-                  {user?.name}
-                </p>
-                <p style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                  {user?.role}
-                </p>
-              </div>
-            )}
-          </div>
+          </Link>
           <button
             className="btn"
             onClick={logout}
