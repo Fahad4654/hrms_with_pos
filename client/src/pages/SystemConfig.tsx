@@ -20,6 +20,7 @@ interface CompanySettings {
   country: string;
   timezone: string;
   currency: string;
+  taxPercentage: number;
 }
 
 const SystemConfig: React.FC = () => {
@@ -39,6 +40,7 @@ const SystemConfig: React.FC = () => {
     country: 'US',
     timezone: 'America/New_York',
     currency: 'USD',
+    taxPercentage: 8,
   });
   
   // Leaves State
@@ -251,6 +253,28 @@ const SystemConfig: React.FC = () => {
                   {day}
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4%', marginBottom: '6%' }}>
+            <div className="input-group">
+              <label>Company Name</label>
+              <input 
+                type="text" 
+                value={settings.companyName}
+                onChange={e => setSettings({...settings, companyName: e.target.value})}
+                placeholder="e.g. My Business Name"
+              />
+            </div>
+            <div className="input-group">
+              <label>Tax Percentage (%)</label>
+              <input 
+                type="number" 
+                step="0.01"
+                value={settings.taxPercentage}
+                onChange={e => setSettings({...settings, taxPercentage: parseFloat(e.target.value)})}
+                placeholder="e.g. 8.00"
+              />
             </div>
           </div>
 

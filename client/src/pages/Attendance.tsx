@@ -33,7 +33,7 @@ function getTodayString(tz: string): string {
 
 const Attendance: React.FC = () => {
   const { showToast } = useToast();
-  const { formatDate, formatTime, timezone } = useLocale();
+  const { formatDate, formatTime, timezone, companyName } = useLocale();
   const [logs, setLogs] = useState<DailyAttendance[]>([]);
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,6 @@ const Attendance: React.FC = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const { user } = useAuth();
-  const companyName = 'HRMS POS'; // Hardcoded for now, or fetch from settings
 
   useEffect(() => {
     fetchLogs();

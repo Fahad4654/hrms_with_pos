@@ -59,6 +59,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ label, icon, to }) => {
 
 const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
+  const { companyName } = useLocale();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(
     window.innerWidth > 1024,
@@ -125,7 +126,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
             color: "var(--primary)",
           }}
         >
-          HRMS + POS
+          {companyName}
         </h2>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>

@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api.js';
 
 interface LocaleContextType {
+  companyName: string;
+  taxPercentage: number;
   country: string;
   timezone: string;
   currency: string;
@@ -13,6 +15,8 @@ interface LocaleContextType {
 }
 
 const LocaleContext = createContext<LocaleContextType>({
+  companyName: 'My Company',
+  taxPercentage: 8,
   country: 'US',
   timezone: 'America/New_York',
   currency: 'USD',
@@ -23,8 +27,6 @@ const LocaleContext = createContext<LocaleContextType>({
   refreshSettings: async () => {},
 });
 
-// Map country code to IANA locale (BCP 47)
-// Uses Intl.Locale if available, otherwise maps common codes
 function countryToLocale(country: string): string {
   const map: Record<string, string> = {
     US: 'en-US',
@@ -66,21 +68,22 @@ function countryToLocale(country: string): string {
 }
 
 export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [companyName, setCompanyName] = useState('My Company');
+  const [taxPercentage, setTaxPercentage] = useState(8);
   const [country, setCountry] = useState('US');
   const [timezone, setTimezone] = useState('America/New_York');
   const [currency, setCurrency] = useState('USD');
 
   const fetchSettings = async () => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      try {
-        const res = await api.get(`/settings/company?t=${Date.now()}`);
-        if (res.data.country) setCountry(res.data.country);
-        if (res.data.timezone) setTimezone(res.data.timezone);
-        if (res.data.currency) setCurrency(res.data.currency);
-      } catch (err) {
-        console.error('Failed to fetch settings:', err);
-      }
+    try {
+      const res = await api.get(`/settings/company?t=${Date.now()}`);
+      if (res.data.companyName) setCompanyName(res.data.companyName);
+      if (res.data.taxPercentage !== undefined) setTaxPercentage(Number(res.data.taxPercentage));
+      if (res.data.country) setCountry(res.data.country);
+      if (res.data.timezone) setTimezone(res.data.timezone);
+      if (res.data.currency) setCurrency(res.data.currency);
+    } catch (err) {
+      console.error('Failed to fetch settings:', err);
     }
   };
 
@@ -88,8 +91,16 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     fetchSettings();
   }, []);
 
+  useEffect(() => {
+    if (companyName) {
+      document.title = companyName;
+    }
+  }, [companyName]);
+
   const refreshSettings = async (data?: any) => {
     if (data) {
+      if (data.companyName) setCompanyName(data.companyName);
+      if (data.taxPercentage !== undefined) setTaxPercentage(Number(data.taxPercentage));
       if (data.country) setCountry(data.country);
       if (data.timezone) setTimezone(data.timezone);
       if (data.currency) setCurrency(data.currency);
@@ -103,7 +114,6 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const formatDate = (date: string | Date | number | null | undefined): string => {
     if (!date) return '--';
     try {
-      // If it's a YYYY-MM-DD string, parse it as a local date to avoid UTC shifts
       const dateObj = typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date) 
         ? new Date(date + 'T00:00:00') 
         : new Date(Number(date) || date);
@@ -141,7 +151,18 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   return (
-    <LocaleContext.Provider value={{ country, timezone, currency, formatDate, formatTime, formatDateTime, formatCurrency, refreshSettings }}>
+    <LocaleContext.Provider value={{ 
+      companyName, 
+      taxPercentage, 
+      country, 
+      timezone, 
+      currency, 
+      formatDate, 
+      formatTime, 
+      formatDateTime, 
+      formatCurrency, 
+      refreshSettings 
+    }}>
       {children}
     </LocaleContext.Provider>
   );

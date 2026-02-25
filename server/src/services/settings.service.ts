@@ -20,6 +20,7 @@ export class SettingsService {
           country: 'US',
           timezone: 'America/New_York',
           currency: 'USD',
+          taxPercentage: 8,
           updatedAt: now,
         },
       });
@@ -36,6 +37,7 @@ export class SettingsService {
     country?: string;
     timezone?: string;
     currency?: string;
+    taxPercentage?: number;
   }) {
     const settings = await prisma.companySettings.findFirst(); // Direct get to avoid recursion or extra serialization
     if (!settings) throw new Error('Settings not found');

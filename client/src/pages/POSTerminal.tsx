@@ -18,7 +18,7 @@ interface CartItem extends Product {
 
 const POSTerminal: React.FC = () => {
   const { showToast } = useToast();
-  const { formatDateTime, formatCurrency } = useLocale();
+  const { formatDateTime, formatCurrency, companyName, taxPercentage } = useLocale();
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState('');
@@ -135,7 +135,7 @@ const POSTerminal: React.FC = () => {
   };
 
   const subtotalValue = cart.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
-  const taxValue = subtotalValue * 0.08;
+  const taxValue = subtotalValue * (taxPercentage / 100);
   const totalValue = subtotalValue + taxValue;
 
   const handlePrintMemo = (sale: any) => {
@@ -169,7 +169,7 @@ const POSTerminal: React.FC = () => {
         </head>
         <body>
           <div class="header">
-            <h1>SALES RECEIPT</h1>
+            <h1>${companyName.toUpperCase()} RECEIPT</h1>
             <p>Transaction ID: #${sale.transactionId}</p>
             <p>${formatDateTime(sale.timestamp)}</p>
           </div>
@@ -204,7 +204,7 @@ const POSTerminal: React.FC = () => {
               <span>${formatCurrency(sale.subtotal)}</span>
             </div>
             <div class="total-row">
-              <span>Tax (8%)</span>
+              <span>Tax (${taxPercentage}%)</span>
               <span>${formatCurrency(sale.taxAmount)}</span>
             </div>
             <div class="total-row grand-total">
@@ -342,7 +342,7 @@ const POSTerminal: React.FC = () => {
 
       {/* Cart / Checkout Area */}
       <div className="glass-card pos-cart" style={{ width: '30%', minWidth: '350px', display: 'flex', flexDirection: 'column', padding: '2% 3%' }}>
-        <h2 style={{ marginBottom: '4%' }}>Current Sale</h2>
+        <h2 style={{ marginBottom: '4%' }}>${companyName} POS</h2>
         
         {/* Customer Information Form */}
         <div style={{ marginBottom: '15px', padding: '12px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', border: '1px solid var(--glass-border)', position: 'relative' }}>
@@ -460,7 +460,7 @@ const POSTerminal: React.FC = () => {
             <span>{formatCurrency(subtotalValue)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4%', color: 'var(--text-muted)' }}>
-            <span>Tax (8%)</span>
+            <span>Tax (${taxPercentage}%)</span>
             <span>{formatCurrency(taxValue)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6%', fontSize: '1.5rem', fontWeight: 'bold' }}>

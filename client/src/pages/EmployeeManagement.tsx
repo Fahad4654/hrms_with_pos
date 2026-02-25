@@ -37,7 +37,7 @@ interface Role {
 const EmployeeManagement: React.FC = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
-  const { formatDateTime } = useLocale();
+  const { formatDateTime, companyName } = useLocale();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1, limit: 10 });
@@ -70,7 +70,6 @@ const EmployeeManagement: React.FC = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const { timezone } = useLocale();
-  const companyName = 'HRMS POS';
 
   // Filter roles based on hierarchy
   // Level 1 can see all. Level > 1 can only see strictly lower hierarchy (higher level number)

@@ -15,7 +15,7 @@ export class SettingsController {
 
   static async updateCompany(req: Request, res: Response) {
     try {
-      const { companyName, workDays, workStartTime, workEndTime, enableOvertime, country, timezone, currency } = req.body;
+      const { companyName, workDays, workStartTime, workEndTime, enableOvertime, country, timezone, currency, taxPercentage } = req.body;
       const settings = await SettingsService.updateCompanySettings({
         companyName,
         workDays,
@@ -24,7 +24,8 @@ export class SettingsController {
         enableOvertime,
         country,
         timezone,
-        currency
+        currency,
+        taxPercentage
       });
       res.json(settings);
     } catch (error: any) {

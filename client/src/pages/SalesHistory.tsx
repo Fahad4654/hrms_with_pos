@@ -38,7 +38,7 @@ const SalesHistory: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [viewingSale, setViewingSale] = useState<Sale | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const { formatDateTime, formatCurrency } = useLocale();
+  const { formatDateTime, formatCurrency, companyName, taxPercentage } = useLocale();
   const { showToast } = useToast();
   const { confirm } = useConfirm();
 
@@ -126,7 +126,7 @@ const SalesHistory: React.FC = () => {
         </head>
         <body>
           <div class="header">
-            <h1>SALES MEMO</h1>
+            <h1>${companyName.toUpperCase()} MEMO</h1>
             <p>Transaction ID: #${sale.transactionId}</p>
             <p>${formatDateTime(sale.timestamp)}</p>
           </div>
@@ -161,7 +161,7 @@ const SalesHistory: React.FC = () => {
               <span>${formatCurrency(sale.subtotal)}</span>
             </div>
             <div class="total-row">
-              <span>Tax (8%)</span>
+              <span>Tax (${taxPercentage}%)</span>
               <span>${formatCurrency(sale.taxAmount)}</span>
             </div>
             <div class="total-row grand-total">
@@ -436,7 +436,7 @@ const SalesHistory: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td colSpan={3} style={{ padding: '10px', textAlign: 'right', color: 'var(--text-muted)' }}>Tax (8%):</td>
+                    <td colSpan={3} style={{ padding: '10px', textAlign: 'right', color: 'var(--text-muted)' }}>Tax (${taxPercentage}%):</td>
                     <td style={{ padding: '10px', textAlign: 'right', fontWeight: '500' }}>
                       {formatCurrency(viewingSale.taxAmount)}
                     </td>

@@ -75,7 +75,8 @@ export class SaleService {
       }
 
       // 2. Create the Sale record
-      const taxRate = 0.08;
+      const settings = await prisma.companySettings.findFirst();
+      const taxRate = Number(settings?.taxPercentage || 8) / 100;
       const subtotal = totalAmount;
       const taxAmount = subtotal * taxRate;
       const finalTotal = subtotal + taxAmount;
