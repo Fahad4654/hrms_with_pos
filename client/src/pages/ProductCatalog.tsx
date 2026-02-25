@@ -360,7 +360,7 @@ const ProductCatalog: React.FC = () => {
               <th onClick={() => toggleSort('company')} style={{ padding: '12px 16px', cursor: 'pointer', width: '12%' }}>
                 Company {sortBy === 'company' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => toggleSort('price')} style={{ padding: '12px 16px', cursor: 'pointer', width: '10%' }}>
+              <th onClick={() => toggleSort('price')} style={{ padding: '12px 16px', cursor: 'pointer', width: '12%' }}>
                 Price {sortBy === 'price' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
               <th onClick={() => toggleSort('stockLevel')} style={{ padding: '12px 16px', cursor: 'pointer', width: '10%' }}>
@@ -390,7 +390,7 @@ const ProductCatalog: React.FC = () => {
                   <td className="td-wrap" style={{ padding: '12px 16px', fontWeight: '500' }}>{product.name}</td>
                   <td className="td-wrap" style={{ padding: '12px 16px' }}>{product.category?.name || 'N/A'}</td>
                   <td className="td-wrap" style={{ padding: '12px 16px' }}>{product.company?.name || 'N/A'}</td>
-                  <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>{useLocale().formatCurrency(product.price)}</td>
+                  <td className="td-wrap" style={{ padding: '12px 16px', fontWeight: 'bold' }}>{useLocale().formatCurrency(product.price)}</td>
                   <td style={{ padding: '12px 16px' }}>{product.stockLevel} units</td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{ 
@@ -604,7 +604,7 @@ const ProductCatalog: React.FC = () => {
                   }}>
                     {formData.image ? (
                       <img 
-                        src={formData.image.startsWith('/') ? `${import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000'}${formData.image}` : formData.image} 
+                        src={formData.image.startsWith('http') ? formData.image : `${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '')}${formData.image.startsWith('/') ? '' : '/'}${formData.image}`} 
                         alt="Preview" 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                       />
@@ -784,7 +784,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, onCl
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {product.image ? (
               <div style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
-                <img src={product.image.startsWith('/') ? `${import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000'}${product.image}` : product.image} alt={product.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                <img src={product.image.startsWith('http') ? product.image : `${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '')}${product.image.startsWith('/') ? '' : '/'}${product.image}`} alt={product.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
               </div>
             ) : (
               <div style={{ 

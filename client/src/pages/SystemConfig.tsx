@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useLocale } from '../context/LocaleContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 interface LeaveType {
   id: string;
@@ -23,6 +24,7 @@ interface CompanySettings {
 
 const SystemConfig: React.FC = () => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const { refreshSettings } = useLocale();
   const [activeTab, setActiveTab] = useState<'schedule' | 'leaves'>('schedule');
   const [loading, setLoading] = useState(true);
@@ -144,16 +146,35 @@ const SystemConfig: React.FC = () => {
     }
   };
   
+
   const handleDeleteLeaveType = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this leave type?')) return;
-    try {
-       await api.delete(`/settings/leave-types/${id}`);
-       showToast('Leave type deleted successfully', 'success');
-       fetchData();
-    } catch (error: any) {
-       showToast(error.response?.data?.message || 'Error deleting leave type', 'error');
+    const isConfirmed = await confirm({
+      title: 'Delete Leave Type',
+      message: 'Are you sure you want to delete this leave type?',
+      confirmText: 'Delete',
+      variant: 'danger'
+    });
+
+    if (isConfirmed) {
+      try {
+        await api.delete(`/settings/leave-types/${id}`);
+        showToast('Leave type deleted successfully', 'success');
+        fetchData();
+      } catch (error: any) {
+        showToast(error.response?.data?.message || 'Error deleting leave type', 'error');
+      }
     }
   };
+  // const handleDeleteLeaveType = async (id: string) => {
+  //   if (!window.confirm('Are you sure you want to delete this leave type?')) return;
+  //   try {
+  //      await api.delete(`/settings/leave-types/${id}`);
+  //      showToast('Leave type deleted successfully', 'success');
+  //      fetchData();
+  //   } catch (error: any) {
+  //      showToast(error.response?.data?.message || 'Error deleting leave type', 'error');
+  //   }
+  // };
 
   const fetchUtilization = async (leaveTypeName: string) => {
     setLoadingUtilization(true);
@@ -317,7 +338,7 @@ const SystemConfig: React.FC = () => {
 
 
           <button className="btn btn-primary" onClick={handleSaveSettings} style={{ width: '200px' }}>
-            Save Schedule
+            Save
           </button>
         </div>
       )}
@@ -413,15 +434,15 @@ const SystemConfig: React.FC = () => {
                   placeholder="e.g. 10"
                 />
               </div>
-              <div className="input-group">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                  <input 
-                    type="checkbox"
-                    checked={editingLeave?.active ?? true}
-                    onChange={e => setEditingLeave({ ...editingLeave!, active: e.target.checked })}
-                  />
-                  Active
-                </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '15px' }}>
+                <input 
+                  type="checkbox"
+                  id="active-checkbox"
+                  checked={editingLeave?.active ?? true}
+                  onChange={e => setEditingLeave({ ...editingLeave!, active: e.target.checked })}
+                  style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                />
+                <label htmlFor="active-checkbox" style={{ margin: 0, cursor: 'pointer' }}>Active</label>
               </div>
               <div style={{ display: 'flex', gap: '2%', marginTop: '5%' }}>
                 <button type="button" className="btn" onClick={() => setIsLeaveModalOpen(false)} style={{ flex: 1, border: '1px solid var(--glass-border)' }}>Cancel</button>

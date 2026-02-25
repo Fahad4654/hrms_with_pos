@@ -75,11 +75,18 @@ export class SaleService {
       }
 
       // 2. Create the Sale record
+      const taxRate = 0.08;
+      const subtotal = totalAmount;
+      const taxAmount = subtotal * taxRate;
+      const finalTotal = subtotal + taxAmount;
+
       const sale = await tx.sale.create({
         data: {
           employeeId,
           ...(customerId ? { customerId } : {}),
-          totalAmount: new Prisma.Decimal(totalAmount),
+          subtotal: new Prisma.Decimal(subtotal),
+          taxAmount: new Prisma.Decimal(taxAmount),
+          totalAmount: new Prisma.Decimal(finalTotal),
           timestamp: BigInt(toEpoch()),
           items: {
             create: items.map((item: any) => ({
@@ -89,7 +96,19 @@ export class SaleService {
             })),
           },
         },
-        include: { items: true },
+        include: { 
+          items: {
+            include: {
+              product: {
+                select: { name: true }
+              }
+            }
+          },
+          employee: {
+            select: { name: true }
+          },
+          customer: true
+        },
       });
 
       // 3. Update Inventory for each item
@@ -113,9 +132,14 @@ export class SaleService {
     const { search } = params;
 
     const where: Prisma.SaleWhereInput = search ? {
-      employee: {
-        name: { contains: search, mode: 'insensitive' }
-      }
+      OR: [
+        {
+          employee: {
+            name: { contains: search, mode: 'insensitive' }
+          }
+        },
+        ...(isNaN(Number(search)) ? [] : [{ transactionId: Number(search) }])
+      ]
     } : {};
 
     const [sales, total] = await Promise.all([
@@ -126,7 +150,7 @@ export class SaleService {
         orderBy: orderBy || { timestamp: 'desc' },
         include: {
           employee: { select: { name: true } },
-          customer: { select: { name: true, phone: true } },
+          customer: { select: { name: true, phone: true, email: true, address: true } },
           items: { include: { product: { select: { name: true } } } },
         },
       }),
@@ -149,6 +173,47 @@ export class SaleService {
       where: { employeeId },
       include: { items: true },
       orderBy: { timestamp: 'desc' },
+    });
+  }
+
+  static async deleteSale(saleId: string) {
+    return prisma.$transaction(async (tx) => {
+      // 1. Find the sale to get its items
+      const sale = await tx.sale.findUnique({
+        where: { id: saleId },
+        include: { items: true }
+      });
+
+      if (!sale) {
+        throw new Error('Sale not found');
+      }
+
+      // 2. Restore product stock for each item
+      for (const item of sale.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stockLevel: {
+              increment: item.quantity
+            }
+          }
+        });
+      }
+
+      // 3. Delete related records (SaleItem, Commission)
+      await tx.saleItem.deleteMany({
+        where: { saleId }
+      });
+      await tx.commission.deleteMany({
+        where: { saleId }
+      });
+
+      // 4. Delete the Sale itself
+      await tx.sale.delete({
+        where: { id: saleId }
+      });
+
+      return { message: 'Sale deleted and inventory restored successfully' };
     });
   }
 }

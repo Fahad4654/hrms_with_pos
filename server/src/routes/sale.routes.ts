@@ -7,5 +7,6 @@ router.use(authenticate);
 
 router.post('/checkout', SaleController.checkout);
 router.get('/history', authorizePermission(['sales']), SaleController.getHistory);
+router.delete('/:id', authorizePermission(['sales']), SaleController.delete);
 
 export default router;

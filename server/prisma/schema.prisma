@@ -116,15 +116,18 @@ model Customer {
 }
 
 model Sale {
-  id          String       @id @default(uuid())
-  employeeId  String
-  employee    Employee     @relation(fields: [employeeId], references: [id])
-  customerId  String?
-  customer    Customer?    @relation(fields: [customerId], references: [id])
-  totalAmount Decimal
-  timestamp   BigInt
-  items       SaleItem[]
-  commissions Commission[]
+  id            String       @id @default(uuid())
+  transactionId Int          @unique @default(autoincrement())
+  employeeId    String
+  employee      Employee     @relation(fields: [employeeId], references: [id])
+  customerId    String?
+  customer      Customer?    @relation(fields: [customerId], references: [id])
+  subtotal      Decimal      @default(0)
+  taxAmount     Decimal      @default(0)
+  totalAmount   Decimal
+  timestamp     BigInt
+  items         SaleItem[]
+  commissions   Commission[]
 }
 
 model SaleItem {

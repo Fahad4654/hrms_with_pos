@@ -33,7 +33,7 @@ function getTodayString(tz: string): string {
 
 const Attendance: React.FC = () => {
   const { showToast } = useToast();
-  const { formatDateTime, formatDate, timezone } = useLocale();
+  const { formatDate, formatTime, timezone } = useLocale();
   const [logs, setLogs] = useState<DailyAttendance[]>([]);
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -183,9 +183,9 @@ const Attendance: React.FC = () => {
                   <tr key={log.date} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                     <td style={{ padding: '2% 3%' }}>{index + 1}</td>
                     <td style={{ padding: '2% 3%' }}>{formatDate(log.date)}</td>
-                    <td style={{ padding: '2% 3%' }}>{formatDateTime(log.firstClockIn)}</td>
-                    <td style={{ padding: '2% 3%' }}>
-                      {log.lastClockOut ? formatDateTime(log.lastClockOut) : '-'}
+                    <td className="td-wrap" style={{ padding: '2% 3%' }}>{formatTime(log.firstClockIn)}</td>
+                    <td className="td-wrap" style={{ padding: '2% 3%' }}>
+                      {log.lastClockOut ? formatTime(log.lastClockOut) : '-'}
                     </td>
                     <td style={{ padding: '2% 3%' }}>
                       {log.isActive ? (

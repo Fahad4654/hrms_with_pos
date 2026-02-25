@@ -34,4 +34,14 @@ export class SaleController {
       res.status(500).json({ message: error.message });
     }
   }
+
+  static async delete(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const result = await SaleService.deleteSale(id as string);
+      res.json(result);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  }
 }

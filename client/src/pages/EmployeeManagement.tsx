@@ -307,7 +307,7 @@ const EmployeeManagement: React.FC = () => {
         <table style={{ width: '100%', minWidth: '1400px', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <th style={{ padding: '12px 16px', width: '5%' }}>#</th>
+              <th style={{ padding: '12px 16px', width: '60px' }}>#</th>
               <th onClick={() => toggleSort('name')} style={{ padding: '12px 16px', cursor: 'pointer', width: '15%' }}>
                 Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
@@ -380,7 +380,7 @@ const EmployeeManagement: React.FC = () => {
                     {emp.email}
                   </td>
                   <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{emp.phone || 'N/A'}</td>
-                  <td style={{ padding: '12px 16px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                  <td className="td-wrap" style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>
                     {emp.joinTimestamp ? formatDateTime(emp.joinTimestamp) : '--'}
                   </td>
                     <td className="actions-cell" style={{ 
@@ -447,7 +447,7 @@ const EmployeeManagement: React.FC = () => {
               fontSize: '0.875rem'
             }}
           >
-            {[5, 10, 20, 50].map(l => <option key={l} value={l}>{l}</option>)}
+            {[10, 20, 50, 100].map(l => <option key={l} value={l}>{l}</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
