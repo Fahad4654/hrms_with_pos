@@ -46,7 +46,7 @@ const AdminSettings: React.FC = () => {
     'inventory',
     'pos',
     'sales',
-    'analytics'
+    'dashboard'
   ];
 
   useEffect(() => {

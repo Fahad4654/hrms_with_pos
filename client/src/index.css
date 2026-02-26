@@ -292,9 +292,9 @@ tbody tr:nth-child(even) {
     height: calc(100vh - 60px);
     transition: width 0.3s cubic-bezier(0.4, 0, 0, 1), min-width 0.3s cubic-bezier(0.4, 0, 0, 1), padding 0.3s cubic-bezier(0.4, 0, 0, 1), opacity 0.3s !important;
     will-change: width, min-width, padding;
-    overflow-y: auto;
     white-space: nowrap;
     top: 60px !important;
+    overflow: hidden;
   }
   .sidebar:not(.open) {
     width: 0 !important;

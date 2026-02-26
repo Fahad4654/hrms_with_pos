@@ -10,7 +10,7 @@ model Role {
   id          String     @id @default(uuid())
   name        String     @unique
   level       Int        @default(10) // 1 = Highest (Super Admin), 10 = Lowest (Staff)
-  permissions String[] // e.g., ["all", "employees", "attendance", "products", "pos", "sales", "analytics"]
+  permissions String[] // e.g., ["all", "employees", "attendance", "products", "pos", "sales", "dashboard"]
   employees   Employee[]
   createdAt   BigInt
   updatedAt   BigInt
@@ -40,6 +40,7 @@ model Employee {
   salary        Decimal        @default(0)
   joinTimestamp BigInt?
   image         String?        @db.Text
+  status        String         @default("ACTIVE") // ACTIVE, INACTIVE, TERMINATED
   refreshToken  String?
   createdAt     BigInt
   updatedAt     BigInt
@@ -125,6 +126,7 @@ model Sale {
   subtotal      Decimal      @default(0)
   taxAmount     Decimal      @default(0)
   totalAmount   Decimal
+  paymentMethod String       @default("CASH") // CASH, CARD, ONLINE
   timestamp     BigInt
   items         SaleItem[]
   commissions   Commission[]

@@ -3,6 +3,16 @@ import type { AuthRequest } from '../middleware/auth.js';
 import { BIService } from '../services/bi.service.js';
 
 export class BIController {
+  static async getDashboardAnalytics(req: AuthRequest, res: Response) {
+    try {
+      const { startDate, endDate } = req.query;
+      const analytics = await BIService.getDashboardAnalytics(startDate as string, endDate as string);
+      res.json(analytics);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
   static async getLaborAnalytics(req: AuthRequest, res: Response) {
     try {
       const analytics = await BIService.getLaborAnalytics();

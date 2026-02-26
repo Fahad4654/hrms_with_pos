@@ -156,9 +156,13 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
       >
         <div
           style={{
-            marginBottom: "32px",
+            flex: 1,
+            overflowY: "auto",
+            marginBottom: "20px",
             marginTop: "0",
+            paddingRight: "4px" // Space for scrollbar
           }}
+          className="sidebar-nav-scroll"
         >
           {[
             {
@@ -211,10 +215,10 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
               permission: "sales",
             },
             {
-              label: "Analytics",
-              icon: "📈",
-              to: "/analytics",
-              permission: "analytics",
+              label: "Dashboard",
+              icon: "📊",
+              to: "/dashboard",
+              permission: "dashboard",
             },
             {
               label: "Permissions",
@@ -336,64 +340,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
         className="main-content"
       >
         <div className="animate-fade-in">
-          {children || (
-            <>
-              <h1 style={{ marginBottom: "40px" }}>Command Center</h1>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: windowWidth <= 480 ? "16px" : "24px",
-                }}
-              >
-                <div
-                  className="glass-card"
-                  style={{ padding: windowWidth <= 480 ? "16px" : "24px" }}
-                >
-                  <p
-                    style={{
-                      color: "var(--text-muted)",
-                      fontSize: "0.875rem",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    Total Sales (Today)
-                  </p>
-                  <h3>{useLocale().formatCurrency(1240.00)}</h3>
-                </div>
-                <div
-                  className="glass-card"
-                  style={{ padding: windowWidth <= 480 ? "16px" : "24px" }}
-                >
-                  <p
-                    style={{
-                      color: "var(--text-muted)",
-                      fontSize: "0.875rem",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    Clocked In
-                  </p>
-                  <h3>12 / 15</h3>
-                </div>
-                <div
-                  className="glass-card"
-                  style={{ padding: windowWidth <= 480 ? "16px" : "24px" }}
-                >
-                  <p
-                    style={{
-                      color: "var(--text-muted)",
-                      fontSize: "0.875rem",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    Pending Leaves
-                  </p>
-                  <h3>3</h3>
-                </div>
-              </div>
-            </>
-          )}
+          {children}
         </div>
       </div>
     </div>

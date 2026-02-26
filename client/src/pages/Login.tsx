@@ -42,8 +42,8 @@ const Login: React.FC = () => {
         navigate('/pos');
       } else if (permissions.includes('sales')) {
         navigate('/sales');
-      } else if (permissions.includes('analytics')) {
-        navigate('/analytics');
+      } else if (permissions.includes('dashboard')) {
+        navigate('/dashboard');
       } else {
         navigate('/no-access');
       }

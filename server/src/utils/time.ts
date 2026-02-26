@@ -56,12 +56,26 @@ export const toEpoch = (date: Date | string | number | bigint = new Date()): num
 export const serializeBigInt = (obj: any): any => {
   if (obj === null || obj === undefined) return obj;
   if (typeof obj === 'bigint') return Number(obj);
+  
+  // Handle Prisma Decimal or other objects with toNumber()
+  if (typeof obj === 'object' && typeof obj.toNumber === 'function') {
+    return obj.toNumber();
+  }
+
   if (Array.isArray(obj)) return obj.map(serializeBigInt);
+  
   if (typeof obj === 'object') {
     if (obj instanceof Date) return obj;
+    // Prevent deep recursion on complex objects that aren't plain data
+    if (obj.constructor && obj.constructor.name !== 'Object' && obj.constructor.name !== 'Array') {
+      return obj;
+    }
+    
     const newObj: any = {};
     for (const key in obj) {
-      newObj[key] = serializeBigInt(obj[key]);
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        newObj[key] = serializeBigInt(obj[key]);
+      }
     }
     return newObj;
   }

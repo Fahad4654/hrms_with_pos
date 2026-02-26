@@ -32,6 +32,35 @@ const ProtectedRoute = ({ children, permission }: { children: React.ReactNode, p
   return <>{children}</>;
 };
 
+const DynamicLanding = () => {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" />;
+
+  const routes = [
+    { to: "/employees", permission: "employees" },
+    { to: "/attendance", permission: "attendance" },
+    { to: "/leaves", permission: "leaves" },
+    { to: "/leave-approvals", permission: "leave-approvals" },
+    { to: "/categories", permission: "categories" },
+    { to: "/companies", permission: "inventory" },
+    { to: "/products", permission: "inventory" },
+    { to: "/pos", permission: "pos" },
+    { to: "/sales", permission: "sales" },
+    { to: "/dashboard", permission: "dashboard" },
+    { to: "/permissions", permission: "all" },
+    { to: "/system-config", permission: "all" },
+    { to: "/profile", permission: null }
+  ];
+
+  const firstAccessible = routes.find(r => 
+    !r.permission || 
+    user.permissions?.includes('all') || 
+    user.permissions?.includes(r.permission)
+  );
+
+  return <Navigate to={firstAccessible?.to || "/profile"} replace />;
+};
+
 const App: React.FC = () => {
   return (
     <Router>
@@ -40,7 +69,7 @@ const App: React.FC = () => {
           <Route path="/no-access" element={<NoAccess />} />
           <Route path="/" element={
             <ProtectedRoute>
-              <Dashboard />
+              <DynamicLanding />
             </ProtectedRoute>
           } />
           <Route path="/employees" element={
@@ -88,8 +117,8 @@ const App: React.FC = () => {
               <Dashboard><SalesHistory /></Dashboard>
             </ProtectedRoute>
           } />
-          <Route path="/analytics" element={
-            <ProtectedRoute permission="analytics">
+          <Route path="/dashboard" element={
+            <ProtectedRoute permission="dashboard">
               <Dashboard><Analytics /></Dashboard>
             </ProtectedRoute>
           } />

@@ -92,4 +92,126 @@ export class BIService {
       unpaidDays,
     };
   }
+
+  static async getDashboardAnalytics(startDate?: string, endDate?: string) {
+    const now = dayjs();
+    const startOfWeek = now.startOf('week').valueOf();
+    const startOfMonth = now.startOf('month').valueOf();
+    const todayStart = now.startOf('day').valueOf();
+
+    // Custom range or default 7 days
+    const rangeEnd = (endDate && dayjs(endDate).isValid()) ? dayjs(endDate).endOf('day') : now;
+    const rangeStart = (startDate && dayjs(startDate).isValid()) ? dayjs(startDate).startOf('day') : rangeEnd.subtract(6, 'day').startOf('day');
+
+    if (!rangeStart.isValid() || !rangeEnd.isValid()) {
+      throw new Error(`Invalid date range: ${startDate} to ${endDate}`);
+    }
+
+    const diffDays = Math.max(1, rangeEnd.diff(rangeStart, 'day') + 1);
+    const daysArray = Array.from({ length: diffDays }, (_, i) => rangeStart.add(i, 'day').format('YYYY-MM-DD'));
+
+    // 1. Revenue Totals
+    const weeklySales = await prisma.sale.findMany({
+      where: { timestamp: { gte: BigInt(startOfWeek) } }
+    });
+    const monthlySales = await prisma.sale.findMany({
+      where: { timestamp: { gte: BigInt(startOfMonth) } }
+    });
+
+    // 2. Employee Attendance (Today)
+    const settings = await prisma.companySettings.findFirst();
+    const workStartTime = settings?.workStartTime || "09:00";
+    const [startH, startM] = workStartTime.split(':');
+    const startH_num = Number(startH);
+    const startM_num = Number(startM);
+    const lateThreshold = now.startOf('day').add(startH_num, 'hour').add(startM_num, 'minute').valueOf();
+
+    const todayAttendance = await prisma.attendance.findMany({
+      where: { clockInTimestamp: { gte: BigInt(todayStart) } },
+      include: { employee: true }
+    });
+
+    const totalEmployees = await prisma.employee.count({ where: { status: 'ACTIVE' } as any });
+    const presentCount = todayAttendance.length;
+    const lateCount = todayAttendance.filter(a => Number(a.clockInTimestamp) > lateThreshold).length;
+    const absentCount = totalEmployees - presentCount;
+
+    // 3. HR Stats
+    const rolesCount = await prisma.role.findMany({
+      include: { _count: { select: { employees: true } } }
+    });
+    
+    const salaryExpenses = await prisma.employee.aggregate({
+      _sum: { salary: true }
+    });
+
+    const newHires = await prisma.employee.count({
+      where: { joinTimestamp: { gte: BigInt(startOfMonth) } }
+    });
+
+    // 4. Inventory Analytics
+    const allProducts = await prisma.product.findMany();
+    const lowStockThreshold = 10;
+    const lowStock = allProducts.filter(p => p.stockLevel > 0 && p.stockLevel <= lowStockThreshold);
+    const outOfStock = allProducts.filter(p => p.stockLevel === 0);
+    
+    // Best Sellers (Top 5)
+    const saleItems = await prisma.saleItem.groupBy({
+      by: ['productId'],
+      _sum: { quantity: true },
+      orderBy: { _sum: { quantity: 'desc' } },
+      take: 5
+    });
+
+    const bestSellers = await Promise.all(saleItems.map(async (item) => {
+      const product = await prisma.product.findUnique({ where: { id: item.productId } });
+      return {
+        name: product?.name || 'Unknown',
+        quantity: item._sum.quantity
+      };
+    }));
+
+    // 5. Peak Sales Heatmap (Daily distribution by hour)
+    const allSales = await prisma.sale.findMany({
+      where: { timestamp: { gte: BigInt(startOfMonth) } }
+    });
+
+    const peakHours = Array.from({ length: 24 }, (_, hour) => {
+      const count = allSales.filter(s => dayjs(Number(s.timestamp)).hour() === hour).length;
+      return { hour, count };
+    });
+
+    // 6. Sales Trends (Daily for selected range)
+    const dailyTrend = await Promise.all(daysArray.map(async (date) => {
+      const start = dayjs(date).startOf('day').valueOf();
+      const end = dayjs(date).endOf('day').valueOf();
+      const sales = await prisma.sale.findMany({
+        where: { timestamp: { gte: BigInt(start), lte: BigInt(end) } }
+      });
+      const revenue = sales.reduce((sum, s) => sum + Number(s.totalAmount), 0);
+      return { date: dayjs(date).format('MMM DD'), revenue };
+    }));
+
+    return serializeBigInt({
+      revenue: {
+        weekly: weeklySales.reduce((sum, s) => sum + Number(s.totalAmount), 0),
+        monthly: monthlySales.reduce((sum, s) => sum + Number(s.totalAmount), 0),
+        dailyTrend
+      },
+      hr: {
+        totalEmployees,
+        attendance: { present: presentCount, absent: absentCount, late: lateCount },
+        distribution: rolesCount.map(r => ({ name: r.name, value: r._count.employees })),
+        salaryExpenses: Number(salaryExpenses._sum.salary || 0),
+        newHires
+      },
+      inventory: {
+        lowStock: lowStock.length,
+        outOfStock: outOfStock.length,
+        bestSellers,
+        totalItems: allProducts.length
+      },
+      peakHours
+    });
+  }
 }
