@@ -436,7 +436,7 @@ const SalesHistory: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td colSpan={3} style={{ padding: '10px', textAlign: 'right', color: 'var(--text-muted)' }}>Tax (${taxPercentage}%):</td>
+                    <td colSpan={3} style={{ padding: '10px', textAlign: 'right', color: 'var(--text-muted)' }}>Tax ({taxPercentage}%):</td>
                     <td style={{ padding: '10px', textAlign: 'right', fontWeight: '500' }}>
                       {formatCurrency(viewingSale.taxAmount)}
                     </td>

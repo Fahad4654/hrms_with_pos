@@ -29,6 +29,7 @@ const POSTerminal: React.FC = () => {
   const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [lastSale, setLastSale] = useState<any | null>(null);
 
   const handleCustomerSearch = (field: 'phone' | 'email', value: string) => {
     setCustomer(prev => ({ ...prev, [field]: value }));
@@ -89,6 +90,7 @@ const POSTerminal: React.FC = () => {
   };
 
   const addToCart = (product: Product) => {
+    if (lastSale) setLastSale(null);
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
@@ -238,7 +240,7 @@ const POSTerminal: React.FC = () => {
     try {
       const { data } = await api.post('/sales/checkout', saleData);
       showToast('Sale completed successfully!', 'success');
-      handlePrintMemo(data);
+      setLastSale(data);
       setCart([]);
       setCustomer({ name: '', email: '', phone: '', address: '' });
       fetchProducts();
@@ -460,7 +462,7 @@ const POSTerminal: React.FC = () => {
             <span>{formatCurrency(subtotalValue)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4%', color: 'var(--text-muted)' }}>
-            <span>Tax (${taxPercentage}%)</span>
+            <span>Tax ({taxPercentage}%)</span>
             <span>{formatCurrency(taxValue)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6%', fontSize: '1.5rem', fontWeight: 'bold' }}>
@@ -476,6 +478,16 @@ const POSTerminal: React.FC = () => {
           >
             {loading ? 'Processing...' : 'Complete Checkout'}
           </button>
+
+          {lastSale && (
+            <button 
+              className="btn" 
+              style={{ width: '100%', height: '50px', marginTop: '12px', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--success)', border: '1px solid rgba(34, 197, 94, 0.2)', justifyContent: 'center' }}
+              onClick={() => handlePrintMemo(lastSale)}
+            >
+              Print Last Receipt
+            </button>
+          )}
         </div>
       </div>
     </div>
