@@ -13,12 +13,30 @@ const LiveClock: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontWeight: '600', fontSize: '1rem' }}>
-       <span style={{ opacity: 0.8 }}>🕒</span>
-       <span>{formatTime(time)}</span>
-       <span style={{ fontSize: '0.7rem', opacity: 0.6, fontWeight: 'normal', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
-         {timezone.split('/').pop()?.replace('_', ' ')}
-       </span>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        color: "var(--accent)",
+        fontWeight: "600",
+        fontSize: "1rem",
+      }}
+    >
+      <span style={{ opacity: 0.8 }}>🕒</span>
+      <span>{formatTime(time)}</span>
+      <span
+        style={{
+          fontSize: "0.7rem",
+          opacity: 0.6,
+          fontWeight: "normal",
+          background: "rgba(255,255,255,0.05)",
+          padding: "2px 6px",
+          borderRadius: "4px",
+        }}
+      >
+        {timezone.split("/").pop()?.replace("_", " ")}
+      </span>
     </div>
   );
 };
@@ -82,12 +100,12 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   // Scroll locking for mobile menu
   React.useEffect(() => {
     if (windowWidth <= 1024 && isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isMobileMenuOpen, windowWidth]);
 
@@ -95,7 +113,14 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     windowWidth <= 480 ? (windowWidth <= 320 ? "3%" : "4%") : "3%";
 
   return (
-    <div style={{ display: "flex", height: "100vh", position: "relative", overflow: "hidden" }}>
+    <div
+      style={{
+        display: "flex",
+        height: "100vh",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
       {/* Universal Header (Mobile & Desktop Toggle) */}
       <div
         className="glass-card"
@@ -114,9 +139,9 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
           transition: "all 0.3s cubic-bezier(0.4, 0, 0, 1)",
           borderRadius: 0, // Header should be flat
           margin: 0,
-          borderLeft: 'none',
-          borderRight: 'none',
-          borderTop: 'none'
+          borderLeft: "none",
+          borderRight: "none",
+          borderTop: "none",
         }}
       >
         <h2
@@ -129,7 +154,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
           {companyName}
         </h2>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
           {windowWidth > 640 && <LiveClock />}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -160,11 +185,17 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
             overflowY: "auto",
             marginBottom: "20px",
             marginTop: "0",
-            paddingRight: "4px" // Space for scrollbar
+            paddingRight: "4px", // Space for scrollbar
           }}
           className="sidebar-nav-scroll"
         >
           {[
+            {
+              label: "Dashboard",
+              icon: "📊",
+              to: "/dashboard",
+              permission: "dashboard",
+            },
             {
               label: "Employees",
               icon: "👥",
@@ -214,12 +245,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
               to: "/sales",
               permission: "sales",
             },
-            {
-              label: "Dashboard",
-              icon: "📊",
-              to: "/dashboard",
-              permission: "dashboard",
-            },
+
             {
               label: "Permissions",
               icon: "⚙️",
@@ -236,7 +262,8 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
             .filter(
               (item) =>
                 user?.permissions?.includes("all") ||
-                (item.permission && user?.permissions?.includes(item.permission)),
+                (item.permission &&
+                  user?.permissions?.includes(item.permission)),
             )
             .map((item) => (
               <SidebarItem
@@ -255,19 +282,19 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
             borderTop: "1px solid var(--glass-border)",
           }}
         >
-          <Link 
-            to="/profile" 
-            style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              gap: "12px", 
+          <Link
+            to="/profile"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
               marginBottom: "20px",
               textDecoration: "none",
               color: "inherit",
               padding: "8px",
               borderRadius: "12px",
               transition: "background 0.2s",
-              cursor: "pointer"
+              cursor: "pointer",
             }}
             className="sidebar-profile-link"
           >
@@ -284,21 +311,47 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
                 fontWeight: "bold",
                 flexShrink: 0,
                 overflow: "hidden",
-                border: user?.image ? "2px solid var(--primary)" : "none"
+                border: user?.image ? "2px solid var(--primary)" : "none",
               }}
             >
               {user?.image ? (
-                <img src={user.image.startsWith('/') ? `${import.meta.env.VITE_API_ORIGIN || 'http://localhost:5000'}${user.image}` : user.image} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img
+                  src={
+                    user.image.startsWith("/")
+                      ? `${import.meta.env.VITE_API_ORIGIN || "http://localhost:5000"}${user.image}`
+                      : user.image
+                  }
+                  alt={user.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
               ) : (
                 user?.name?.charAt(0) || "U"
               )}
             </div>
             {(isMobileMenuOpen || windowWidth > 1200) && (
               <div style={{ minWidth: 0 }}>
-                <p style={{ fontSize: "0.875rem", fontWeight: "bold", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <p
+                  style={{
+                    fontSize: "0.875rem",
+                    fontWeight: "bold",
+                    margin: 0,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
                   {user?.name}
                 </p>
-                <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--text-muted)",
+                    margin: 0,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
                   {user?.role}
                 </p>
               </div>
@@ -339,9 +392,7 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
         }}
         className="main-content"
       >
-        <div className="animate-fade-in">
-          {children}
-        </div>
+        <div className="animate-fade-in">{children}</div>
       </div>
     </div>
   );
